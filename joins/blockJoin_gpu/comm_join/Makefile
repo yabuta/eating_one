@@ -1,0 +1,18 @@
+# Makefile
+TARGET	= NestLoopExe
+CC	= gcc
+NVCC	= nvcc -arch sm_35 -cubin
+LIBS	= -lcuda -lstdc++
+CFLAGS	= -L/usr/local/cuda/lib64 -I /usr/local/cuda/include
+
+all: conv.o nestLoopJoinArg.cc join_gpuArg.cu
+	$(NVCC) -o join_gpu.cubin join_gpuArg.cu
+	gcc -o $(TARGET) $(CFLAGS) $(LIBS) nestLoopJoinArg.cc 
+
+#conv.o
+
+#conv.o: conv.c
+#	gcc -o conv.o conv.c
+
+clean:
+	rm -f $(TARGET) *.cubin ./*~

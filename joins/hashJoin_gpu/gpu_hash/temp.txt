@@ -1,0 +1,169 @@
+  /******************************************************************
+    count the number of match tuple
+    
+  *******************************************************************/
+
+
+  void *count_args[]={
+    
+    (void *)&rt_dev,
+    (void *)&count_dev,
+    (void *)&bucket_dev,
+    (void *)&buckArray_dev,
+    (void *)&idxcount_dev,
+    (void *)&right
+      
+  };
+
+  //グリッド・ブロックの指定、変数の指定、カーネルの実行を行う
+
+  res = cuLaunchKernel(
+                       c_function,    // CUfunction f
+                       1,        // gridDimX
+                       grid_y,        // gridDimY
+                       1,             // gridDimZ
+                       1,       // blockDimX
+                       block_y,       // blockDimY
+                       1,             // blockDimZ
+                       0,             // sharedMemBytes
+                       NULL,          // hStream
+                       count_args,   // keunelParams
+                       NULL           // extra
+                       );
+  if(res != CUDA_SUCCESS) {
+    printf("count cuLaunchKernel() failed: res = %lu\n", (unsigned long int)res);
+    exit(1);
+  }      
+
+  res = cuCtxSynchronize();
+  if(res != CUDA_SUCCESS) {
+    printf("cuCtxSynchronize() failed: res = %lu\n", (unsigned long int)res);
+    exit(1);
+  }  
+
+
+  res = cuMemcpyDtoH(count, count_dev, right * sizeof(int));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemcpyDtoH (count) failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+
+
+  /***************************************************************************************/
+
+
+
+
+  /**************************** prefix sum *************************************/
+
+  thrust::inclusive_scan(count,count + right,count);
+
+  /********************************************************************/
+
+
+  /*
+  for(int i = 0; i < right; i++){
+    printf("%d = %d\n",i,count[i]);
+  }
+  */
+
+
+  //cpy count to GPU again      ***************************************
+  res = cuMemcpyHtoD(count_dev, count, right * sizeof(int));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemcpyHtoD (count) failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+
+
+  /**********************************************************************/
+
+  gettimeofday(&time_count_f, NULL);
+
+  /************************************************************************
+   p memory alloc and p upload
+   supplementary:
+   The reason that join table is "p" ,it's used sample program .
+   As possible I will change appriciate value.
+  ************************************************************************/
+
+  if(count[right-1] <= 0){
+    printf("no tuple is matched.\n");
+    exit(1);
+  }else{
+    res = cuMemAlloc(&jt_dev, count[right-1] * sizeof(RESULT));
+    if (res != CUDA_SUCCESS) {
+      printf("cuMemAlloc (join) failed\n");
+      exit(1);
+    }
+  }
+
+
+  gettimeofday(&time_join_s, NULL);
+
+  gettimeofday(&time_jup_s, NULL);
+
+  res = cuMemcpyHtoD(jt_dev, jt, count[right-1] * sizeof(RESULT));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemcpyHtoD (join) failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+
+  gettimeofday(&time_jup_f, NULL);
+
+
+  gettimeofday(&time_jkernel_s, NULL);
+
+  void *kernel_args[]={
+    (void *)&lt_dev,
+    (void *)&rt_dev,
+    (void *)&jt_dev,
+    (void *)&count_dev,
+    (void *)&bucket_dev,
+    (void *)&buckArray_dev,
+    (void *)&idxcount_dev,
+    (void *)&left,
+    (void *)&right,    
+  };
+
+  //グリッド・ブロックの指定、変数の指定、カーネルの実行を行う
+  res = cuLaunchKernel(
+                       function,      // CUfunction f
+                       1,        // gridDimX
+                       grid_y,        // gridDimY
+                       1,             // gridDimZ
+                       1,       // blockDimX
+                       block_y,       // blockDimY
+                       1,             // blockDimZ
+                       0,             // sharedMemBytes
+                       NULL,          // hStream
+                       kernel_args,   // keunelParams
+                       NULL           // extra
+                       );
+  if(res != CUDA_SUCCESS) {
+    printf("join cuLaunchKernel() failed: res = %lu\n", (unsigned long int)res);
+    exit(1);
+  }  
+
+
+
+  res = cuCtxSynchronize();
+  if(res != CUDA_SUCCESS) {
+    printf("cuCtxSynchronize() failed: res = %lu\n", (unsigned long int)res);
+    exit(1);
+  }  
+
+  gettimeofday(&time_jkernel_f, NULL);
+
+
+  gettimeofday(&time_jdown_s, NULL);
+
+  res = cuMemcpyDtoH(jt, jt_dev, count[right-1] * sizeof(RESULT));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemcpyDtoH (p) failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+
+  gettimeofday(&time_jdown_f, NULL);
+
+  /***************************************************************/

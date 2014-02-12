@@ -1,0 +1,7 @@
+Makefile
+NestLoopJoinArg.cc
+Join_gpuArg.cu
+tuple.h
+
+
+がメインのファイル。あとはバックアップとか

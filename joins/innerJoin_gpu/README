@@ -1,0 +1,17 @@
+inner index joinのGPU化
+
+primary_inner
+現在実装中のGPU化したjoinが入っている
+実行方法
+sudo ./InnerExe 1000 1000
+
+
+
+ori_innerはGPU化する前のinner index joinが入っている
+実行方法
+./inner_idx_bnlj 1000 1000
+
+
+other
+改良中バージョンが入っている。
+
