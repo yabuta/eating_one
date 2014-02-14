@@ -5,9 +5,9 @@
 #define BLOCK_SIZE_Y 32
 #define PART_C_NUM 64
 #define TUPLE_SIZE 8
-#define SHAREDSIZE 80
-//#define B_ROW_NUM 10
-#define B_ROW_NUM (SHAREDSIZE/TUPLE_SIZE)
+#define SHAREDSIZE 49152
+#define B_ROW_NUM 3072
+//#define B_ROW_NUM (SHAREDSIZE/TUPLE_SIZE)
 #define PER_TH 10
 
 #define NUM_VAL 1

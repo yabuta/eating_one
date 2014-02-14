@@ -53,6 +53,7 @@ __global__ void join(
 
   __syncthreads();
 
+
   //printf("%d\t%d\t%d\n",r_p[radix[blockIdx.x]+1],r_p[radix[blockIdx.x]],radix[blockIdx.x]);
   
 

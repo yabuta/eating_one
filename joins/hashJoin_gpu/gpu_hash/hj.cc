@@ -613,6 +613,7 @@ join()
   }
   */
 
+  //exit(1);
 
 
   /****************************************************************
@@ -772,11 +773,9 @@ join()
   }
 
 
-  /*
   for(int i = 0; i < right; i++){
     printf("%d = %d\n",i,prt[i].val);
   }
-  */
 
 
   gettimeofday(&time_hash_f, NULL);
@@ -884,6 +883,11 @@ join()
       
   };
 
+  int sharedMemBytes = B_ROW_NUM*sizeof(TUPLE);
+
+
+  printf("%d\n",sizeof(TUPLE));
+ 
   //グリッド・ブロックの指定、変数の指定、カーネルの実行を行う
 
   res = cuLaunchKernel(
@@ -892,9 +896,9 @@ join()
                        1,        // gridDimY
                        1,             // gridDimZ
                        block_x,     // blockDimX
-                       block_y,       // blockDimY
+                       1,       // blockDimY
                        1,             // blockDimZ
-                       0,             // sharedMemBytes
+                       sharedMemBytes,             // sharedMemBytes
                        NULL,          // hStream
                        count_args,   // keunelParams
                        NULL           // extra
@@ -1050,6 +1054,7 @@ join()
   gettimeofday(&end, NULL);
 
 
+  /*
   int temp3=0;
   for(int i=0 ; i<left ; i++){
     for(int j=0; j<right ;j++){
@@ -1060,7 +1065,7 @@ join()
   }
 
   printf("sequence result = %d\n",temp3);
-
+  */
 
   res = cuMemFree(lt_dev);
   if (res != CUDA_SUCCESS) {
@@ -1134,6 +1139,8 @@ join()
   printDiff(time_count_s,time_count_f);
   printf("join time:\n");
   printDiff(time_join_s,time_join_f);
+  printf("join download time:\n");
+  printDiff(time_jdown_s,time_jdown_f);
 
   /*
   printf("count time:\n");

@@ -50,6 +50,14 @@ void count(
 
   __syncthreads();  
 
+
+  if(blockIdx.x==0){
+    //for(j=0;(j<BLOCK_SIZE_X)&&((j+BLOCK_SIZE_X*blockIdx.x)<ltn);j++){
+    printf("%d\t%d\n",Tleft[0].val[0],threadIdx.y);
+    //}
+  }
+
+
   TUPLE Tright = rt[i];
 
 
