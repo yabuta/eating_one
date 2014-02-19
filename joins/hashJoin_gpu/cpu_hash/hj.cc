@@ -11,7 +11,7 @@
 #include "tuple.h"
 
 #define JT_SIZE 1200000
-#define SELECTIVITY 100
+#define SELECTIVITY 10000
 
 TUPLE *rt;
 TUPLE *lt;

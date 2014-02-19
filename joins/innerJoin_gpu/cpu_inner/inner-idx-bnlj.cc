@@ -10,8 +10,8 @@
 #include "debug.h"
 #include "tuple.h"
 
-#define JT_SIZE 1200000
-#define SELECTIVITY 100
+#define JT_SIZE 120000000
+#define SELECTIVITY 10
 
 
 BUCKET *Bucket;

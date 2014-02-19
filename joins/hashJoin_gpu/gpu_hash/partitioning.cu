@@ -18,7 +18,8 @@ void partitioning(
           TUPLE *pt,
           int *L,
           int p,
-          int t_num
+          int t_num,
+          int rows_num
           ) 
 
 {
@@ -27,13 +28,15 @@ void partitioning(
 
   // Matching phase
   int hash = 0;
-  for(int i = 0; i<PER_TH;i++){
-    hash = t[x*PER_TH + i].val%p;
-    pt[L[hash*t_num + x]].key = t[x*PER_TH + i].key;  
-    pt[L[hash*t_num + x]].val = t[x*PER_TH + i].val;  
-    L[hash*t_num + x]++;
-    //printf("i = %d\tloc = %d\tt = %d\n",hash*t_num + x,L[hash*t_num + x],t[x*PER_TH + i].val);
-
+  if(x < t_num){
+    for(int i = 0; i<PER_TH&&(x*PER_TH+i)<rows_num;i++){
+      hash = t[x*PER_TH + i].val%p;
+      pt[L[hash*t_num + x]].key = t[x*PER_TH + i].key;  
+      pt[L[hash*t_num + x]].val = t[x*PER_TH + i].val;  
+      L[hash*t_num + x]++;
+      //printf("i = %d\tloc = %d\tt = %d\n",hash*t_num + x,L[hash*t_num + x],t[x*PER_TH + i].val);
+      
+    }
   }
 
 

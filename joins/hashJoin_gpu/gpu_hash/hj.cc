@@ -14,8 +14,6 @@
 #include "debug.h"
 #include "tuple.h"
 
-#define JT_SIZE 1200000
-#define SELECTIVITY 2
 
 TUPLE *rt;
 TUPLE *lt;
@@ -170,7 +168,7 @@ join()
   char fname[256];
   const char *path=".";
   struct timeval begin, end;
-  struct timeval tv_cal_s, tv_cal_f,time_join_s,time_join_f,time_jdown_s,time_jdown_f;
+  struct timeval tv_cal_s, tv_cal_f,time_join_s,time_join_f,time_jkernel_s,time_jkernel_f,time_jdown_s,time_jdown_f;
   struct timeval time_count_s,time_count_f,time_alloc_s,time_alloc_f;
   struct timeval time_hash_s,time_hash_f;
   double time_cal;
@@ -323,7 +321,7 @@ join()
 
 
   t_num = left/PER_TH;
-  if(left%PER_TH){
+  if(left%PER_TH != 0){
     t_num++;
   }
 
@@ -410,7 +408,8 @@ join()
     (void *)&lt_dev,
     (void *)&lL_dev,
     (void *)&p_num,
-    (void *)&t_num
+    (void *)&t_num,
+    (void *)&left
       
   };
 
@@ -447,12 +446,14 @@ join()
     exit(1);
   }
 
+
   /*
   for(int i = 0; i<t_num*p_num ;i++){
      printf("%d = %d\n",i,lL[i]);
 
   }
   */
+
 
   /**************************** prefix sum *************************************/
 
@@ -473,6 +474,7 @@ join()
   }
   p_sum[p_num-1] = left - lL[t_num*(p_num-1)];
 
+  
 
   /*
   for(int i = 0; i<t_num*p_num ;i++){
@@ -483,6 +485,7 @@ join()
     printf("p sum = %d\n",p_sum[i]);
   }
   */
+
 
 
   /***********************************************
@@ -541,9 +544,13 @@ join()
   l_p[l_p_num] = left;
   radix_num[l_p_num] = p_num;
 
-  for(int i=0 ; i<l_p_num ;i++){
+  /*
+  for(int i=0 ; i<l_p_num+1 ;i++){
     printf("%d\t%d\t%d\n",i,l_p[i],radix_num[i]);
   }
+  */
+
+
 
 
 
@@ -565,7 +572,8 @@ join()
     (void *)&plt_dev,
     (void *)&lL_dev,
     (void *)&p_num,
-    (void *)&t_num
+    (void *)&t_num,
+    (void *)&left
       
   };
 
@@ -609,9 +617,11 @@ join()
 
   /*
   for(int i=0 ;i<left ;i++){
-    printf("%d\n",plt[i].val);
+    printf("%d = %d\n",i,plt[i].val);
   }
   */
+
+
 
   //exit(1);
 
@@ -656,7 +666,8 @@ join()
     (void *)&rt_dev,
     (void *)&rL_dev,
     (void *)&p_num,
-    (void *)&t_num
+    (void *)&t_num,
+    (void *)&right
       
   };
 
@@ -692,7 +703,7 @@ join()
     printf("cuMemcpyDtoH (rL) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
-  
+
 
   /**************************** prefix sum *************************************/
 
@@ -715,10 +726,10 @@ join()
   }
   r_p[p_num] = right;
 
+
   /*
   for(int i=0 ; i<p_num+1 ;i++){
     printf("%d\n",r_p[i]);
-
   }
   */
 
@@ -735,7 +746,8 @@ join()
     (void *)&prt_dev,
     (void *)&rL_dev,
     (void *)&p_num,
-    (void *)&t_num
+    (void *)&t_num,
+    (void *)&right
       
   };
 
@@ -773,9 +785,13 @@ join()
   }
 
 
+  /*
   for(int i = 0; i < right; i++){
-    printf("%d = %d\n",i,prt[i].val);
+    printf("right:%d = %d\n",i,prt[i].val);
   }
+  */
+
+
 
 
   gettimeofday(&time_hash_f, NULL);
@@ -886,8 +902,6 @@ join()
   int sharedMemBytes = B_ROW_NUM*sizeof(TUPLE);
 
 
-  printf("%d\n",sizeof(TUPLE));
- 
   //グリッド・ブロックの指定、変数の指定、カーネルの実行を行う
 
   res = cuLaunchKernel(
@@ -948,6 +962,7 @@ join()
   */
 
 
+
   gettimeofday(&time_count_f, NULL);
 
 
@@ -988,10 +1003,15 @@ join()
     exit(1);
   }
 
+  res = cuMemcpyHtoD(count_dev, count, grid_x * block_x * block_y * sizeof(int));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemcpyHtoD (count) failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+
   //gettimeofday(&time_jup_f, NULL);
 
-
-  //gettimeofday(&time_jkernel_s, NULL);
+  gettimeofday(&time_jkernel_s, NULL);
 
   void *kernel_args[]={
     (void *)&plt_dev,
@@ -1032,8 +1052,7 @@ join()
     exit(1);
   }  
 
-  //gettimeofday(&time_jkernel_f, NULL);
-
+  gettimeofday(&time_jkernel_f, NULL);
 
   gettimeofday(&time_jdown_s, NULL);
 
@@ -1053,19 +1072,6 @@ join()
 
   gettimeofday(&end, NULL);
 
-
-  /*
-  int temp3=0;
-  for(int i=0 ; i<left ; i++){
-    for(int j=0; j<right ;j++){
-      if(plt[i].val == prt[j].val){
-        temp3++;
-      }
-    }
-  }
-
-  printf("sequence result = %d\n",temp3);
-  */
 
   res = cuMemFree(lt_dev);
   if (res != CUDA_SUCCESS) {
@@ -1119,7 +1125,6 @@ join()
   }
 
 
-
   free(lL);
   free(rL);
   free(plt);
@@ -1128,6 +1133,8 @@ join()
   free(l_p);
   free(radix_num);
   free(p_loc);
+
+
 
   printf("all time:\n");
   printDiff(begin, end);
@@ -1139,6 +1146,8 @@ join()
   printDiff(time_count_s,time_count_f);
   printf("join time:\n");
   printDiff(time_join_s,time_join_f);
+  printf("kernel launch time of join:\n");
+  printDiff(time_jkernel_s,time_jkernel_f);
   printf("join download time:\n");
   printDiff(time_jdown_s,time_jdown_f);
 
@@ -1147,11 +1156,101 @@ join()
   printDiff(time_count_s,time_count_f);
   printf("upload time of jt:\n");
   printDiff(time_jup_s,time_jup_f);
-  printf("kernel launch time of join:\n");
-  printDiff(time_jkernel_s,time_jkernel_f);
   printf("download time of jt:\n");
   printDiff(time_jdown_s,time_jdown_f);
   */
+
+  int temp3=0;
+
+  for(int i=0 ; i<left ;i++ ){
+    if(lt[i].val==0){
+      temp3++;
+    }
+  }
+  printf("lt0 = %d\n",temp3);
+  temp3=0;
+
+  for(int i=0 ; i<right ;i++ ){
+    if(rt[i].val==0){
+      temp3++;
+    }
+  }
+  printf("rt0 = %d\n",temp3);
+  temp3=0;
+
+  for(int i=0 ; i<right ;i++ ){
+    if(rt[i].val==1){
+      temp3++;
+    }
+  }
+  printf("rt1 = %d\n",temp3);
+  temp3=0;
+
+  for(int i=0 ; i<left ;i++ ){
+    if(plt[i].val==0){
+      temp3++;
+    }
+  }
+  printf("plt0 = %d\n",temp3);
+  temp3=0;
+
+  for(int i=0 ; i<right ;i++ ){
+    if(prt[i].val==0){
+      temp3++;
+    }
+  }
+  printf("prt0 = %d\n",temp3);
+  temp3=0;
+
+  for(int i=0 ; i<right ;i++ ){
+    if(prt[i].val!=0&&prt[i].val!=1){
+      printf("%d\t%d\n",i,prt[i].val);
+      temp3++;
+    }
+  }
+  printf("prt1 = %d\n",temp3);
+  temp3=0;
+
+  for(int i=0; i<right ;i++){
+    for(int j=0 ;j<right ;j++){
+      if(prt[i].key==rt[j].key&&prt[i].val != rt[j].val){
+        printf("diff rt and prt = %d\t%d\t%d\t%d\t%d\n",i,prt[i].key,prt[i].val,rt[j].key,prt[j].val);
+      }
+    }
+  }
+
+  for(int i=0 ; i<left ; i++){
+    for(int j=0; j<right ;j++){
+      if(plt[i].val == prt[j].val){
+        temp3++;
+      }
+    }
+  }
+
+  printf("p sequence result = %d\n",temp3);
+  temp3=0;
+
+  for(int i=0 ; i<left ; i++){
+    for(int j=0; j<right ;j++){
+      if(lt[i].val == rt[j].val){
+        temp3++;
+      }
+    }
+  }
+
+  printf("normal sequence result = %d\n",temp3);
+
+
+
+  /*
+  printf("result of join tuple----------\n");
+  for(int i=0; i<jt_size ; i++){
+    if(i%10000==0){
+      printf("left:id = %d  val = %d\tright:id=%d  val = %d\n",jt[i].lkey,jt[i].lval,jt[i].rkey,jt[i].rval);
+    }
+  }
+  */
+
 
   //finish GPU   ****************************************************
   res = cuModuleUnload(module);

@@ -13,8 +13,8 @@
 #include "debug.h"
 #include "tuple.h"
 
-#define JT_SIZE 1200000
-#define SELECTIVITY 10000
+#define JT_SIZE 120000000
+#define SELECTIVITY 10
 
 BUCKET *Bucket;
 int Buck_array[NB_BKT_ENT];

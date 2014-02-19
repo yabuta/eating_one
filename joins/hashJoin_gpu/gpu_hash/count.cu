@@ -1,7 +1,7 @@
 /*
 count the number of tuple matching criteria for join
 block_x_size 128
-block_y_size 64
+block_y_size 1
 grid_x_size new_p_num
 grid_y_size 1
 
@@ -35,9 +35,13 @@ void count(
   //insert partition left table in shared memory
   __shared__ TUPLE sub_lt[B_ROW_NUM];
 
-  //printf("%d\t%d\n",lp[blockIdx.x+1],lp[blockIdx.x]);
-
-  for(int i=lp[blockIdx.x] + threadIdx.x,j=threadIdx.x; i<lp[blockIdx.x+1]; i += BLOCK_SIZE_X, j += BLOCK_SIZE_X){
+  /*
+  if(blockIdx.x==0){
+    printf("%d\t%d\t%d\n",lp[blockIdx.x+1],lp[blockIdx.x],threadIdx.x);
+  }
+  */
+  
+  for(int i=lp[blockIdx.x] + threadIdx.x,j=threadIdx.x; i<lp[blockIdx.x+1]; i += blockDim.x, j += blockDim.x){
     if(j<B_ROW_NUM){
       sub_lt[j].key = lt[i].key;
       sub_lt[j].val = lt[i].val;
@@ -55,6 +59,7 @@ void count(
   }
   */
 
+
   /*
   if(threadIdx.x<lp[blockIdx.x+1]-lp[blockIdx.x]){
     sub_lt[threadIdx.x].key = lt[threadIdx.x+lp[blockIdx.x]].key;
@@ -65,24 +70,35 @@ void count(
 
   __syncthreads();
 
-
   /*
-  if(blockIdx.x==2){
+  if(blockIdx.x==0){
     for(int i=0 ; i<lp[blockIdx.x+1] - lp[blockIdx.x] ; i++){
-      printf("thread = %d\t%d\n",threadIdx.x,sub_lt[i].val);
+      printf("thread = %d\tlt[%d] = %d\n",threadIdx.x,i,sub_lt[i].val);
     }
   }
   */
 
-  for(int k=r_p[radix[blockIdx.x]]+threadIdx.x ; k<r_p[radix[blockIdx.x]+1] ; k += BLOCK_SIZE_X){
+  int temp=0;
+  //int temp2=0;
+  for(int k=r_p[radix[blockIdx.x]]+threadIdx.x ; k<r_p[radix[blockIdx.x]+1] ; k += blockDim.x){
+    temp = rt[k].val;
+    //temp2=0;
     for(int i=0; i<lp[blockIdx.x+1] - lp[blockIdx.x] ;i++){
-      if(sub_lt[i].val == rt[k].val){
+      if(sub_lt[i].val == temp){
         count[x]++;
+        //temp2++;
       }
+      //printf("lt = %d\t%d\n",i,sub_lt[i].val);
+      
+
     }
+    //if(threadIdx.x==29){
+    //printf("rt = %d\t%d\t%d\n",threadIdx.x,temp,temp2);
+      //}
+    //printf("%d\t%d\n",threadIdx.x,temp2);
   }
 
-  //printf("%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",temp,temp2,blockIdx.x,threadIdx.x,lp[blockIdx.x+1],lp[blockIdx.x],r_p[radix[blockIdx.x]+1],r_p[radix[blockIdx.x]]);
+  //printf("%d\t%d\t%d\t%d\n",blockIdx.x,threadIdx.x,lp[blockIdx.x+1]-lp[blockIdx.x],r_p[radix[blockIdx.x]+1]-r_p[radix[blockIdx.x]]);
 
 
 }

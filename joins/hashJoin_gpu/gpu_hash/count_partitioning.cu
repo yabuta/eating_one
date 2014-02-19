@@ -16,8 +16,9 @@ __global__
 void count_partitioning(
           TUPLE *t,
           int *L,
-          int p,
-          int t_num
+          int p_num,
+          int t_num,
+          int rows_num
           ) 
 
 {
@@ -26,11 +27,13 @@ void count_partitioning(
 
   // Matching phase
   int hash = 0;
-  for(int i = 0; i<PER_TH;i++){
-    hash = t[x*PER_TH + i].val%p;
-    L[hash*t_num + x]++;  
+  if(x < t_num){
+    for(int i = 0; i<PER_TH&&(x*PER_TH+i)<rows_num;i++){
+      hash = t[x*PER_TH + i].val % p_num;
+      L[hash*t_num + x]++;  
+
+    }
   }
 
 }
-
 }

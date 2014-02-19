@@ -25,7 +25,7 @@ __global__ void join(
 
   //printf("%d\t%d\n",lp[blockIdx.x+1],lp[blockIdx.x]);
 
-  for(int i=lp[blockIdx.x] + threadIdx.x,j=threadIdx.x; i<lp[blockIdx.x+1]; i += BLOCK_SIZE_X, j += BLOCK_SIZE_X){
+  for(int i=lp[blockIdx.x] + threadIdx.x,j=threadIdx.x; i<lp[blockIdx.x+1]; i += blockDim.x, j += blockDim.x){
     if(j<B_ROW_NUM){
       sub_lt[j].key = lt[i].key;
       sub_lt[j].val = lt[i].val;
@@ -55,19 +55,25 @@ __global__ void join(
 
   //printf("%d\t%d\t%d\n",r_p[radix[blockIdx.x]+1],r_p[radix[blockIdx.x]],radix[blockIdx.x]);
   
-
-  //int temp = 0,temp2=0;
-  for(int k=r_p[radix[blockIdx.x]]+threadIdx.x ; k<r_p[radix[blockIdx.x]+1] ; k += BLOCK_SIZE_X){
+  TUPLE temp;
+  for(int k=r_p[radix[blockIdx.x]]+threadIdx.x ; k<r_p[radix[blockIdx.x]+1] ; k += blockDim.x){
+    temp.key = rt[k].key;
+    temp.val = rt[k].val;
     for(int i=0; i<lp[blockIdx.x+1] - lp[blockIdx.x] ;i++){
-      if(sub_lt[i].val == rt[k].val){
-        jt[count[x]].rkey = rt[k].key;
-        jt[count[x]].rval = rt[k].val;
+      if(sub_lt[i].val == temp.val){
+
+        jt[count[x]].rkey = temp.key;
+        jt[count[x]].rval = temp.val;
         jt[count[x]].lkey = sub_lt[i].key;
         jt[count[x]].lval = sub_lt[i].val;
+        /*
+        temp.key = sub_lt[i].key;
+        temp.val = sub_lt[i].val;
+        temp.key = sub_lt[i].key;
+        temp.val = sub_lt[i].val;
+        */
         count[x]++;
 
-      }else{
-        //printf("in %d\t%d\t%d\t%d\n",sub_lt[i].val,rt[k].val,i,threadIdx.x);
       }
     }
   }
