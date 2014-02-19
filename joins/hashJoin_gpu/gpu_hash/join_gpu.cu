@@ -20,7 +20,6 @@ __global__ void join(
 
   int x = blockIdx.x*blockDim.x + threadIdx.x;
 
-  //insert partition left table in shared memory
   __shared__ TUPLE sub_lt[B_ROW_NUM];
 
   //printf("%d\t%d\n",lp[blockIdx.x+1],lp[blockIdx.x]);
@@ -62,6 +61,7 @@ __global__ void join(
     for(int i=0; i<lp[blockIdx.x+1] - lp[blockIdx.x] ;i++){
       if(sub_lt[i].val == temp.val){
 
+        
         jt[count[x]].rkey = temp.key;
         jt[count[x]].rval = temp.val;
         jt[count[x]].lkey = sub_lt[i].key;

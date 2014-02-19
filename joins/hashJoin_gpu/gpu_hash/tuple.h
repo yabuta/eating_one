@@ -13,7 +13,7 @@
 #define NUM_VAL 1
 
 #define JT_SIZE 120000000
-#define SELECTIVITY 2
+#define SELECTIVITY 100
 
 
 typedef struct _TUPLE {

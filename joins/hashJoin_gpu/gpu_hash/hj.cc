@@ -784,6 +784,7 @@ join()
     exit(1);
   }
 
+  printf("prt value = %d\n",prt[1].val);
 
   /*
   for(int i = 0; i < right; i++){
@@ -1125,15 +1126,6 @@ join()
   }
 
 
-  free(lL);
-  free(rL);
-  free(plt);
-  free(prt);
-  free(p_sum);
-  free(l_p);
-  free(radix_num);
-  free(p_loc);
-
 
 
   printf("all time:\n");
@@ -1162,63 +1154,6 @@ join()
 
   int temp3=0;
 
-  for(int i=0 ; i<left ;i++ ){
-    if(lt[i].val==0){
-      temp3++;
-    }
-  }
-  printf("lt0 = %d\n",temp3);
-  temp3=0;
-
-  for(int i=0 ; i<right ;i++ ){
-    if(rt[i].val==0){
-      temp3++;
-    }
-  }
-  printf("rt0 = %d\n",temp3);
-  temp3=0;
-
-  for(int i=0 ; i<right ;i++ ){
-    if(rt[i].val==1){
-      temp3++;
-    }
-  }
-  printf("rt1 = %d\n",temp3);
-  temp3=0;
-
-  for(int i=0 ; i<left ;i++ ){
-    if(plt[i].val==0){
-      temp3++;
-    }
-  }
-  printf("plt0 = %d\n",temp3);
-  temp3=0;
-
-  for(int i=0 ; i<right ;i++ ){
-    if(prt[i].val==0){
-      temp3++;
-    }
-  }
-  printf("prt0 = %d\n",temp3);
-  temp3=0;
-
-  for(int i=0 ; i<right ;i++ ){
-    if(prt[i].val!=0&&prt[i].val!=1){
-      printf("%d\t%d\n",i,prt[i].val);
-      temp3++;
-    }
-  }
-  printf("prt1 = %d\n",temp3);
-  temp3=0;
-
-  for(int i=0; i<right ;i++){
-    for(int j=0 ;j<right ;j++){
-      if(prt[i].key==rt[j].key&&prt[i].val != rt[j].val){
-        printf("diff rt and prt = %d\t%d\t%d\t%d\t%d\n",i,prt[i].key,prt[i].val,rt[j].key,prt[j].val);
-      }
-    }
-  }
-
   for(int i=0 ; i<left ; i++){
     for(int j=0; j<right ;j++){
       if(plt[i].val == prt[j].val){
@@ -1227,18 +1162,7 @@ join()
     }
   }
 
-  printf("p sequence result = %d\n",temp3);
-  temp3=0;
-
-  for(int i=0 ; i<left ; i++){
-    for(int j=0; j<right ;j++){
-      if(lt[i].val == rt[j].val){
-        temp3++;
-      }
-    }
-  }
-
-  printf("normal sequence result = %d\n",temp3);
+  printf("sequence result = %d\n",temp3);
 
 
 
@@ -1250,6 +1174,16 @@ join()
     }
   }
   */
+
+  free(lL);
+  free(rL);
+  free(plt);
+  free(prt);
+  free(p_sum);
+  free(l_p);
+  free(radix_num);
+  free(p_loc);
+
 
 
   //finish GPU   ****************************************************
