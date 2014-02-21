@@ -55,24 +55,26 @@ __global__ void join(
   //printf("%d\t%d\t%d\n",r_p[radix[blockIdx.x]+1],r_p[radix[blockIdx.x]],radix[blockIdx.x]);
   
   TUPLE temp;
+  int tcount=count[x];
+  
   for(int k=r_p[radix[blockIdx.x]]+threadIdx.x ; k<r_p[radix[blockIdx.x]+1] ; k += blockDim.x){
     temp.key = rt[k].key;
     temp.val = rt[k].val;
     for(int i=0; i<lp[blockIdx.x+1] - lp[blockIdx.x] ;i++){
       if(sub_lt[i].val == temp.val){
 
-        
-        jt[count[x]].rkey = temp.key;
-        jt[count[x]].rval = temp.val;
-        jt[count[x]].lkey = sub_lt[i].key;
-        jt[count[x]].lval = sub_lt[i].val;
+        jt[tcount].rkey = temp.key;
+        jt[tcount].rval = temp.val;
+        jt[tcount].lkey = sub_lt[i].key;
+        jt[tcount].lval = sub_lt[i].val;
+
         /*
         temp.key = sub_lt[i].key;
         temp.val = sub_lt[i].val;
         temp.key = sub_lt[i].key;
         temp.val = sub_lt[i].val;
         */
-        count[x]++;
+        tcount++;
 
       }
     }

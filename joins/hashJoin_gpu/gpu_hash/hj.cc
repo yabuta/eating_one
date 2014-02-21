@@ -22,10 +22,12 @@ RESULT *jt;
 TUPLE *hrt;
 TUPLE *hlt;
 
+/*
 int rlocation[NB_BKTENT];
 int rcount[NB_BKTENT];
 int llocation[NB_BKTENT];
 int lcount[NB_BKTENT];
+*/
 
 int right,left;
 
@@ -75,10 +77,7 @@ void createTuple()
     memset(&(rt[i]),0,sizeof(TUPLE));
     rt[i].key = getTupleId();
 
-    for(int j = 0;j<NUM_VAL;j++){
-      rt[i].val = rand()%SELECTIVITY; // selectivity = 1.0
-      //rt[i].val = 1; // selectivity = 1.0
-    }
+    rt[i].val = rand()%SELECTIVITY; // selectivity in tuple.h
 
   }
 
@@ -103,10 +102,8 @@ void createTuple()
     memset(&(lt[i]),0,sizeof(TUPLE));    
     lt[i].key = getTupleId();
 
-    for(int j = 0; j < NUM_VAL;j++){
-      lt[i].val = rand()%SELECTIVITY; // selectivity = 1.0
-      //lt[i].val = 1; // selectivity = 1.0
-    }
+    lt[i].val = rand()%SELECTIVITY; // selectivity in tuple.h
+
 
   }
   
@@ -169,6 +166,7 @@ join()
   const char *path=".";
   struct timeval begin, end;
   struct timeval tv_cal_s, tv_cal_f,time_join_s,time_join_f,time_jkernel_s,time_jkernel_f,time_jdown_s,time_jdown_f;
+  struct timeval time_lhash_s,time_lhash_f,time_rhash_s,time_rhash_f;
   struct timeval time_count_s,time_count_f,time_alloc_s,time_alloc_f;
   struct timeval time_hash_s,time_hash_f;
   double time_cal;
@@ -332,6 +330,8 @@ join()
   plt = (TUPLE *)calloc(left,sizeof(TUPLE));
   prt = (TUPLE *)calloc(right,sizeof(TUPLE));
 
+  printf("%d\n",p_num * t_num);
+
   /*lL, plt and prt alloc in GPU */
   res = cuMemAlloc(&lL_dev, p_num * t_num * sizeof(int));
   if (res != CUDA_SUCCESS) {
@@ -396,6 +396,8 @@ join()
 
 
   ***************************************************************/
+
+  gettimeofday(&time_lhash_s, NULL);
 
   p_block_x = t_num < PART_C_NUM ? t_num : PART_C_NUM;
   p_grid_x = t_num / p_block_x;
@@ -625,6 +627,8 @@ join()
 
   //exit(1);
 
+  gettimeofday(&time_lhash_f, NULL);
+
 
   /****************************************************************
     right table partitioning for hash
@@ -632,6 +636,7 @@ join()
 
   ***************************************************************/
 
+  gettimeofday(&time_rhash_s, NULL);
 
   
   t_num = right/PER_TH;
@@ -784,7 +789,7 @@ join()
     exit(1);
   }
 
-  printf("prt value = %d\n",prt[1].val);
+  //printf("prt value = %d\n",prt[1].val);
 
   /*
   for(int i = 0; i < right; i++){
@@ -792,8 +797,7 @@ join()
   }
   */
 
-
-
+  gettimeofday(&time_rhash_f, NULL);
 
   gettimeofday(&time_hash_f, NULL);
 
@@ -1130,10 +1134,16 @@ join()
 
   printf("all time:\n");
   printDiff(begin, end);
+  /*
   printf("memory allocate time:\n");
   printDiff(time_alloc_s,time_alloc_f);
+  */
   printf("hash time:\n");
   printDiff(time_hash_s,time_hash_f);
+  printf("lhash time:\n");
+  printDiff(time_lhash_s,time_lhash_f);
+  printf("rhash time:\n");
+  printDiff(time_rhash_s,time_rhash_f);
   printf("count time:\n");
   printDiff(time_count_s,time_count_f);
   printf("join time:\n");
@@ -1152,6 +1162,7 @@ join()
   printDiff(time_jdown_s,time_jdown_f);
   */
 
+  /*
   int temp3=0;
 
   for(int i=0 ; i<left ; i++){
@@ -1164,16 +1175,17 @@ join()
 
   printf("sequence result = %d\n",temp3);
 
-
+  */
 
   /*
   printf("result of join tuple----------\n");
   for(int i=0; i<jt_size ; i++){
-    if(i%10000==0){
+    if(i%10000000==0){
       printf("left:id = %d  val = %d\tright:id=%d  val = %d\n",jt[i].lkey,jt[i].lval,jt[i].rkey,jt[i].rval);
     }
   }
   */
+
 
   free(lL);
   free(rL);

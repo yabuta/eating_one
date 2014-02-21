@@ -10,9 +10,6 @@
 #include "debug.h"
 #include "tuple.h"
 
-#define JT_SIZE 1200000
-#define SELECTIVITY 10000
-
 TUPLE *rt;
 TUPLE *lt;
 RESULT *jt;
@@ -187,7 +184,7 @@ main(int argc,char *argv[])
   createTuple();
 
 
-
+  gettimeofday(&begin, NULL);
   // Hash construction phase
   createPart();
 
@@ -200,7 +197,7 @@ main(int argc,char *argv[])
   */
 
   // Matching phase
-  gettimeofday(&begin, NULL);
+
   for (int i = 0; i < NB_BKTENT; i++) {
 
     for (int j = 0; j < rcount[i]; j++) {
