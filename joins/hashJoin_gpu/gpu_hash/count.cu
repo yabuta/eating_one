@@ -30,7 +30,7 @@ void count(
 
 {
 
-  int x = blockIdx.x*blockDim.x + threadIdx.x;
+  int x = blockIdx.x*blockDim.x*blockDim.y + threadIdx.x + threadIdx.y*blockDim.x;
 
   //insert partition left table in shared memory
   __shared__ TUPLE sub_lt[B_ROW_NUM];
@@ -40,13 +40,14 @@ void count(
     printf("%d\t%d\t%d\n",lp[blockIdx.x+1],lp[blockIdx.x],threadIdx.x);
   }
   */
-  
+
   for(int i=lp[blockIdx.x] + threadIdx.x,j=threadIdx.x; i<lp[blockIdx.x+1]; i += blockDim.x, j += blockDim.x){
     if(j<B_ROW_NUM){
       sub_lt[j].key = lt[i].key;
       sub_lt[j].val = lt[i].val;
     }
   }
+  
 
   /*
   if(threadIdx.x==0){
@@ -83,7 +84,7 @@ void count(
   for(int k=r_p[radix[blockIdx.x]]+threadIdx.x ; k<r_p[radix[blockIdx.x]+1] ; k += blockDim.x){
     temp = rt[k].val;
     //temp2=0;
-    for(int i=0; i<lp[blockIdx.x+1] - lp[blockIdx.x] ;i++){
+    for(int i=blockIdx.y*J_T_LEFT; i<(blockIdx.y+1)*J_T_LEFT&&i<lp[blockIdx.x+1]-lp[blockIdx.x] ;i++){
       if(sub_lt[i].val == temp){
         count[x]++;
         //temp2++;
@@ -92,6 +93,17 @@ void count(
       
 
     }
+    /*
+    for(int i=threadIdx.y*J_T_LEFT; i<(threadIdx.y+1)*J_T_LEFT&&i<lp[blockIdx.x+1]-lp[blockIdx.x] ;i++){
+      if(sub_lt[i].val == temp){
+        count[x]++;
+        //temp2++;
+      }
+      //printf("lt = %d\t%d\n",i,sub_lt[i].val);
+      
+
+    }
+    */
     //if(threadIdx.x==29){
     //printf("rt = %d\t%d\t%d\n",threadIdx.x,temp,temp2);
       //}

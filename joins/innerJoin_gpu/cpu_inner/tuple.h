@@ -1,4 +1,4 @@
-#define SZ_PAGE 4096
+#define SZ_PAGE 40960000
 #define NB_BUFR (SZ_PAGE * 2 / sizeof(TUPLE))
 #define NB_BUFS (SZ_PAGE * 16 / sizeof(TUPLE))
 

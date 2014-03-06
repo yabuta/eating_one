@@ -161,15 +161,19 @@ join()
   CUmodule module,c_module,p_module,cp_module;
   CUdeviceptr lt_dev, rt_dev, jt_dev,count_dev,lL_dev,rL_dev;
   CUdeviceptr plt_dev,prt_dev,l_p_dev,r_p_dev,radix_dev;
-  unsigned int block_x, block_y,p_block_x, grid_x, grid_y,p_grid_x;
+  unsigned int block_x, block_y, grid_x, grid_y,p_grid_x,p_block_x;
   char fname[256];
   const char *path=".";
   struct timeval begin, end;
-  struct timeval tv_cal_s, tv_cal_f,time_join_s,time_join_f,time_jkernel_s,time_jkernel_f,time_jdown_s,time_jdown_f;
-  struct timeval time_lhash_s,time_lhash_f,time_rhash_s,time_rhash_f;
-  struct timeval time_count_s,time_count_f,time_alloc_s,time_alloc_f;
-  struct timeval time_hash_s,time_hash_f;
+  struct timeval time_join_s,time_join_f,time_jkernel_s,time_jkernel_f;
+  struct timeval time_jdown_s,time_jdown_f,time_upload_s,time_upload_f;
+  struct timeval time_hash_s,time_hash_f,time_hkernel_s,time_hkernel_f,time_lhash_s,time_lhash_f,time_rhash_s,time_rhash_f;
+  struct timeval time_lhck_s,time_lhck_f,time_rhck_s,time_rhck_f,time_rhk_s,time_rhk_f;
+  struct timeval time_count_s,time_count_f,time_ckernel_s,time_ckernel_f,time_alloc_s,time_alloc_f;
+  struct timeval temp_s,temp_f;
   double time_cal;
+  long temper=0;
+  long uptime = 0;
 
 
 
@@ -357,6 +361,8 @@ join()
 
 
 
+  gettimeofday(&time_upload_s, NULL);  
+
   res = cuMemcpyHtoD(lt_dev, lt, left * sizeof(TUPLE));
   if (res != CUDA_SUCCESS) {
     printf("cuMemcpyHtoD (lt) failed: res = %lu\n", res);//conv(res));
@@ -367,6 +373,7 @@ join()
     printf("cuMemcpyHtoD (rt) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
+  gettimeofday(&time_upload_f, NULL);  
 
   res = cuMemcpyHtoD(lL_dev, lL, p_num * t_num * sizeof(int));
   if (res != CUDA_SUCCESS) {
@@ -405,6 +412,8 @@ join()
     p_grid_x++;
 
 
+  gettimeofday(&time_lhck_s, NULL);
+
   void *count_lpartition_args[]={
     
     (void *)&lt_dev,
@@ -441,6 +450,7 @@ join()
     exit(1);
   }  
 
+  gettimeofday(&time_lhck_f, NULL);
 
   res = cuMemcpyDtoH(lL, lL_dev, t_num * p_num * sizeof(int));
   if (res != CUDA_SUCCESS) {
@@ -460,6 +470,13 @@ join()
   /**************************** prefix sum *************************************/
 
   thrust::inclusive_scan(lL,lL + t_num*p_num,lL);
+
+  /*
+  for(int i=1;i<t_num*p_num;i++){
+    lL[i] = lL[i] + lL[i-1];
+  }
+  */
+
 
   /********************************************************************/
 
@@ -513,8 +530,10 @@ join()
   int temp2 = 0;
 
 
+  /****************presum*****************/
   thrust::inclusive_scan(p_sum,p_sum + p_num,p_loc);
 
+  /***************************************/
   for(int i = p_num-1; i>0 ;i--){
     p_loc[i] = p_loc[i-1];
   }
@@ -553,10 +572,6 @@ join()
   */
 
 
-
-
-
-
   /***************************
    end of resizing partition
 
@@ -567,6 +582,8 @@ join()
     printf("cuMemcpyHtoD (lL) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
+
+  gettimeofday(&time_hkernel_s, NULL);
 
   void *lpartition_args[]={
     
@@ -604,7 +621,8 @@ join()
     printf("cuCtxSynchronize() failed: res = %lu\n", (unsigned long int)res);
     exit(1);
   }  
-  
+
+  gettimeofday(&time_hkernel_f, NULL);  
 
   res = cuMemcpyDtoH(plt, plt_dev, left * sizeof(TUPLE));
   if (res != CUDA_SUCCESS) {
@@ -645,26 +663,34 @@ join()
   }
 
   printf("t_num=%d\tp_num=%d\n",t_num,p_num);
-  
+
   res = cuMemAlloc(&rL_dev, p_num * t_num * sizeof(int));
   if (res != CUDA_SUCCESS){
     printf("cuMemAlloc (rL) failed\n");
     exit(1);
   }
 
+
   rL = (int *)calloc(p_num * t_num,sizeof(int));
+
+  gettimeofday(&temp_s, NULL);
 
   res = cuMemcpyHtoD(rL_dev, rL, p_num * t_num * sizeof(int));
   if (res != CUDA_SUCCESS) {
     printf("cuMemcpyHtoD (rL) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
+  gettimeofday(&temp_f, NULL);
+
+  temper += (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
+  printf("Diff: %ld us (%ld ms)\n", temper, temper/1000);
 
   p_block_x = t_num < PART_C_NUM ? t_num : PART_C_NUM;
   p_grid_x = t_num / p_block_x;
   if (t_num % p_block_x != 0)
     p_grid_x++;
 
+  gettimeofday(&time_rhck_s, NULL);
 
   void *count_rpartition_args[]={
     
@@ -701,7 +727,9 @@ join()
     printf("cuCtxSynchronize() failed: res = %lu\n", (unsigned long int)res);
     exit(1);
   }  
+  gettimeofday(&time_rhck_f, NULL);
 
+  gettimeofday(&temp_s, NULL);
 
   res = cuMemcpyDtoH(rL, rL_dev, t_num * p_num * sizeof(int));
   if (res != CUDA_SUCCESS) {
@@ -709,12 +737,31 @@ join()
     exit(1);
   }
 
+  gettimeofday(&temp_f, NULL);
+
+  temper += (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
+  printf("Diff: %ld us (%ld ms)\n", temper, temper/1000);
+
+  gettimeofday(&temp_s, NULL);
+
 
   /**************************** prefix sum *************************************/
 
   thrust::inclusive_scan(rL,rL + t_num*p_num,rL);
 
+  /*
+  for(int i=1;i<t_num*p_num;i++){
+    rL[i] = rL[i] + rL[i-1];
+  }
+  */
+
+
   /********************************************************************/
+
+  gettimeofday(&temp_f, NULL);
+  temper = (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
+  printf("presum Diff: %ld us (%ld ms)\n", temper, temper/1000);
+  temper=0;
 
   
   for(int i = t_num*p_num-1; i>0 ;i--){
@@ -739,11 +786,19 @@ join()
   */
 
 
+  gettimeofday(&temp_s, NULL);
+
   res = cuMemcpyHtoD(rL_dev, rL, p_num * t_num * sizeof(int));
   if (res != CUDA_SUCCESS) {
     printf("cuMemcpyHtoD (rL) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
+
+  gettimeofday(&temp_f, NULL);
+  temper += (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
+  printf("Diff: %ld us (%ld ms)\n", temper, temper/1000);
+
+  gettimeofday(&time_rhk_s, NULL);
 
   void *rpartition_args[]={
     
@@ -782,12 +837,20 @@ join()
     exit(1);
   }  
 
+  gettimeofday(&time_rhk_f, NULL);
+
+
+  gettimeofday(&temp_s, NULL);
 
   res = cuMemcpyDtoH(prt, prt_dev, right * sizeof(TUPLE));
   if (res != CUDA_SUCCESS) {
     printf("cuMemcpyDtoH (prt) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
+
+  gettimeofday(&temp_f, NULL);
+
+  temper += (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
 
   //printf("prt value = %d\n",prt[1].val);
 
@@ -803,6 +866,7 @@ join()
 
   /**************************************************************/
 
+  printf("Diff: %ld us (%ld ms)\n", temper, temper/1000);
 
   /**
      plt and prt is created from lt and rt
@@ -824,13 +888,13 @@ join()
 
 
   block_x = right < BLOCK_SIZE_X ? right : BLOCK_SIZE_X;
-  block_y = 1;//right < BLOCK_SIZE_Y ? right : BLOCK_SIZE_Y;
+  block_y = BLOCK_SIZE_Y;
 
   grid_x = l_p_num;
-
+  grid_y = GRID_SIZE_Y;
 
   /*GPU memory alloc and send data of count ,l_p ,radix and r_p*/
-  res = cuMemAlloc(&count_dev, grid_x * block_x * block_y * sizeof(int));
+  res = cuMemAlloc(&count_dev, grid_x * block_x * grid_y * sizeof(int));
   if (res != CUDA_SUCCESS) {
     printf("cuMemAlloc (count) failed\n");
     exit(1);
@@ -855,9 +919,9 @@ join()
   }
 
 
-  count = (int *)calloc(grid_x*block_x*block_y,sizeof(int));
+  count = (int *)calloc(grid_x*block_x*grid_y,sizeof(int));
 
-  res = cuMemcpyHtoD(count_dev, count, grid_x * block_x * block_y * sizeof(int));
+  res = cuMemcpyHtoD(count_dev, count, grid_x * block_x * grid_y * sizeof(int));
   if (res != CUDA_SUCCESS) {
     printf("cuMemcpyHtoD (count) failed: res = %lu\n", (unsigned long)res);
     exit(1);
@@ -891,6 +955,8 @@ join()
 
    */
 
+  gettimeofday(&time_ckernel_s, NULL);
+
   void *count_args[]={
     
     (void *)&plt_dev,
@@ -912,10 +978,10 @@ join()
   res = cuLaunchKernel(
                        c_function,    // CUfunction f
                        grid_x,        // gridDimX
-                       1,        // gridDimY
+                       grid_y,        // gridDimY
                        1,             // gridDimZ
                        block_x,     // blockDimX
-                       1,       // blockDimY
+                       block_y,       // blockDimY
                        1,             // blockDimZ
                        sharedMemBytes,             // sharedMemBytes
                        NULL,          // hStream
@@ -933,8 +999,9 @@ join()
     exit(1);
   }  
 
+  gettimeofday(&time_ckernel_f, NULL);
 
-  res = cuMemcpyDtoH(count, count_dev, grid_x * block_x * block_y * sizeof(int));
+  res = cuMemcpyDtoH(count, count_dev, grid_x * block_x * grid_y * sizeof(int));
   if (res != CUDA_SUCCESS) {
     printf("cuMemcpyDtoH (count) failed: res = %lu\n", (unsigned long)res);
     exit(1);
@@ -944,13 +1011,20 @@ join()
 
   /**************************** prefix sum *************************************/
 
-  thrust::inclusive_scan(count,count + grid_x*block_x*block_y,count);
+  thrust::inclusive_scan(count,count + grid_x*block_x*grid_y,count);
+
+  /*
+  for(int i=1;i<grid_x*block_x*block_y;i++){
+    count[i] = count[i] + count[i-1];
+  }
+  */
+
 
   /********************************************************************/
 
-  int jt_size = count[grid_x*block_x*block_y-1];
+  int jt_size = count[grid_x*block_x*grid_y-1];
 
-  for(int i=grid_x*block_x*block_y-1 ; i>0 ;i--){
+  for(int i=grid_x*block_x*grid_y-1 ; i>0 ;i--){
     count[i] = count[i-1];
 
   }
@@ -958,7 +1032,8 @@ join()
 
 
 
-  printf("%d\t%d\n",jt_size,grid_x*block_x*block_y);
+  printf("%d\t%d\t%d\n",jt_size,grid_x*block_x*grid_y,l_p_num);
+  
   /*
   for(int i=0 ; i<grid_x*block_x*block_y ; i++){
     printf("%d\t%d\n",i,count[i]);
@@ -985,6 +1060,9 @@ join()
    As possible I will change appriciate value.
   ************************************************************************/
 
+  gettimeofday(&time_join_s, NULL);
+
+
   if(jt_size <= 0){
     printf("no tuple is matched.\n");
     exit(1);
@@ -997,8 +1075,6 @@ join()
   }
 
 
-  gettimeofday(&time_join_s, NULL);
-
 
   //gettimeofday(&time_jup_s, NULL);
 
@@ -1008,7 +1084,7 @@ join()
     exit(1);
   }
 
-  res = cuMemcpyHtoD(count_dev, count, grid_x * block_x * block_y * sizeof(int));
+  res = cuMemcpyHtoD(count_dev, count, grid_x * block_x * grid_y * sizeof(int));
   if (res != CUDA_SUCCESS) {
     printf("cuMemcpyHtoD (count) failed: res = %lu\n", (unsigned long)res);
     exit(1);
@@ -1034,7 +1110,7 @@ join()
   res = cuLaunchKernel(
                        function,      // CUfunction f
                        grid_x,        // gridDimX
-                       1,        // gridDimY
+                       grid_y,        // gridDimY
                        1,             // gridDimZ
                        block_x,       // blockDimX
                        block_y,       // blockDimY
@@ -1130,22 +1206,44 @@ join()
   }
 
 
+  /*size of HtoD data*/
+
+  int DEF = 1000;
+  printf("lt = %d\n",left*sizeof(TUPLE)/DEF);
+  printf("rt = %d\n" ,right * sizeof(TUPLE)/DEF);
+  printf("lL = %d\n", p_num*sizeof(int)*left/PER_TH/DEF);
+  printf("rL = %d\n", p_num*t_num*sizeof(int)/DEF);
+  printf("plt = %d\n", left*sizeof(TUPLE)/DEF);
+  printf("prt = %d\n", right*sizeof(TUPLE)/DEF);
+  printf("count = %d\n", grid_x*block_x*block_y*sizeof(int)/DEF);
+  printf("l_p = %d\n", (l_p_num+1)*sizeof(int)/DEF);
+  printf("radix = %d\n", (l_p_num+1)*sizeof(int)/DEF);
+  printf("r_p = %d\n", (p_num+1)*sizeof(int)/DEF);
+  printf("jt = %d\n",  jt_size*sizeof(RESULT)/DEF);
 
 
   printf("all time:\n");
   printDiff(begin, end);
-  /*
-  printf("memory allocate time:\n");
-  printDiff(time_alloc_s,time_alloc_f);
-  */
+  printf("left and right table upload time:\n");
+  printDiff(time_upload_s,time_upload_f);
   printf("hash time:\n");
   printDiff(time_hash_s,time_hash_f);
   printf("lhash time:\n");
   printDiff(time_lhash_s,time_lhash_f);
+  printf("lhash count kernel time:\n");
+  printDiff(time_lhck_s,time_lhck_f);
+  printf("lhash kernel time:\n");
+  printDiff(time_hkernel_s,time_hkernel_f);
   printf("rhash time:\n");
   printDiff(time_rhash_s,time_rhash_f);
+  printf("rhash count kernel time:\n");
+  printDiff(time_rhck_s,time_rhck_f);
+  printf("rhash kernel time:\n");
+  printDiff(time_rhk_s,time_rhk_f);
   printf("count time:\n");
   printDiff(time_count_s,time_count_f);
+  printf("count kernel time:\n");
+  printDiff(time_ckernel_s,time_ckernel_f);
   printf("join time:\n");
   printDiff(time_join_s,time_join_f);
   printf("kernel launch time of join:\n");
@@ -1160,30 +1258,6 @@ join()
   printDiff(time_jup_s,time_jup_f);
   printf("download time of jt:\n");
   printDiff(time_jdown_s,time_jdown_f);
-  */
-
-  /*
-  int temp3=0;
-
-  for(int i=0 ; i<left ; i++){
-    for(int j=0; j<right ;j++){
-      if(plt[i].val == prt[j].val){
-        temp3++;
-      }
-    }
-  }
-
-  printf("sequence result = %d\n",temp3);
-
-  */
-
-  /*
-  printf("result of join tuple----------\n");
-  for(int i=0; i<jt_size ; i++){
-    if(i%10000000==0){
-      printf("left:id = %d  val = %d\tright:id=%d  val = %d\n",jt[i].lkey,jt[i].lval,jt[i].rkey,jt[i].rval);
-    }
-  }
   */
 
 

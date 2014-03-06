@@ -13,9 +13,6 @@
 #include "debug.h"
 #include "tuple.h"
 
-#define JT_SIZE 120000000
-#define SELECTIVITY 10
-
 BUCKET *Bucket;
 int Buck_array[NB_BKT_ENT];
 int idxcount[NB_BKT_ENT];

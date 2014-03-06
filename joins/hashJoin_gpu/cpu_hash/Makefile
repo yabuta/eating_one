@@ -9,7 +9,7 @@ O1 = hj.o
 #
 # Rules for make
 #
-all:$(T1)
+all:$(T1) tuple.h
 
 
 $(T1): $(O1) 

@@ -11,8 +11,8 @@
 //#define MAX_RIGHT 100
 
 #define VAL_NUM 1
-#define JT_SIZE 1200000
-#define SELECTIVITY 900
+#define JT_SIZE 120000000
+#define SELECTIVITY 10000
 
 
 int left;

@@ -30,7 +30,7 @@ __global__ void join(
       sub_lt[j].val = lt[i].val;
     }
   }
-
+  
   /*
   if(threadIdx.x==0){
     for(int j=0; j<lp[blockIdx.x+1]-lp[blockIdx.x]; j++){
@@ -60,7 +60,8 @@ __global__ void join(
   for(int k=r_p[radix[blockIdx.x]]+threadIdx.x ; k<r_p[radix[blockIdx.x]+1] ; k += blockDim.x){
     temp.key = rt[k].key;
     temp.val = rt[k].val;
-    for(int i=0; i<lp[blockIdx.x+1] - lp[blockIdx.x] ;i++){
+
+    for(int i=blockIdx.y*J_T_LEFT; i<(blockIdx.y+1)*J_T_LEFT&&i<lp[blockIdx.x+1] - lp[blockIdx.x] ;i++){
       if(sub_lt[i].val == temp.val){
 
         jt[tcount].rkey = temp.key;
@@ -68,16 +69,13 @@ __global__ void join(
         jt[tcount].lkey = sub_lt[i].key;
         jt[tcount].lval = sub_lt[i].val;
 
-        /*
-        temp.key = sub_lt[i].key;
-        temp.val = sub_lt[i].val;
-        temp.key = sub_lt[i].key;
-        temp.val = sub_lt[i].val;
-        */
         tcount++;
 
       }
+
     }
+
+
   }
 
   //printf("%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",temp,temp2,blockIdx.x,threadIdx.x,lp[blockIdx.x+1],lp[blockIdx.x],r_p[radix[blockIdx.x]+1],r_p[radix[blockIdx.x]]);
