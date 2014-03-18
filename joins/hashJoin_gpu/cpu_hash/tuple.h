@@ -3,7 +3,7 @@
 #define NB_BKTENT 1000000 // the number of partitions
 
 #define JT_SIZE 1200000000
-#define SELECTIVITY 100000000
+#define SELECTIVITY 1000000
 
 
 #define NUM_VAL 1

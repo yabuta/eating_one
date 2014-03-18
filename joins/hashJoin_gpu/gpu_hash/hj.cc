@@ -172,7 +172,7 @@ join()
   struct timeval time_count_s,time_count_f,time_ckernel_s,time_ckernel_f,time_alloc_s,time_alloc_f;
   struct timeval temp_s,temp_f;
   double time_cal;
-  long temper=0;
+  long temper=0,tempest=0;
   long uptime = 0;
 
 
@@ -452,7 +452,7 @@ join()
 
   gettimeofday(&time_lhck_f, NULL);
 
-  res = cuMemcpyDtoH(lL, lL_dev, t_num * p_num * sizeof(int));
+  res = cuMemcpyDtoH(&(lL[1]), lL_dev, (t_num * p_num - 1) * sizeof(int));
   if (res != CUDA_SUCCESS) {
     printf("cuMemcpyDtoH (lL) failed: res = %lu\n", (unsigned long)res);
     exit(1);
@@ -469,21 +469,22 @@ join()
 
   /**************************** prefix sum *************************************/
 
-  thrust::inclusive_scan(lL,lL + t_num*p_num,lL);
+  //thrust::inclusive_scan(lL,lL + t_num*p_num,lL);
 
-  /*
   for(int i=1;i<t_num*p_num;i++){
     lL[i] = lL[i] + lL[i-1];
   }
-  */
 
 
   /********************************************************************/
 
+  /*
   for(int i = t_num*p_num-1; i>0 ;i--){
     lL[i] = lL[i-1];
   }
   lL[0] = 0;
+  */
+
 
   p_sum = (int *)calloc(p_num,sizeof(int));
 
@@ -494,7 +495,6 @@ join()
   p_sum[p_num-1] = left - lL[t_num*(p_num-1)];
 
   
-
   /*
   for(int i = 0; i<t_num*p_num ;i++){
      printf("presum lL = %d\n",lL[i]);
@@ -504,7 +504,6 @@ join()
     printf("p sum = %d\n",p_sum[i]);
   }
   */
-
 
 
   /***********************************************
@@ -664,6 +663,8 @@ join()
 
   printf("t_num=%d\tp_num=%d\n",t_num,p_num);
 
+  gettimeofday(&temp_s, NULL);
+
   res = cuMemAlloc(&rL_dev, p_num * t_num * sizeof(int));
   if (res != CUDA_SUCCESS){
     printf("cuMemAlloc (rL) failed\n");
@@ -672,6 +673,12 @@ join()
 
 
   rL = (int *)calloc(p_num * t_num,sizeof(int));
+  gettimeofday(&temp_f, NULL);
+
+  temper = (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
+  printf("Diff: %ld us (%ld ms)\n", temper, temper/1000);
+  temper=0;
+
 
   gettimeofday(&temp_s, NULL);
 
@@ -683,7 +690,8 @@ join()
   gettimeofday(&temp_f, NULL);
 
   temper += (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
-  printf("Diff: %ld us (%ld ms)\n", temper, temper/1000);
+  //printf("Diff: %ld us (%ld ms)\n", temper, temper/1000);
+
 
   p_block_x = t_num < PART_C_NUM ? t_num : PART_C_NUM;
   p_grid_x = t_num / p_block_x;
@@ -727,48 +735,52 @@ join()
     printf("cuCtxSynchronize() failed: res = %lu\n", (unsigned long int)res);
     exit(1);
   }  
+
+
   gettimeofday(&time_rhck_f, NULL);
 
   gettimeofday(&temp_s, NULL);
 
-  res = cuMemcpyDtoH(rL, rL_dev, t_num * p_num * sizeof(int));
+
+  res = cuMemcpyDtoH(&(rL[1]), rL_dev, (t_num * p_num - 1) * sizeof(int));
   if (res != CUDA_SUCCESS) {
     printf("cuMemcpyDtoH (rL) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
 
+
   gettimeofday(&temp_f, NULL);
 
+
   temper += (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
-  printf("Diff: %ld us (%ld ms)\n", temper, temper/1000);
+  //printf("Diff: %ld us (%ld ms)\n", temper, temper/1000);
+
 
   gettimeofday(&temp_s, NULL);
 
-
   /**************************** prefix sum *************************************/
 
-  thrust::inclusive_scan(rL,rL + t_num*p_num,rL);
+  //thrust::inclusive_scan(rL,rL + t_num*p_num,rL);
 
-  /*
+
   for(int i=1;i<t_num*p_num;i++){
     rL[i] = rL[i] + rL[i-1];
   }
-  */
-
 
   /********************************************************************/
 
   gettimeofday(&temp_f, NULL);
-  temper = (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
-  printf("presum Diff: %ld us (%ld ms)\n", temper, temper/1000);
-  temper=0;
+  tempest = (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
+  printf("presum Diff: %ld us (%ld ms)\n", tempest, tempest/1000);
 
-  
+
+  gettimeofday(&temp_s, NULL);
+  /*
   for(int i = t_num*p_num-1; i>0 ;i--){
     rL[i] = rL[i-1];
   }
   rL[0] = 0;
-
+  */
 
   int *r_p;
   r_p = (int *)calloc(p_num+1,sizeof(int));
@@ -777,6 +789,10 @@ join()
     r_p[i] = rL[t_num * i];
   }
   r_p[p_num] = right;
+
+  gettimeofday(&temp_f, NULL);
+  tempest = (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
+  printf("sum prefix Diff: %ld us (%ld ms)\n", tempest, tempest/1000);
 
 
   /*
@@ -919,7 +935,7 @@ join()
   }
 
 
-  count = (int *)calloc(grid_x*block_x*grid_y,sizeof(int));
+  count = (int *)calloc(grid_x*block_x*grid_y+1,sizeof(int));
 
   res = cuMemcpyHtoD(count_dev, count, grid_x * block_x * grid_y * sizeof(int));
   if (res != CUDA_SUCCESS) {
@@ -1001,7 +1017,7 @@ join()
 
   gettimeofday(&time_ckernel_f, NULL);
 
-  res = cuMemcpyDtoH(count, count_dev, grid_x * block_x * grid_y * sizeof(int));
+  res = cuMemcpyDtoH(&(count[1]), count_dev, grid_x * block_x * grid_y * sizeof(int));
   if (res != CUDA_SUCCESS) {
     printf("cuMemcpyDtoH (count) failed: res = %lu\n", (unsigned long)res);
     exit(1);
@@ -1014,7 +1030,7 @@ join()
   thrust::inclusive_scan(count,count + grid_x*block_x*grid_y,count);
 
   /*
-  for(int i=1;i<grid_x*block_x*block_y;i++){
+  for(int i=2;i<grid_x*block_x*block_y;i++){
     count[i] = count[i] + count[i-1];
   }
   */
@@ -1024,12 +1040,13 @@ join()
 
   int jt_size = count[grid_x*block_x*grid_y-1];
 
+  /*
   for(int i=grid_x*block_x*grid_y-1 ; i>0 ;i--){
     count[i] = count[i-1];
 
   }
   count[0] = 0;
-
+  */
 
 
   printf("%d\t%d\t%d\n",jt_size,grid_x*block_x*grid_y,l_p_num);
@@ -1042,10 +1059,17 @@ join()
   */
 
 
-
   gettimeofday(&time_count_f, NULL);
 
 
+  /*
+  printf("count time:\n");
+  printDiff(time_count_s,time_count_f);
+  printf("count kernel time:\n");
+  printDiff(time_ckernel_s,time_ckernel_f);
+
+  exit(1);
+  */
 
   /***************************************************************************************/
 

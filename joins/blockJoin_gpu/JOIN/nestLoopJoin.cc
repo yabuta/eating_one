@@ -12,7 +12,7 @@
 
 #define VAL_NUM 1
 #define JT_SIZE 120000000
-#define SELECTIVITY 10000
+#define SELECTIVITY 1
 
 
 int left;
