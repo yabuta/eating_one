@@ -166,7 +166,7 @@ main(int argc,char *argv[])
 
   RESULT result;
   int resultVal = 0;
-  struct timeval begin, end;
+  struct timeval begin, end ,middle;
 
   if(argc>3){
     printf("引数が多い\n");
@@ -197,6 +197,7 @@ main(int argc,char *argv[])
   */
 
   // Matching phase
+  gettimeofday(&middle, NULL);
 
   for (int i = 0; i < NB_BKTENT; i++) {
 
@@ -216,8 +217,11 @@ main(int argc,char *argv[])
   gettimeofday(&end, NULL);
 
   printDiff(begin, end);
+  printDiff(begin, middle);
+  printDiff(middle, end);
   printf("resultVal: %d\n", resultVal);
 
+  
   freeTuple();
 
   return 0;

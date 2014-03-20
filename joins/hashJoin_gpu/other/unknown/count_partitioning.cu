@@ -23,22 +23,15 @@ void count_partitioning(
 
 {
 
-  int DEF = blockIdx.x * blockDim.x * PER_TH;
   int x = blockIdx.x * blockDim.x + threadIdx.x;
-  int Dim = 0;
-  if(gridDim.x-1 == blockIdx.x){
-    Dim = t_num - blockIdx.x*blockDim.x;
-  }else{
-    Dim = blockDim.x;
-  }
-
 
   // Matching phase
   int hash = 0;
   if(x < t_num){
-    for(int i = 0; i<PER_TH&&(DEF+threadIdx.x+i*Dim)<rows_num;i++){
-      hash = t[DEF + threadIdx.x + i*Dim].val % p_num;
-      L[hash*t_num + x]++;
+    for(int i = 0; i<PER_TH&&(x*PER_TH+i)<rows_num;i++){
+      hash = t[x*PER_TH + i].val % p_num;
+      L[hash*t_num + x]++;  
+
     }
   }
 

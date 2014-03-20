@@ -13,34 +13,33 @@ count the number of match tuple in each partition and each thread
 extern "C" {
 
 __global__
-void count_partitioning(
+void partitioning(
           TUPLE *t,
+          TUPLE *pt,
           int *L,
-          int p_num,
+          int p,
           int t_num,
           int rows_num
           ) 
 
 {
 
-  int DEF = blockIdx.x * blockDim.x * PER_TH;
   int x = blockIdx.x * blockDim.x + threadIdx.x;
-  int Dim = 0;
-  if(gridDim.x-1 == blockIdx.x){
-    Dim = t_num - blockIdx.x*blockDim.x;
-  }else{
-    Dim = blockDim.x;
-  }
-
 
   // Matching phase
   int hash = 0;
   if(x < t_num){
-    for(int i = 0; i<PER_TH&&(DEF+threadIdx.x+i*Dim)<rows_num;i++){
-      hash = t[DEF + threadIdx.x + i*Dim].val % p_num;
+    for(int i = 0; i<PER_TH&&(x*PER_TH+i)<rows_num;i++){
+      hash = t[x*PER_TH + i].val%p;
+      pt[L[hash*t_num + x]].key = t[x*PER_TH + i].key;  
+      pt[L[hash*t_num + x]].val = t[x*PER_TH + i].val;  
       L[hash*t_num + x]++;
+      //printf("i = %d\tloc = %d\tt = %d\n",hash*t_num + x,L[hash*t_num + x],t[x*PER_TH + i].val);
+      
     }
   }
 
+
 }
+
 }

@@ -35,12 +35,14 @@ void count_partitioning(
 
   // Matching phase
   int hash = 0;
+  //int L_temp = 0;
   if(x < t_num){
     for(int i = 0; i<PER_TH&&(DEF+threadIdx.x+i*Dim)<rows_num;i++){
       hash = t[DEF + threadIdx.x + i*Dim].val % p_num;
       L[hash*t_num + x]++;
     }
   }
+  //L[hash*t_num + x] = L_temp;
 
 }
 }
