@@ -152,6 +152,7 @@ join()
   int resultVal = 0;
 
   int p_num,t_num;
+  int r_p_max;
   int *l_p,*radix_num,*p_loc;
   int *count,*lL,*rL,*p_sum;
   CUresult res;
@@ -375,12 +376,6 @@ join()
   }
   gettimeofday(&time_upload_f, NULL);  
 
-  res = cuMemcpyHtoD(lL_dev, lL, p_num * t_num * sizeof(int));
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD (lL) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-
   res = cuMemcpyHtoD(plt_dev, plt, left * sizeof(TUPLE));
   if (res != CUDA_SUCCESS) {
     printf("cuMemcpyHtoD (plt) failed: res = %lu\n", (unsigned long)res);
@@ -406,11 +401,85 @@ join()
 
   gettimeofday(&time_lhash_s, NULL);
 
+
+  res = cuMemcpyHtoD(lL_dev, lL, p_num * t_num * sizeof(int));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemcpyHtoD (lL) failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+
+
   p_block_x = t_num < PART_C_NUM ? t_num : PART_C_NUM;
   p_grid_x = t_num / p_block_x;
   if (t_num % p_block_x != 0)
     p_grid_x++;
 
+  /*
+  // get handles to a texture memory 
+  CUtexref lt_texref, rt_texref;
+  res = cuModuleGetTexRef(&lt_texref, cp_module, "lt");
+  if(res != CUDA_SUCCESS) {
+    printf("cuModuleGetTexRef(lt) failed: res = %d\n -> %s\n", res, getCudaDrvErrorString(res));
+    return -1;
+  }
+
+  res = cuModuleGetTexRef(&rt_texref, cp_module, "rt");
+  if(res != CUDA_SUCCESS) {
+    printf("cuModuleGetTexRef(rt) failed: res = %d\n -> %s\n", res, getCudaDrvErrorString(res));
+    return -1;
+  }
+
+  // bind texture memorys on GPU 
+  res = cuTexRefSetAddress(NULL, lt_texref, lt_dev, left * sizeof(TUPLE));
+  if(res != CUDA_SUCCESS) {
+    printf("cuTexRefSetAddress(lt_dev) failed: res = %d\n -> %s\n", res, getCudaDrvErrorString(res));
+    return -1;
+  }
+
+  res = cuTexRefSetAddress(NULL, rt_texref, rt_dev, right * sizeof(TUPLE));
+  if(res != CUDA_SUCCESS) {
+    printf("cuTexRefSetAddress(rt_dev) failed: res = %d\n -> %s\n", res, getCudaDrvErrorString(res));
+    return -1;
+  }
+
+
+  // texture memory configuration 
+  res = cuTexRefSetFlags(lt_texref, CU_TRSF_READ_AS_INTEGER);
+  if(res != CUDA_SUCCESS) {
+    printf("cuTexRefSetFlags(lt_texref) failed: res = %d\n->%s\n", res, getCudaDrvErrorString(res));
+    return -1;
+  }
+  
+  res = cuTexRefSetFlags(rt_texref, CU_TRSF_READ_AS_INTEGER);
+  if(res != CUDA_SUCCESS) {
+    printf("cuTexRefSetFlags(b_texref) failed: res = %d\n->%s\n", res, getCudaDrvErrorString(res));
+    return -1;
+  }
+  
+  res = cuTexRefSetFormat(lt_texref, CU_AD_FORMAT_SIGNED_INT32, 2);
+  if(res != CUDA_SUCCESS) {
+    printf("cuTexRefSetFormat(lt_texref) failed: res = %d\n->%s\n", res, getCudaDrvErrorString(res));
+    return -1;
+  }
+
+  res = cuTexRefSetFormat(rt_texref, CU_AD_FORMAT_SIGNED_INT32, 2);
+  if(res != CUDA_SUCCESS) {
+    printf("cuTexRefSetFormat(rt_texref) failed: res = %d\n->%s\n", res, getCudaDrvErrorString(res));
+    return -1;
+  }
+  
+  res = cuParamSetTexRef(cp_function, CU_PARAM_TR_DEFAULT, lt_texref);
+  if(res != CUDA_SUCCESS) {
+    printf("cuParamSetTexRef(lt_texref) failed: res = %d\n->%s\n", res, getCudaDrvErrorString(res));
+    return -1;
+  }
+
+  res = cuParamSetTexRef(cp_function, CU_PARAM_TR_DEFAULT, rt_texref);
+  if(res != CUDA_SUCCESS) {
+    printf("cuParamSetTexRef(rt_texref) failed: res = %d\n->%s\n", res, getCudaDrvErrorString(res));
+    return -1;
+  }
+  */
 
   gettimeofday(&time_lhck_s, NULL);
 
@@ -424,7 +493,7 @@ join()
       
   };
 
-  //グリッド・ブロックの指定、変数の指定、カーネルの実行を行う
+  //グリッド・ブロックの指定、変数の指定、カーネルの実行を行うthe count_partitioning executes
 
   res = cuLaunchKernel(
                        cp_function,    // CUfunction f
@@ -467,6 +536,7 @@ join()
   */
 
 
+  //To calculate start position , execute prefix sum.
   /**************************** prefix sum *************************************/
 
   //thrust::inclusive_scan(lL,lL + t_num*p_num,lL);
@@ -506,6 +576,7 @@ join()
   */
 
 
+  //To resize partition for shared memory size.
   /***********************************************
     resizing partition 
 
@@ -689,8 +760,8 @@ join()
   }
   gettimeofday(&temp_f, NULL);
 
-  temper += (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
-  //printf("Diff: %ld us (%ld ms)\n", temper, temper/1000);
+  temper = (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
+  printf("Diff: %ld us (%ld ms)\n", temper, temper/1000);
 
 
   p_block_x = t_num < PART_C_NUM ? t_num : PART_C_NUM;
@@ -752,8 +823,8 @@ join()
   gettimeofday(&temp_f, NULL);
 
 
-  temper += (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
-  //printf("Diff: %ld us (%ld ms)\n", temper, temper/1000);
+  temper = (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
+  printf("Diff: %ld us (%ld ms)\n", temper, temper/1000);
 
 
   gettimeofday(&temp_s, NULL);
@@ -761,7 +832,6 @@ join()
   /**************************** prefix sum *************************************/
 
   //thrust::inclusive_scan(rL,rL + t_num*p_num,rL);
-
 
   for(int i=1;i<t_num*p_num;i++){
     rL[i] = rL[i] + rL[i-1];
@@ -783,12 +853,28 @@ join()
   */
 
   int *r_p;
+  int rdiff;
   r_p = (int *)calloc(p_num+1,sizeof(int));
 
   for(int i = 0; i<p_num ;i++){
     r_p[i] = rL[t_num * i];
+
+    if(i==0){
+      r_p_max = r_p[i];
+    }else{
+      rdiff = r_p[i] - r_p[i-1];
+      if(rdiff > r_p_max){
+        r_p_max = rdiff;
+      }
+    }
   }
   r_p[p_num] = right;
+
+  //maxはcount,joinのblockDimを決めるとき使う
+  rdiff = r_p[p_num] - r_p[p_num-1];
+  if(rdiff > r_p_max){
+    r_p_max = rdiff;
+  }
 
   gettimeofday(&temp_f, NULL);
   tempest = (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
@@ -811,7 +897,7 @@ join()
   }
 
   gettimeofday(&temp_f, NULL);
-  temper += (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
+  temper = (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
   printf("Diff: %ld us (%ld ms)\n", temper, temper/1000);
 
   gettimeofday(&time_rhk_s, NULL);
@@ -866,7 +952,7 @@ join()
 
   gettimeofday(&temp_f, NULL);
 
-  temper += (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
+  temper = (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
 
   //printf("prt value = %d\n",prt[1].val);
 
@@ -903,7 +989,7 @@ join()
   gettimeofday(&time_count_s, NULL);
 
 
-  block_x = right < BLOCK_SIZE_X ? right : BLOCK_SIZE_X;
+  block_x = r_p_max < BLOCK_SIZE_X ? r_p_max : BLOCK_SIZE_X;
   block_y = BLOCK_SIZE_Y;
 
   grid_x = l_p_num;
@@ -1233,7 +1319,7 @@ join()
   int DEF = 1000;
   printf("lt = %d\n",left*sizeof(TUPLE)/DEF);
   printf("rt = %d\n" ,right * sizeof(TUPLE)/DEF);
-  printf("lL = %d\n", p_num*sizeof(int)*left/PER_TH/DEF);
+  printf("lL = %d\n", p_num*sizeof(int)*(left/PER_TH+1)/DEF);
   printf("rL = %d\n", p_num*t_num*sizeof(int)/DEF);
   printf("plt = %d\n", left*sizeof(TUPLE)/DEF);
   printf("prt = %d\n", right*sizeof(TUPLE)/DEF);

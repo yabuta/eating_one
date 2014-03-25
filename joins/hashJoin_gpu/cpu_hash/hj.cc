@@ -164,7 +164,7 @@ int
 main(int argc,char *argv[])
 {
 
-  RESULT result;
+  RESULT result[JT_SIZE];
   int resultVal = 0;
   struct timeval begin, end ,middle;
 
@@ -204,10 +204,10 @@ main(int argc,char *argv[])
     for (int j = 0; j < rcount[i]; j++) {
       for (int k = 0; k < lcount[i]; k++) {
         if (hrt[rlocation[i] + j].val == hlt[llocation[i] + k].val) {
-          result.rkey = hrt[rlocation[i] + j].key;
-          result.rval = hrt[rlocation[i] + j].val;
-          result.skey = hlt[llocation[i] + k].key;
-          result.sval = hlt[llocation[i] + k].val;
+          result[resultVal].rkey = hrt[rlocation[i] + j].key;
+          result[resultVal].rval = hrt[rlocation[i] + j].val;
+          result[resultVal].skey = hlt[llocation[i] + k].key;
+          result[resultVal].sval = hlt[llocation[i] + k].val;
           resultVal++;
         }
       }

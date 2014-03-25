@@ -412,6 +412,7 @@ join()
     p_grid_x++;
 
 
+
   gettimeofday(&time_lhck_s, NULL);
 
   void *count_lpartition_args[]={
@@ -676,7 +677,7 @@ join()
   gettimeofday(&temp_f, NULL);
 
   temper = (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
-  printf("Diff: %ld us (%ld ms)\n", temper, temper/1000);
+  printf("alloc Diff: %ld us (%ld ms)\n", temper, temper/1000);
   temper=0;
 
 
@@ -689,8 +690,8 @@ join()
   }
   gettimeofday(&temp_f, NULL);
 
-  temper += (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
-  //printf("Diff: %ld us (%ld ms)\n", temper, temper/1000);
+  temper = (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
+  printf("Diff: %ld us (%ld ms)\n", temper, temper/1000);
 
 
   p_block_x = t_num < PART_C_NUM ? t_num : PART_C_NUM;
@@ -752,8 +753,8 @@ join()
   gettimeofday(&temp_f, NULL);
 
 
-  temper += (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
-  //printf("Diff: %ld us (%ld ms)\n", temper, temper/1000);
+  temper = (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
+  printf("Diff: %ld us (%ld ms)\n", temper, temper/1000);
 
 
   gettimeofday(&temp_s, NULL);
@@ -811,7 +812,7 @@ join()
   }
 
   gettimeofday(&temp_f, NULL);
-  temper += (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
+  temper = (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
   printf("Diff: %ld us (%ld ms)\n", temper, temper/1000);
 
   gettimeofday(&time_rhk_s, NULL);
@@ -866,7 +867,7 @@ join()
 
   gettimeofday(&temp_f, NULL);
 
-  temper += (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
+  temper = (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
 
   //printf("prt value = %d\n",prt[1].val);
 
@@ -1233,7 +1234,7 @@ join()
   int DEF = 1000;
   printf("lt = %d\n",left*sizeof(TUPLE)/DEF);
   printf("rt = %d\n" ,right * sizeof(TUPLE)/DEF);
-  printf("lL = %d\n", p_num*sizeof(int)*left/PER_TH/DEF);
+  printf("lL = %d\n", p_num*(left/PER_TH+1)*sizeof(int)/DEF);
   printf("rL = %d\n", p_num*t_num*sizeof(int)/DEF);
   printf("plt = %d\n", left*sizeof(TUPLE)/DEF);
   printf("prt = %d\n", right*sizeof(TUPLE)/DEF);
