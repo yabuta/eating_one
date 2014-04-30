@@ -23,20 +23,23 @@ __global__ void join(
 
 
   int writeloc = 0;
-  if(y!=0){
+  if(y > 0){
     writeloc = count[y-1];
   }
 
   if(y < right){
     int idx = rt[y].val % NB_BKT_ENT;
-    if(buck_array[idx] != -1){
+    int idx_c = idxcount[idx];
+    int buck_a = buck_array[idx];
+
+    if(buck_a != -1){
       int i = 0;
-      for(int k = 0; k < idxcount[idx]; k++){
-        if(bucket[buck_array[idx] + k].val == rt[y].val){
+      for(int k = 0; k < idx_c; k++){
+        if(bucket[buck_a + k].val == rt[y].val){
           jt[writeloc + i].rkey = rt[y].key;
           jt[writeloc + i].rval = rt[y].val;
-          jt[writeloc + i].lkey = lt[bucket[buck_array[idx] + k].adr].key;
-          jt[writeloc + i].lval = lt[bucket[buck_array[idx] + k].adr].val;
+          jt[writeloc + i].lkey = lt[bucket[buck_a + k].adr].key;
+          jt[writeloc + i].lval = lt[bucket[buck_a + k].adr].val;
           
           i++;
           //printf("%d %d\n",jt[count[i] + k].rkey,jt[count[i] + k].lkey);

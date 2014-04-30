@@ -536,7 +536,7 @@ join()
   }
   p_sum[p_num-1] = left - lL[t_num*(p_num-1)];
 
-  //To resize partition for shared memory size.
+
   /***********************************************
     resizing partition 
 
@@ -563,11 +563,20 @@ join()
   /****************presum*****************/
   thrust::inclusive_scan(p_sum,p_sum + p_num,p_loc);
 
-  /***************************************/
+  p_loc[0] = 0;
+  for(int i = 1;i<p_num;i++){
+    p_loc[i] = p_loc[i-1] + p_sum[i-1];
+  }
+
+
+  /*
   for(int i = p_num-1; i>0 ;i--){
     p_loc[i] = p_loc[i-1];
   }
+
   p_loc[0] = 0;
+  */
+  /***************************************/
 
   for(int i=0; i<p_num; i++){
     if(p_sum[i]/B_ROW_NUM < 1 || p_sum[i]==B_ROW_NUM){
@@ -771,6 +780,8 @@ join()
   gettimeofday(&temp_s, NULL);
 
   /**************************** prefix sum *************************************/
+
+  rL[0] = 0;
 
   //thrust::inclusive_scan(rL,rL + t_num*p_num,rL);
 
@@ -1090,6 +1101,8 @@ join()
 
 
   /**************************** prefix sum *************************************/
+
+  count[0] = 0;
 
   //thrust::inclusive_scan(count,count + grid_x*block_x*grid_y,count);
 

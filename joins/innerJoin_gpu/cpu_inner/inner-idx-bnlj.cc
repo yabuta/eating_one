@@ -10,9 +10,6 @@
 #include "debug.h"
 #include "tuple.h"
 
-#define JT_SIZE 1200000000
-#define SELECTIVITY 1000000
-
 
 BUCKET *Bucket;
 int Buck_array[NB_BUCKET];
@@ -107,8 +104,9 @@ main(int argc,char *argv[])
     printf("left=%d:right=%d\n",left,right);
   }
 
-  createTuple();
+  gettimeofday(&begin, NULL);
 
+  createTuple();
 
   //make index
   
@@ -146,7 +144,7 @@ main(int argc,char *argv[])
   }
 
   // join
-  gettimeofday(&begin, NULL);
+  //gettimeofday(&begin, NULL);
 
   for (int j = 0; j < right; j++) {
     int hash = rt[j].val % NB_BUCKET;

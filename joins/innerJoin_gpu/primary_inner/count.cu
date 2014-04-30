@@ -34,12 +34,17 @@ void count(
   
   if(i < right){
     int idx = rt[i].val % NB_BKT_ENT;
-    if(buck_array[idx] != -1){
-      for(int k = 0; k < idxcount[idx]; k++){
-        if(bucket[buck_array[idx] + k].val == rt[i].val){
-          count[i]++;
+    int idx_c = idxcount[idx];
+    int buck_a = buck_array[idx];
+
+    if(buck_a != -1){
+      int temp = 0;
+      for(int k = 0; k < idx_c; k++){
+        if(bucket[buck_a + k].val == rt[i].val){
+          temp++;
         }
       }
+      count[i] = count[i] + temp;
     }
   }
 

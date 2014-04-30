@@ -272,11 +272,15 @@ void join(){
     exit(1);
   }
 
+
+
   /*tuple and index init******************************************/  
 
   createTuple();
-  createIndex();
 
+  gettimeofday(&begin, NULL);
+  createIndex();
+  //gettimeofday(&begin, NULL);
   /****************************************************************/
 
 
@@ -306,7 +310,7 @@ void join(){
   ******************/
 
 
-  gettimeofday(&begin, NULL);
+
 
   /********************************************************************
    *lt,rt,countのメモリを割り当てる。
@@ -474,7 +478,12 @@ void join(){
 
   /**************************** prefix sum *************************************/
 
-  thrust::inclusive_scan(count,count + right,count);
+  //thrust::inclusive_scan(count,count + right,count);
+
+  for(int i = 1; i < right ; i++){
+    count[i] = count[i] + count[i-1];
+  }
+
 
   /********************************************************************/
 

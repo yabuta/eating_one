@@ -12,7 +12,7 @@ O1 = hj.o
 all:$(T1) tuple.h
 
 
-$(T1): $(O1) 
+$(T1): $(O1) tuple.h
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 .cc.o:

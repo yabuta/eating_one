@@ -9,8 +9,6 @@
 #include <thrust/scan.h>
 #include "tuple.h"
 
-#define JT_SIZE 120000000
-#define SELECTIVITY 10000
 
 TUPLE *Tright;
 TUPLE *Tleft;
@@ -360,15 +358,17 @@ join()
                        NULL           // extra
                        );
   if(res != CUDA_SUCCESS) {
-    printf("cuLaunchKernel() failed: res = %lu\n", (unsigned long int)res);
+    printf("cuLaunchKernel(count) failed: res = %lu\n", (unsigned long int)res);
     exit(1);
   }      
 
   res = cuCtxSynchronize();
   if(res != CUDA_SUCCESS) {
-    printf("cuCtxSynchronize() failed: res = %lu\n", (unsigned long int)res);
+    printf("cuCtxSynchronize(count) failed: res = %lu\n", (unsigned long int)res);
     exit(1);
   }  
+
+  
 
   //count.cuの時間計測
   //gettimeofday(&time_count_f, NULL);

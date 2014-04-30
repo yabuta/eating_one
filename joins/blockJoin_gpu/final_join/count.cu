@@ -50,27 +50,17 @@ void count(
 
   __syncthreads();  
 
-  /*
-  if(blockIdx.x==0){
-    //for(j=0;(j<BLOCK_SIZE_X)&&((j+BLOCK_SIZE_X*blockIdx.x)<ltn);j++){
-    printf("%d\t%d\n",Tleft[0].val[0],threadIdx.y);
-    //}
-  }
-  */
-
-
   TUPLE Tright = rt[i];
-
-
 
   /*
     count loop
    */
-  for(j = 0; j<BLOCK_SIZE_X &&((j+BLOCK_SIZE_X*blockIdx.x)<ltn);j++){
+  int ltn_g = ltn;
+  int rtn_g = rtn;
 
 
-
-    if(i<rtn){
+  for(j = 0; j<BLOCK_SIZE_X &&((j+BLOCK_SIZE_X*blockIdx.x)<ltn_g);j++){
+    if(i<rtn_g){
      
       if(&(Tleft[j])==NULL||&(Tright)==NULL){
         printf("memory error in .cu.\n");

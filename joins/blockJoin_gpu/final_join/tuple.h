@@ -34,6 +34,8 @@ typedef struct _JOIN_TUPLE {
 #define PER_SHOW 1000000//10000000
 
 //1blockでのスレッド数の定義。32*32=1024
-#define BLOCK_SIZE_X 256
-#define BLOCK_SIZE_Y 128
+#define BLOCK_SIZE_X 1024
+#define BLOCK_SIZE_Y 256
 
+#define JT_SIZE 120000000
+#define SELECTIVITY 1000000

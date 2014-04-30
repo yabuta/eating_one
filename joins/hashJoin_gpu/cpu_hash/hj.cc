@@ -66,11 +66,15 @@ void createTuple()
 
   srand((unsigned)time(NULL));
   for (int i = 0; i < right; i++) {
-    getTuple(&(rt[i]),rand()%SELECTIVITY);
+    getTuple(&(rt[i]),i);
   }
 
   for (int i = 0; i < left; i++) {
-    getTuple(&(lt[i]),rand()%SELECTIVITY);
+    if(i < RES_MAX){
+      getTuple(&(lt[i]),i);
+    }else{
+      getTuple(&(lt[i]),i + right);
+    }
   }
 
 
@@ -97,6 +101,11 @@ createPart()
   TUPLE buf[NB_BUF];
   */
 
+
+  /************
+   right hash
+   ************/
+
   for(int i = 0; i<right ; i++){
     int idx = rt[i].val % NB_BKTENT;
     rcount[idx]++;
@@ -120,6 +129,10 @@ createPart()
 
   }
   
+
+  /********
+   left hash
+   *******/
 
   for(int i = 0; i<left ; i++){
     int idx = lt[i].val % NB_BKTENT;
@@ -146,6 +159,7 @@ createPart()
   
 }
 
+/*
 int
 openPart(const char *partFile, int id)
 {
@@ -159,6 +173,7 @@ openPart(const char *partFile, int id)
 
   return fd;
 }
+*/
 
 int 
 main(int argc,char *argv[])

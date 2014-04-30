@@ -13,7 +13,7 @@
 #include <ctype.h>
 #include "debug.h"
 #include "tuple.h"
-
+#include "scan_common.h"
 
 TUPLE *rt;
 TUPLE *lt;
@@ -219,29 +219,11 @@ join()
     exit(1);
   }
 
-  /*
-  sprintf(fname, "%s/count.cubin", path);
-  res = cuModuleLoad(&c_module, fname);
-  if (res != CUDA_SUCCESS) {
-    printf("cuModuleLoad(count) failed\n");
-    exit(1);
-  }
-  */
-
   res = cuModuleGetFunction(&c_function, module, "count");
   if (res != CUDA_SUCCESS) {
     printf("cuModuleGetFunction(count) failed\n");
     exit(1);
   }
-  /*
-  sprintf(fname, "%s/count_partitioning.cubin", path);
-  res = cuModuleLoad(&cp_module, fname);
-  if (res != CUDA_SUCCESS) {
-    printf("cuModuleLoad(count_partitioning) failed\n");
-    exit(1);
-  }
-  */
-  
 
   sprintf(fname, "%s/partitioning.cubin", path);
   res = cuModuleLoad(&p_module, fname);
@@ -271,11 +253,8 @@ join()
 
   createTuple();
 
-  /*
-  for(int i = 0; i < left; i++){
-    printf("%d = %d\n",i,lt[i].val);
-  }
-  */
+  /*scan init*/
+  initScan();
 
 
   /*******************
@@ -474,6 +453,8 @@ join()
 
   /**************************** prefix sum *************************************/
 
+  lL[0] = 0;
+
   //thrust::inclusive_scan(lL,lL + t_num*p_num,lL);
 
   for(int i=1;i<t_num*p_num;i++){
@@ -591,13 +572,25 @@ join()
 
 
   /****************presum*****************/
-  thrust::inclusive_scan(p_sum,p_sum + p_num,p_loc);
 
-  /***************************************/
+  p_loc[0] = 0;
+
+  for(int i=1 ; i<p_num ; i++){
+    p_loc[i] = p_loc[i-1] + p_sum[i-1];
+
+  }
+
+
+  /*
+  thrust::inclusive_scan(p_sum,p_sum + p_num,p_loc);
   for(int i = p_num-1; i>0 ;i--){
     p_loc[i] = p_loc[i-1];
   }
   p_loc[0] = 0;
+  */
+
+
+  /***************************************/
 
   for(int i=0; i<p_num; i++){
     //printf("p_sum=%d\t%d\n",p_sum[i],B_ROW_NUM);
@@ -807,6 +800,8 @@ join()
 
   /**************************** prefix sum *************************************/
 
+  rL[0] = 0;
+
   //thrust::inclusive_scan(rL,rL + t_num*p_num,rL);
 
   for(int i=1;i<t_num*p_num;i++){
@@ -820,12 +815,6 @@ join()
   printf("presum Diff: %ld us (%ld ms)\n", tempest, tempest/1000);
 
   gettimeofday(&temp_s, NULL);
-  /*
-  for(int i = t_num*p_num-1; i>0 ;i--){
-    rL[i] = rL[i-1];
-  }
-  rL[0] = 0;
-  */
 
   int *r_p;
   int rdiff;
@@ -1061,6 +1050,8 @@ join()
 
   /**************************** prefix sum *************************************/
 
+  count[0] = 0;
+
   //thrust::inclusive_scan(count,count + grid_x*block_x*grid_y,count);
 
   for(int i=2;i<grid_x*grid_y*block_x*block_y;i++){
@@ -1072,41 +1063,11 @@ join()
 
   int jt_size = count[grid_x*block_x*grid_y-1];
 
-  /*
-  for(int i=grid_x*block_x*grid_y-1 ; i>0 ;i--){
-    count[i] = count[i-1];
-
-  }
-  count[0] = 0;
-  */
-
-
   printf("%d\t%d\t%d\n",jt_size,grid_x*block_x*grid_y,l_p_num);
-  
-  /*
-  for(int i=0 ; i<grid_x*block_x*block_y ; i++){
-    printf("%d\t%d\n",i,count[i]);
-
-  }
-  */
-
 
   gettimeofday(&time_count_f, NULL);
 
-
-  /*
-  printf("count time:\n");
-  printDiff(time_count_s,time_count_f);
-  printf("count kernel time:\n");
-  printDiff(time_ckernel_s,time_ckernel_f);
-
-  exit(1);
-  */
-
   /***************************************************************************************/
-
-
-
 
 
   /************************************************************************
@@ -1306,15 +1267,6 @@ join()
   printDiff(time_jkernel_s,time_jkernel_f);
   printf("join download time:\n");
   printDiff(time_jdown_s,time_jdown_f);
-
-  /*
-  printf("count time:\n");
-  printDiff(time_count_s,time_count_f);
-  printf("upload time of jt:\n");
-  printDiff(time_jup_s,time_jup_f);
-  printf("download time of jt:\n");
-  printDiff(time_jdown_s,time_jdown_f);
-  */
 
 
   free(lL);

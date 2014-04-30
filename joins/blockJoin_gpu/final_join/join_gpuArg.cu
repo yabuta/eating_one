@@ -45,10 +45,13 @@ __global__ void join(
   if(i != 0){
     writeloc = count[i + blockIdx.x*blockDim.y*gridDim.y -1];
   }
+  int ltn_g = ltn;
+  int rtn_g = rtn;
 
-  for(j = 0; j<BLOCK_SIZE_X &&((j+BLOCK_SIZE_X*blockIdx.x)<ltn);j++){
 
-    if(i<rtn){
+  for(j = 0; j<BLOCK_SIZE_X &&((j+BLOCK_SIZE_X*blockIdx.x)<ltn_g);j++){
+
+    if(i<rtn_g){
     
       if(&(Tleft[j])==NULL||&(Tright)==NULL||&(p[writeloc])==NULL){
         printf("memory error in .cu.\n");
