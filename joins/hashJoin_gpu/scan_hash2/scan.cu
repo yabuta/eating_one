@@ -16,7 +16,7 @@
 
 //All three kernels run 512 threads per workgroup
 //Must be a power of two
-#define THREADBLOCK_SIZE 256
+#define THREADBLOCK_SIZE 512
 
 ////////////////////////////////////////////////////////////////////////////////
 // Basic ccan codelets
@@ -220,7 +220,7 @@ __global__ void uniformUpdate2(
 ////////////////////////////////////////////////////////////////////////////////
 //Derived as 32768 (max power-of-two gridDim.x) * 4 * THREADBLOCK_SIZE
 //Due to scanExclusiveShared<<<>>>() 1D block addressing
-extern "C" const uint MAX_BATCH_ELEMENTS = 64 * 1048576;//must be < 4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE * THREADBLOCK_SIZE
+extern "C" const uint MAX_BATCH_ELEMENTS = 4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE * THREADBLOCK_SIZE;
 extern "C" const uint MIN_SHORT_ARRAY_SIZE = 4;
 extern "C" const uint MAX_SHORT_ARRAY_SIZE = 4 * THREADBLOCK_SIZE;
 extern "C" const uint MIN_LARGE_ARRAY_SIZE = 8 * THREADBLOCK_SIZE;
@@ -350,59 +350,58 @@ extern "C" size_t scanExclusiveLL(
 )
 {
     //Check power-of-two factorization
-
   /*
-  uint log2L;
-  uint factorizationRemainder = factorRadix2(log2L, arrayLength);
-  assert(factorizationRemainder == 1);
+    uint log2L;
+    uint factorizationRemainder = factorRadix2(log2L, arrayLength);
+    assert(factorizationRemainder == 1);
   */
   assert((arrayLength%MAX_LARGE_ARRAY_SIZE) == 0);
 
-  //Check supported size range
-  assert((arrayLength >= MIN_LL_SIZE) && (arrayLength <= MAX_LL_SIZE));
-  
-  //Check total batch size limit
-  assert((batchSize * arrayLength) <= MAX_BATCH_ELEMENTS);
-  
-  scanExclusiveShared<<<(batchSize * arrayLength) / (4 * THREADBLOCK_SIZE), THREADBLOCK_SIZE>>>(
+    //Check supported size range
+    assert((arrayLength >= MIN_LL_SIZE) && (arrayLength <= MAX_LL_SIZE));
+
+    //Check total batch size limit
+    assert((batchSize * arrayLength) <= MAX_BATCH_ELEMENTS);
+
+    scanExclusiveShared<<<(batchSize * arrayLength) / (4 * THREADBLOCK_SIZE), THREADBLOCK_SIZE>>>(
         (uint4 *)d_Dst,
         (uint4 *)d_Src,
         4 * THREADBLOCK_SIZE
-  );
-  getLastCudaError("scanExclusiveShared() execution FAILED\n");
-  checkCudaErrors(cudaDeviceSynchronize());
+    );
+    getLastCudaError("scanExclusiveShared() execution FAILED\n");
+    checkCudaErrors(cudaDeviceSynchronize());
 
-  //Now ,prefix sum per THREADBLOCK_SIZE done
-  
-  
-  //Not all threadblocks need to be packed with input data:
-  //inactive threads of highest threadblock just don't do global reads and writes
-  
-  const uint blockCount2 = iDivUp((batchSize * arrayLength) / (4 * THREADBLOCK_SIZE), THREADBLOCK_SIZE);
-  scanExclusiveShared2<<< blockCount2, THREADBLOCK_SIZE>>>(
+    //Now ,prefix sum per THREADBLOCK_SIZE done
+
+
+    //Not all threadblocks need to be packed with input data:
+    //inactive threads of highest threadblock just don't do global reads and writes
+
+    const uint blockCount2 = iDivUp((batchSize * arrayLength) / (4 * THREADBLOCK_SIZE), THREADBLOCK_SIZE);
+    scanExclusiveShared2<<< blockCount2, THREADBLOCK_SIZE>>>(
         (uint *)d_Buf,
         (uint *)d_Dst,
         (uint *)d_Src,
         (batchSize *arrayLength) / (4 * THREADBLOCK_SIZE),
         THREADBLOCK_SIZE
     );
-  getLastCudaError("scanExclusiveShared2() execution FAILED\n");
-  checkCudaErrors(cudaDeviceSynchronize());
+    getLastCudaError("scanExclusiveShared2() execution FAILED\n");
+    checkCudaErrors(cudaDeviceSynchronize());
 
 
-  //prefix sum of last elements per THREADBLOCK_SIZE done
-  //this prefix sum can caluculate under only THREADBLOCK_SIZE size.
-  //so We need one more prefix sum for last elements.
+    //prefix sum of last elements per THREADBLOCK_SIZE done
+    //this prefix sum can caluculate under only THREADBLOCK_SIZE size.
+    //so We need one more prefix sum for last elements.
 
-  uint array_temp;
-  for(uint i = 2; i<THREADBLOCK_SIZE ; i <<= 1){
-    if(i > arrayLength/(4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE)){
-      array_temp = i;
+    uint array_temp = THREADBLOCK_SIZE;
+    for(uint i = 2; i<=THREADBLOCK_SIZE ; i <<= 1){
+      if(i >= arrayLength/(4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE)){
+        array_temp = i;
+      }
     }
-  }
 
-  const uint blockCount3 = 1;//(batchSize * arrayLength) / (4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE);
-  scanExclusiveShared3<<< blockCount3, THREADBLOCK_SIZE>>>(
+    const uint blockCount3 = 1;//(batchSize * arrayLength) / (4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE);
+    scanExclusiveShared3<<< blockCount3, THREADBLOCK_SIZE>>>(
         (uint *)e_Buf,
         (uint *)d_Buf,
         (uint *)d_Dst,
@@ -411,25 +410,25 @@ extern "C" size_t scanExclusiveLL(
         array_temp
         //arrayLength / (4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE)
     );
-  getLastCudaError("scanExclusiveShared3() execution FAILED\n");
-  checkCudaErrors(cudaDeviceSynchronize());
+    getLastCudaError("scanExclusiveShared3() execution FAILED\n");
+    checkCudaErrors(cudaDeviceSynchronize());
 
 
-  //add d_Buf to each array of d_Dst
-  uniformUpdate<<<(batchSize *arrayLength) / (4 * THREADBLOCK_SIZE ), THREADBLOCK_SIZE>>>(
+    //add d_Buf to each array of d_Dst
+    uniformUpdate<<<(batchSize *arrayLength) / (4 * THREADBLOCK_SIZE ), THREADBLOCK_SIZE>>>(
         (uint4 *)d_Dst,
         (uint *)d_Buf
     );
 
-  //add e_Buf to each array of d_Dst
-  checkCudaErrors(cudaDeviceSynchronize());
+    //add e_Buf to each array of d_Dst
+    checkCudaErrors(cudaDeviceSynchronize());
 
-  uniformUpdate2<<<(batchSize *arrayLength) / (4 * THREADBLOCK_SIZE ), THREADBLOCK_SIZE>>>(
+    uniformUpdate2<<<(batchSize *arrayLength) / (4 * THREADBLOCK_SIZE ), THREADBLOCK_SIZE>>>(
         (uint4 *)d_Dst,
         (uint *)e_Buf
     );
-  getLastCudaError("uniformUpdate() execution FAILED\n");
+    getLastCudaError("uniformUpdate() execution FAILED\n");
 
-  checkCudaErrors(cudaDeviceSynchronize());
-  return THREADBLOCK_SIZE;
+    checkCudaErrors(cudaDeviceSynchronize());
+    return THREADBLOCK_SIZE;
 }

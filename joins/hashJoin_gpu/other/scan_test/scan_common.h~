@@ -27,8 +27,6 @@ extern "C" const uint MIN_SHORT_ARRAY_SIZE;
 extern "C" const uint MAX_SHORT_ARRAY_SIZE;
 extern "C" const uint MIN_LARGE_ARRAY_SIZE;
 extern "C" const uint MAX_LARGE_ARRAY_SIZE;
-extern "C" const uint MAX_LL_SIZE;
-extern "C" const uint MIN_LL_SIZE;
 
 ////////////////////////////////////////////////////////////////////////////////
 // CUDA scan
@@ -44,13 +42,6 @@ extern "C" size_t scanExclusiveShort(
 );
 
 extern "C" size_t scanExclusiveLarge(
-    uint *d_Dst,
-    uint *d_Src,
-    uint batchSize,
-    uint arrayLength
-);
-
-extern "C" size_t scanExclusiveLL(
     uint *d_Dst,
     uint *d_Src,
     uint batchSize,

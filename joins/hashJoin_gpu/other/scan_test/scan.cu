@@ -122,8 +122,7 @@ __global__ void scanExclusiveShared2(
 
     if (pos < N)
         idata =
-            d_Dst[(4 * THREADBLOCK_SIZE) - 1 + (4 * THREADBLOCK_SIZE) * pos] +
-            d_Src[(4 * THREADBLOCK_SIZE) - 1 + (4 * THREADBLOCK_SIZE) * pos];
+            d_Dst[(4 * THREADBLOCK_SIZE) - 1 + (4 * THREADBLOCK_SIZE) * pos] + d_Src[(4 * THREADBLOCK_SIZE) - 1 + (4 * THREADBLOCK_SIZE) * pos];
 
     //Compute
     uint odata = scan1Exclusive(idata, s_Data, arrayLength);
@@ -134,6 +133,39 @@ __global__ void scanExclusiveShared2(
         d_Buf[pos] = odata;
     }
 }
+
+__global__ void scanExclusiveShared3(
+                                     uint *e_Buf,
+                                     uint *d_Buf,
+                                     uint *d_Dst,
+                                     uint *d_Src,
+                                     uint N,
+                                     uint arrayLength
+                                     )
+{
+  __shared__ uint s_Data[2 * THREADBLOCK_SIZE];
+  
+  //Skip loads and stores for inactive threads of last threadblock (pos >= N)
+  uint pos = blockIdx.x * blockDim.x + threadIdx.x;
+  
+  //Load top elements
+  //Convert results of bottom-level scan back to inclusive
+  uint idata = 0;
+  
+  if (pos < N)
+    idata =
+      d_Buf[THREADBLOCK_SIZE -1 + pos * THREADBLOCK_SIZE] + d_Dst[(4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE) - 1 + (4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE) * pos] + d_Src[(4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE) - 1 + (4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE) * pos];
+  
+  //Compute
+  uint odata = scan1Exclusive(idata, s_Data, arrayLength);
+  
+  //Avoid out-of-bound access
+  if (pos < N)
+    {
+      e_Buf[pos] = odata;
+    }
+}
+
 
 //Final step of large-array scan: combine basic inclusive scan with exclusive scan of top elements of input arrays
 __global__ void uniformUpdate(
@@ -159,23 +191,53 @@ __global__ void uniformUpdate(
     d_Data[pos] = data4;
 }
 
+__global__ void uniformUpdate2(
+    uint4 *d_Data,
+    uint *d_Buffer
+)
+{
+    __shared__ uint buf;
+    uint pos = blockIdx.x * blockDim.x + threadIdx.x;
+
+    uint temp = blockIdx.x/THREADBLOCK_SIZE;
+    if (threadIdx.x == 0)
+    {
+        buf = d_Buffer[temp];
+    }
+
+    __syncthreads();
+
+    uint4 data4 = d_Data[pos];
+    data4.x += buf;
+    data4.y += buf;
+    data4.z += buf;
+    data4.w += buf;
+    d_Data[pos] = data4;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Interface function
 ////////////////////////////////////////////////////////////////////////////////
 //Derived as 32768 (max power-of-two gridDim.x) * 4 * THREADBLOCK_SIZE
 //Due to scanExclusiveShared<<<>>>() 1D block addressing
-extern "C" const uint MAX_BATCH_ELEMENTS = 64 * 1048576;
+extern "C" const uint MAX_BATCH_ELEMENTS = 64 * 1048576;//must be < 4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE * THREADBLOCK_SIZE
 extern "C" const uint MIN_SHORT_ARRAY_SIZE = 4;
 extern "C" const uint MAX_SHORT_ARRAY_SIZE = 4 * THREADBLOCK_SIZE;
 extern "C" const uint MIN_LARGE_ARRAY_SIZE = 8 * THREADBLOCK_SIZE;
-extern "C" const uint MAX_LARGE_ARRAY_SIZE = 4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE * 8;
+extern "C" const uint MAX_LARGE_ARRAY_SIZE = 4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE;
+extern "C" const uint MIN_LL_SIZE = 8 * THREADBLOCK_SIZE * THREADBLOCK_SIZE;
+extern "C" const uint MAX_LL_SIZE = MAX_BATCH_ELEMENTS;//4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE * THREADBLOCK_SIZE;
+
 
 //Internal exclusive scan buffer
 static uint *d_Buf;
+static uint *e_Buf;
 
 extern "C" void initScan(void)
 {
     checkCudaErrors(cudaMalloc((void **)&d_Buf, (MAX_BATCH_ELEMENTS / (4 * THREADBLOCK_SIZE)) * sizeof(uint)));
+    checkCudaErrors(cudaMalloc((void **)&e_Buf, (MAX_BATCH_ELEMENTS / (4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE)) * sizeof(uint)));
+
 }
 
 extern "C" void closeScan(void)
@@ -252,34 +314,122 @@ extern "C" size_t scanExclusiveLarge(
     //Check total batch size limit
     assert((batchSize * arrayLength) <= MAX_BATCH_ELEMENTS);
 
-    scanExclusiveShared<<<(batchSize * arrayLength) / (4 * THREADBLOCK_SIZE * 8), THREADBLOCK_SIZE>>>(
+    scanExclusiveShared<<<(batchSize * arrayLength) / (4 * THREADBLOCK_SIZE), THREADBLOCK_SIZE>>>(
         (uint4 *)d_Dst,
         (uint4 *)d_Src,
-        4 * THREADBLOCK_SIZE * 8
+        4 * THREADBLOCK_SIZE
     );
     getLastCudaError("scanExclusiveShared() execution FAILED\n");
 
-    printf("ok\n");
-
     //Not all threadblocks need to be packed with input data:
     //inactive threads of highest threadblock just don't do global reads and writes
-    const uint blockCount2 = iDivUp((batchSize * arrayLength) / (4 * THREADBLOCK_SIZE * 8), THREADBLOCK_SIZE);
+    const uint blockCount2 = iDivUp((batchSize * arrayLength) / (4 * THREADBLOCK_SIZE), THREADBLOCK_SIZE);
     scanExclusiveShared2<<< blockCount2, THREADBLOCK_SIZE>>>(
         (uint *)d_Buf,
         (uint *)d_Dst,
         (uint *)d_Src,
-        (batchSize *arrayLength) / (4 * THREADBLOCK_SIZE * 8),
-        arrayLength / (4 * THREADBLOCK_SIZE * 8)
+        (batchSize *arrayLength) / (4 * THREADBLOCK_SIZE),
+        arrayLength / (4 * THREADBLOCK_SIZE)
     );
     getLastCudaError("scanExclusiveShared2() execution FAILED\n");
 
-    printf("ok\n");
-
-    uniformUpdate<<<(batchSize *arrayLength) / (4 * THREADBLOCK_SIZE * 8), THREADBLOCK_SIZE>>>(
+    uniformUpdate<<<(batchSize *arrayLength) / (4 * THREADBLOCK_SIZE), THREADBLOCK_SIZE>>>(
         (uint4 *)d_Dst,
         (uint *)d_Buf
     );
     getLastCudaError("uniformUpdate() execution FAILED\n");
 
     return THREADBLOCK_SIZE;
+}
+
+extern "C" size_t scanExclusiveLL(
+    uint *d_Dst,
+    uint *d_Src,
+    uint batchSize,
+    uint arrayLength
+)
+{
+    //Check power-of-two factorization
+
+  /*
+  uint log2L;
+  uint factorizationRemainder = factorRadix2(log2L, arrayLength);
+  assert(factorizationRemainder == 1);
+  */
+  assert((arrayLength%MAX_LARGE_ARRAY_SIZE) == 0);
+
+  //Check supported size range
+  assert((arrayLength >= MIN_LL_SIZE) && (arrayLength <= MAX_LL_SIZE));
+  
+  //Check total batch size limit
+  assert((batchSize * arrayLength) <= MAX_BATCH_ELEMENTS);
+  
+  scanExclusiveShared<<<(batchSize * arrayLength) / (4 * THREADBLOCK_SIZE), THREADBLOCK_SIZE>>>(
+        (uint4 *)d_Dst,
+        (uint4 *)d_Src,
+        4 * THREADBLOCK_SIZE
+  );
+  getLastCudaError("scanExclusiveShared() execution FAILED\n");
+  checkCudaErrors(cudaDeviceSynchronize());
+
+  //Now ,prefix sum per THREADBLOCK_SIZE done
+  
+  
+  //Not all threadblocks need to be packed with input data:
+  //inactive threads of highest threadblock just don't do global reads and writes
+  
+  const uint blockCount2 = iDivUp((batchSize * arrayLength) / (4 * THREADBLOCK_SIZE), THREADBLOCK_SIZE);
+  scanExclusiveShared2<<< blockCount2, THREADBLOCK_SIZE>>>(
+        (uint *)d_Buf,
+        (uint *)d_Dst,
+        (uint *)d_Src,
+        (batchSize *arrayLength) / (4 * THREADBLOCK_SIZE),
+        THREADBLOCK_SIZE
+    );
+  getLastCudaError("scanExclusiveShared2() execution FAILED\n");
+  checkCudaErrors(cudaDeviceSynchronize());
+
+
+  //prefix sum of last elements per THREADBLOCK_SIZE done
+  //this prefix sum can caluculate under only THREADBLOCK_SIZE size.
+  //so We need one more prefix sum for last elements.
+
+  uint array_temp = THREADBLOCK_SIZE;
+  for(uint i = 2; i<=THREADBLOCK_SIZE ; i <<= 1){
+    if(i >= arrayLength/(4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE)){
+      array_temp = i;
+    }
+  }
+
+  const uint blockCount3 = 1;//(batchSize * arrayLength) / (4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE);
+  scanExclusiveShared3<<< blockCount3, THREADBLOCK_SIZE>>>(
+        (uint *)e_Buf,
+        (uint *)d_Buf,
+        (uint *)d_Dst,
+        (uint *)d_Src,
+        (batchSize *arrayLength) / (4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE),
+        array_temp
+        //arrayLength / (4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE)
+    );
+  getLastCudaError("scanExclusiveShared3() execution FAILED\n");
+  checkCudaErrors(cudaDeviceSynchronize());
+
+
+  //add d_Buf to each array of d_Dst
+  uniformUpdate<<<(batchSize *arrayLength) / (4 * THREADBLOCK_SIZE ), THREADBLOCK_SIZE>>>(
+        (uint4 *)d_Dst,
+        (uint *)d_Buf
+    );
+
+  //add e_Buf to each array of d_Dst
+  checkCudaErrors(cudaDeviceSynchronize());
+
+  uniformUpdate2<<<(batchSize *arrayLength) / (4 * THREADBLOCK_SIZE ), THREADBLOCK_SIZE>>>(
+        (uint4 *)d_Dst,
+        (uint *)e_Buf
+    );
+  getLastCudaError("uniformUpdate() execution FAILED\n");
+
+  checkCudaErrors(cudaDeviceSynchronize());
+  return THREADBLOCK_SIZE;
 }

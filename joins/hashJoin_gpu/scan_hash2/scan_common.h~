@@ -13,6 +13,7 @@
 #define SCAN_COMMON_H
 
 #include <stdlib.h>
+#include <cuda.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 // Shortcut typename
@@ -54,6 +55,11 @@ extern "C" size_t scanExclusiveLL(
     uint *d_Dst,
     uint *d_Src,
     uint batchSize,
+    uint arrayLength
+);
+
+extern "C" int presum(
+    CUdeviceptr *d_Input,
     uint arrayLength
 );
 

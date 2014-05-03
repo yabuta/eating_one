@@ -1,9 +1,9 @@
 #define SZ_PAGE 4096
 #define NB_BUF  (SZ_PAGE * 16 / sizeof(TUPLE))
-#define NB_BKTENT 500000// the number of partitions
+#define NB_BKTENT 1000000// the number of partitions
 
 #define JT_SIZE 1200000000
-#define SELECTIVITY 4900000000
+#define SELECTIVITY 100000000
 #define RES_MAX 1000000
 
 #define NUM_VAL 1

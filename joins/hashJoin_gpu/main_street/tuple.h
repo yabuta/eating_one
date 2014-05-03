@@ -2,11 +2,11 @@
 #define BLOCK_SIZE_Y 1
 #define GRID_SIZE_Y 1
 #define PART_C_NUM 256   //cuda block size of hash partition count
-#define PER_TH 131072       //the number of tuple per one thread of hash partition 
+#define PER_TH 65536       //the number of tuple per one thread of hash partition 
 #define B_ROW_NUM 512      //the number of sub left tuple per one block in join and count kernel
 #define J_T_LEFT B_ROW_NUM/GRID_SIZE_Y
 #define JT_SIZE 120000000 //max result tuple size
-#define SELECTIVITY 2500000000  //val selectivity is 1/SELECTIVITY
+#define SELECTIVITY 100000000  //val selectivity is 1/SELECTIVITY
 #define RES_MAX 1000000
 
 /*500000 500000
@@ -45,6 +45,19 @@
 #define SELECTIVITY 169000000  //val selectivity is 1/SELECTIVITY
 */
 
+/*100000000 * 100000000 optimatic
+#define BLOCK_SIZE_X 1024 //cuda block size of join and count kernel 
+#define BLOCK_SIZE_Y 1
+#define GRID_SIZE_Y 1
+#define PART_C_NUM 256   //cuda block size of hash partition count
+#define PER_TH 65536       //the number of tuple per one thread of hash partition 
+#define B_ROW_NUM 512      //the number of sub left tuple per one block in join and count kernel
+#define J_T_LEFT B_ROW_NUM/GRID_SIZE_Y
+#define JT_SIZE 120000000 //max result tuple size
+#define SELECTIVITY 100000000  //val selectivity is 1/SELECTIVITY
+#define RES_MAX 1000000
+
+ */
 
 typedef struct _TUPLE {
   int key;
