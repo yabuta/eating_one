@@ -2,11 +2,11 @@
 #define BLOCK_SIZE_Y 1
 #define GRID_SIZE_Y 1
 #define PART_C_NUM 256   //cuda block size of hash partition count
-#define PER_TH 65536       //the number of tuple per one thread of hash partition 
-#define B_ROW_NUM 256      //the number of sub left tuple per one block in join and count kernel
+#define PER_TH 8192       //the number of tuple per one thread of hash partition 
+#define B_ROW_NUM 512      //the number of sub left tuple per one block in join and count kernel
 #define J_T_LEFT B_ROW_NUM/GRID_SIZE_Y
 #define JT_SIZE 120000000 //max result tuple size
-#define SELECTIVITY 169000000  //val selectivity is 1/SELECTIVITY
+#define SELECTIVITY 100000000  //val selectivity is 1/SELECTIVITY
 #define RES_MAX 1000000
 
 /*500000 500000

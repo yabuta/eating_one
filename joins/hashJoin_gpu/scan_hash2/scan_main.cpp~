@@ -10,6 +10,18 @@
  */
 
 
+/*
+yabuta's after comment
+
+this file arrange interface of scan kernel. 
+
+presum calls a suit kernel per size.
+
+part_presum calculate difference of discrete element of array.
+
+
+ */
+
 #include <cuda_runtime.h>
 
 #include <helper_cuda.h>
@@ -20,47 +32,20 @@
 
 CUdeviceptr presum(CUdeviceptr d_Input, uint arrayLength)
 {
-    printf("Starting...\n\n");
+  //printf("Starting...\n\n");
 
     StopWatchInterface  *hTimer = NULL;
-    sdkCreateTimer(&hTimer);
+    //sdkCreateTimer(&hTimer);
 
     uint N = 0;
     CUdeviceptr d_Output;
 
-    /*
-    uint *d_Input, *d_Output;
-    uint *h_Input, *h_OutputCPU, *h_OutputGPU;
-    const uint N = 2 * 64 * 1048576 ;//13 * 1048576 / 2;
-    printf("Allocating and initializing host arrays...\n");
-    h_Input     = (uint *)malloc(N * sizeof(uint));
-    h_OutputCPU = (uint *)malloc(N * sizeof(uint));
-    h_OutputGPU = (uint *)malloc(N * sizeof(uint));
-    srand(2009);
-
-    for (uint i = 0; i < N; i++)
-    {
-      h_Input[i] = 1;//rand();
-    }
-
-    printf("Allocating and initializing CUDA arrays...\n");
-    checkCudaErrors(cudaMalloc((void **)&d_Input, N * sizeof(uint)));
-    checkCudaErrors(cudaMalloc((void **)&d_Output, N * sizeof(uint)));
-    checkCudaErrors(cudaMemcpy(d_Input, h_Input, N * sizeof(uint), cudaMemcpyHostToDevice));
-    */
-
-    printf("Initializing CUDA-C scan...\n\n");
+    //printf("Initializing CUDA-C scan...\n\n");
     initScan();
-
-    int res = 1;
-    size_t szWorkgroup;
-    //const int iCycles = 5;
-
+    //size_t szWorkgroup;
 
     if(arrayLength <= MAX_SHORT_ARRAY_SIZE && arrayLength > MIN_SHORT_ARRAY_SIZE)
       {    
-        printf("*** Running GPU scan for short arrays (%d identical iterations)...\n\n", 1);
-
         for(uint i = 4; i<=MAX_SHORT_ARRAY_SIZE ; i<<1){
           if(arrayLength <= i){
             N = i;
@@ -68,44 +53,12 @@ CUdeviceptr presum(CUdeviceptr d_Input, uint arrayLength)
         }
         checkCudaErrors(cudaMalloc((void **)&d_Output, N * sizeof(uint)));
 
-    
-        printf("Running scan for %u elements (%u arrays)...\n", N , 1);
         checkCudaErrors(cudaDeviceSynchronize());
-        sdkResetTimer(&hTimer);
-        sdkStartTimer(&hTimer);
 
-        szWorkgroup = scanExclusiveShort((uint *)d_Output, (uint *)d_Input, 1, N);
+        scanExclusiveShort((uint *)d_Output, (uint *)d_Input, 1, N);
+        //szWorkgroup = scanExclusiveShort((uint *)d_Output, (uint *)d_Input, 1, N);
 
         checkCudaErrors(cudaDeviceSynchronize());
-        sdkStopTimer(&hTimer);
-        double timerValue = 1.0e-3 * sdkGetTimerValue(&hTimer);
-
-        //printf("Validating the results...\n");
-        //printf("...reading back GPU results\n");
-        //checkCudaErrors(cudaMemcpy(h_OutputGPU, d_Output, N * sizeof(uint), cudaMemcpyDeviceToHost));
-
-        /*
-        printf(" ...scanExclusiveHost()\n");
-        scanExclusiveHost(h_OutputCPU, h_Input, N / arrayLength, arrayLength);
-        */
-        // Compare GPU results with CPU results and accumulate error for this test
-        /*
-        printf(" ...comparing the results\n");
-        int localFlag = 1;
-
-        for (uint i = 0; i < N; i++)
-        {
-            if (h_OutputCPU[i] != h_OutputGPU[i])
-            {
-                localFlag = 0;
-                break;
-            }
-        }
-        */
-
-        // Log message on individual test result, then accumulate to global flag
-        //printf(" ...Results %s\n\n", (localFlag == 1) ? "Match" : "DON'T Match !!!");
-        //globalFlag = globalFlag && localFlag;
 
         // Data log
         /*
@@ -116,8 +69,6 @@ CUdeviceptr presum(CUdeviceptr d_Input, uint arrayLength)
         */
     }else if(arrayLength <= MAX_LARGE_ARRAY_SIZE)
     {
-      //printf("***Running GPU scan for large arrays (%u identical iterations)...\n\n", 1);
-
       for(uint i = MIN_LARGE_ARRAY_SIZE; i<=MAX_LARGE_ARRAY_SIZE ; i<<1){
         if(arrayLength <= i){
           N = i;
@@ -125,52 +76,13 @@ CUdeviceptr presum(CUdeviceptr d_Input, uint arrayLength)
       }
       checkCudaErrors(cudaMalloc((void **)&d_Output, N * sizeof(uint)));      
       
-      //printf("Running scan for %u elements (%u arrays)...\n", N, 1);
       checkCudaErrors(cudaDeviceSynchronize());
-      sdkResetTimer(&hTimer);
-      sdkStartTimer(&hTimer);
       
-      szWorkgroup = scanExclusiveLarge((uint *)d_Output, (uint *)d_Input, 1, N);
+      scanExclusiveLarge((uint *)d_Output, (uint *)d_Input, 1, N);
+      //szWorkgroup = scanExclusiveLarge((uint *)d_Output, (uint *)d_Input, 1, N);
       
       checkCudaErrors(cudaDeviceSynchronize());
-      sdkStopTimer(&hTimer);
-      double timerValue = 1.0e-3 * sdkGetTimerValue(&hTimer);
 
-      /*
-      printf("Validating the results...\n");
-      printf("...reading back GPU results\n");
-      checkCudaErrors(cudaMemcpy(h_OutputGPU, d_Output, N * sizeof(uint), cudaMemcpyDeviceToHost));
-
-      
-      printf("...scanExclusiveHost()\n");
-      sdkResetTimer(&hTimer);
-      sdkStartTimer(&hTimer);
-      scanExclusiveHost(h_OutputCPU, h_Input, N / arrayLength, arrayLength);
-      
-      sdkStopTimer(&hTimer);
-      double CPUtimerValue = 1.0e-3 * sdkGetTimerValue(&hTimer);
-      */
-
-      
-      // Compare GPU results with CPU results and accumulate error for this test
-      /*
-      printf(" ...comparing the results\n");
-      int localFlag = 1;
-      
-      for (uint i = 0; i < N; i++)
-        {
-          if (h_OutputCPU[i] != h_OutputGPU[i])
-            {
-              localFlag = 0;
-              break;
-            }
-        }
-      
-      // Log message on individual test result, then accumulate to global flag
-      printf(" ...Results %s\n\n", (localFlag == 1) ? "Match" : "DON'T Match !!!");
-      globalFlag = globalFlag && localFlag;
-      */
-      // Data log
       /*
       printf("\n");
       printf("scan-Large, Throughput = %.4f MElements/s, Time = %.5f s, Size = %u Elements, NumDevsUsed = %u, Workgroup = %u\n",
@@ -179,59 +91,24 @@ CUdeviceptr presum(CUdeviceptr d_Input, uint arrayLength)
       */
     }else if(arrayLength <= MAX_LL_SIZE)
       {
-        //printf("***Running GPU scan for LL arrays (%u identical iterations)...\n\n", arrayLength);
-
+        /*
         for(uint i = MIN_LL_SIZE; i<=MAX_LL_SIZE ; i<<=1){
           if(arrayLength <= i){
             N = i;
           }
         }
+        */
+
         N = MAX_LARGE_ARRAY_SIZE * ( arrayLength/MAX_LARGE_ARRAY_SIZE + 1 );
         checkCudaErrors(cudaMalloc((void **)&d_Output, N * sizeof(uint)));      
         
-        //printf("Running scan for %u elements (%u arrays)...\n", arrayLength, 1);
         checkCudaErrors(cudaDeviceSynchronize());
-        sdkResetTimer(&hTimer);
-        sdkStartTimer(&hTimer);
-        szWorkgroup = scanExclusiveLL((uint *)d_Output, (uint *)d_Input, 1, N);
+
+        scanExclusiveLL((uint *)d_Output, (uint *)d_Input, 1, N);
+        //szWorkgroup = scanExclusiveLL((uint *)d_Output, (uint *)d_Input, 1, N);
         
         checkCudaErrors(cudaDeviceSynchronize());
-        sdkStopTimer(&hTimer);
-        double timerValue = 1.0e-3 * sdkGetTimerValue(&hTimer);
 
-        /*
-        printf("Validating the results...\n");
-        printf("...reading back GPU results\n");
-        checkCudaErrors(cudaMemcpy(h_OutputGPU, d_Output, N * sizeof(uint), cudaMemcpyDeviceToHost));
-
-        printf("...scanExclusiveHost()\n");
-        sdkResetTimer(&hTimer);
-        sdkStartTimer(&hTimer);
-
-        scanExclusiveHost(h_OutputCPU, h_Input, N / arrayLength, arrayLength);
-
-        sdkStopTimer(&hTimer);
-        double CPUtimerValue = 1.0e-3 * sdkGetTimerValue(&hTimer);
-        */
-
-        // Compare GPU results with CPU results and accumulate error for this test
-        /*
-        printf(" ...comparing the results\n");
-        int localFlag = 1;
-
-        for (uint i = 0; i < N; i++)
-        {
-            if (h_OutputCPU[i] != h_OutputGPU[i])
-            {
-                localFlag = 0;
-                break;
-            }
-        }
-
-        // Log message on individual test result, then accumulate to global flag
-        printf(" ...Results %s\n\n", (localFlag == 1) ? "Match" : "DON'T Match !!!");
-        globalFlag = globalFlag && localFlag;
-        */
         // Data log
         /*
         printf("\n");
@@ -240,18 +117,61 @@ CUdeviceptr presum(CUdeviceptr d_Input, uint arrayLength)
         printf("\n");
         */
       }else{
-      d_Output = NULL;
+      cuMemFree(d_Output);
+      return NULL;      
     }
 
-    printf("Shutting down...\n");
     closeScan();
-    //checkCudaErrors(cudaFree(d_Output));
-    sdkDeleteTimer(&hTimer);
 
-    cudaDeviceReset();
-    // pass or fail (cumulative... all tests in the loop)
-    if(d_Output){
-      cuMemFree(d_Input);
-    }
+    cuMemFree(d_Input);
+    //*d_input = d_Output;
+
     return d_Output;
+}
+
+
+/**
+part_presum
+  first: CUdeviceptr
+  second: the size of a space
+  third: the scaned array size
+  forth: table size
+
+ **/
+
+CUdeviceptr diff_part(CUdeviceptr d_Input , uint tnum , uint arrayLength, uint size){
+
+  
+  CUdeviceptr d_Output;
+  
+  checkCudaErrors(cudaMalloc((void **)&d_Output, arrayLength * sizeof(uint)));            
+  checkCudaErrors(cudaDeviceSynchronize());
+  
+  diff_Part((uint *)d_Output, (uint *)d_Input, tnum, arrayLength,size);
+  //szWorkgroup = scanExclusiveLarge((uint *)d_Output, (uint *)d_Input, pnum, N);
+  checkCudaErrors(cudaDeviceSynchronize());
+  
+  //cudaDeviceReset();
+  // pass or fail (cumulative... all tests in the loop)
+
+  return d_Output;
+
+}
+
+CUdeviceptr trasport(CUdeviceptr d_Input , uint tnum , uint arrayLength, uint size){
+
+  CUdeviceptr d_Output;
+  
+  checkCudaErrors(cudaMalloc((void **)&d_Output, (arrayLength+1) * sizeof(uint)));
+  checkCudaErrors(cudaDeviceSynchronize());
+  
+  transport_gpu((uint *)d_Output, (uint *)d_Input, tnum, arrayLength,size);
+  //szWorkgroup = scanExclusiveLarge((uint *)d_Output, (uint *)d_Input, pnum, N);
+  checkCudaErrors(cudaDeviceSynchronize());
+
+  // pass or fail (cumulative... all tests in the loop)
+
+  return d_Output;
+
+
 }

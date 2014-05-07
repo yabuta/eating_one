@@ -17,6 +17,8 @@
 //All three kernels run 512 threads per workgroup
 //Must be a power of two
 #define THREADBLOCK_SIZE 512
+#define LOOP_PERTHREAD 16
+#define LOOP_PERTHREAD2 16
 
 ////////////////////////////////////////////////////////////////////////////////
 // Basic ccan codelets
@@ -25,6 +27,7 @@
 //Allocate 2 * 'size' local memory, initialize the first half
 //with 'size' zeros avoiding if(pos >= offset) condition evaluation
 //and saving instructions
+
 inline __device__ uint scan1Inclusive(uint idata, volatile uint *s_Data, uint size)
 {
     uint pos = 2 * threadIdx.x - (threadIdx.x & (size - 1));
@@ -214,6 +217,59 @@ __global__ void uniformUpdate2(
     data4.w += buf;
     d_Data[pos] = data4;
 }
+
+__global__ void diff_kernel(
+    uint *d_Data,
+    uint *d_Src,
+    uint pnum,
+    uint length,
+    uint size
+)
+{
+
+  uint pos = blockIdx.x * blockDim.x + threadIdx.x;
+  uint p_n = pnum;
+  uint len = length;
+  uint POS = pos * LOOP_PERTHREAD;
+  uint i;
+
+  for(i = POS ; (i < POS + LOOP_PERTHREAD)&&(i < len-1); i++){      
+    d_Data[i] = d_Src[(i+1)*p_n] - d_Src[i * p_n];          
+  }
+
+  if(i == (len-1)){
+    d_Data[len-1] = size - d_Src[(len-1)*p_n];
+  }
+
+}
+
+
+__global__ void transport_kernel(
+    uint *d_Data,
+    uint *d_Src,
+    uint pnum,
+    uint length,
+    uint size
+)
+{
+
+  uint pos = blockIdx.x * blockDim.x + threadIdx.x;
+  uint p_n = pnum;
+  uint len = length;
+  uint POS = pos * LOOP_PERTHREAD2;
+  uint i;
+
+  for(i = POS ; (i < POS + LOOP_PERTHREAD2)&&(i < len); i++){      
+    d_Data[i] = d_Src[i * p_n];
+  }
+
+  if(i == len){
+    d_Data[len] = size;
+  }
+
+}
+
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Interface function
@@ -431,4 +487,57 @@ extern "C" size_t scanExclusiveLL(
 
     checkCudaErrors(cudaDeviceSynchronize());
     return THREADBLOCK_SIZE;
+}
+
+
+extern "C" size_t diff_Part(
+    uint *d_Dst,
+    uint *d_Src,
+    uint diff,
+    uint arrayLength,
+    uint size
+)
+{
+
+    //Check total batch size limit
+    //assert((arrayLength) <= MAX_BATCH_ELEMENTS);
+
+    const uint blockCount = iDivUp(arrayLength , LOOP_PERTHREAD*THREADBLOCK_SIZE);
+    diff_kernel<<<blockCount, THREADBLOCK_SIZE>>>(
+        d_Dst,
+        d_Src,
+        diff,
+        arrayLength,
+        size
+    );
+    getLastCudaError("diff_Part() execution FAILED\n");
+    checkCudaErrors(cudaDeviceSynchronize());
+
+    return THREADBLOCK_SIZE;
+}
+
+
+extern "C" void transport_gpu(
+    uint *d_Dst,
+    uint *d_Src,
+    uint diff,
+    uint arrayLength,
+    uint size
+)
+{
+
+    //Check total batch size limit
+    //assert((arrayLength) <= MAX_BATCH_ELEMENTS);
+
+    const uint blockCount = iDivUp(arrayLength , LOOP_PERTHREAD2*THREADBLOCK_SIZE);
+    transport_kernel<<<blockCount, THREADBLOCK_SIZE>>>(
+        d_Dst,
+        d_Src,
+        diff,
+        arrayLength,
+        size
+    );
+    getLastCudaError("diff_Part() execution FAILED\n");
+    checkCudaErrors(cudaDeviceSynchronize());
+
 }

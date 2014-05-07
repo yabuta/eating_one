@@ -58,10 +58,44 @@ extern "C" size_t scanExclusiveLL(
     uint arrayLength
 );
 
+extern "C" size_t diff_Part(
+    uint *d_Dst,
+    uint *d_Src,
+    uint diff,
+    uint arrayLength,
+    uint size
+);
+
+extern "C" void transport_gpu(
+    uint *d_Dst,
+    uint *d_Src,
+    uint diff,
+    uint arrayLength,
+    uint size
+);
+
+
 extern "C" CUdeviceptr presum(
     CUdeviceptr d_Input,
     uint arrayLength
 );
+
+extern "C" CUdeviceptr diff_part(
+    CUdeviceptr d_Input,
+    uint tnum,
+    uint arrayLength,
+    uint size
+);
+
+extern "C" CUdeviceptr transport(
+    CUdeviceptr d_Input,
+    uint tnum,
+    uint arrayLength,
+    uint size
+);
+
+
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Reference CPU scan

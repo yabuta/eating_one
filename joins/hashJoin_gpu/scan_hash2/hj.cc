@@ -178,7 +178,7 @@ join()
   CUfunction function,c_function,cp_function,p_function;
   CUmodule module,c_module,p_module,cp_module;
   CUdeviceptr lt_dev, rt_dev, jt_dev,count_dev,lL_dev,rL_dev;
-  CUdeviceptr plt_dev,prt_dev,l_p_dev,r_p_dev,radix_dev;
+  CUdeviceptr plt_dev,prt_dev,l_p_dev,r_p_dev,radix_dev,p_sum_dev;
   unsigned int block_x, block_y, grid_x, grid_y,p_grid_x,p_block_x;
   char fname[256];
   const char *path=".";
@@ -393,12 +393,6 @@ join()
   }
   gettimeofday(&time_upload_f, NULL);  
 
-  res = cuMemcpyHtoD(lL_dev, lL, p_num * t_num * sizeof(uint));
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD (lL) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-
   res = cuMemcpyHtoD(plt_dev, plt, left * sizeof(TUPLE));
   if (res != CUDA_SUCCESS) {
     printf("cuMemcpyHtoD (plt) failed: res = %lu\n", (unsigned long)res);
@@ -430,6 +424,11 @@ join()
     p_grid_x++;
 
 
+  res = cuMemcpyHtoD(lL_dev, lL, p_num * t_num * sizeof(uint));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemcpyHtoD (lL) failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
 
   gettimeofday(&time_lhck_s, NULL);
 
@@ -481,8 +480,6 @@ join()
 
   /**************************** prefix sum *************************************/
 
-  lL[0] = 0;
-
   //thrust::inclusive_scan(lL,lL + t_num*p_num,lL);
 
   /*
@@ -491,39 +488,49 @@ join()
   }
   */
 
-  //int *lL_temp = (int *)calloc(p_num*t_num,sizeof(int));
 
   if(!(lL_dev = presum(lL_dev,t_num*p_num))){
-    printf("presum error\n");
+    printf("lL presum error\n");
     exit(1);
   }
 
+  /*
   res = cuMemcpyDtoH(lL,lL_dev,t_num * p_num * sizeof(uint)); 
   if(res != CUDA_SUCCESS){
     printf("cuMemcpyDtoH (lL2) failed: res = %lu\n", (unsigned long)res);
     exit(1);    
   }
-
-  /*
-  for(uint i = 0; i<t_num*p_num;i++){
-    if(lL[i] != lL_temp[i]){
-      printf("scan fail : lL[%d] = %d\tlL_temp[%d] = %d",i,lL[i],i,lL_temp[i]);
-      break;
-    }
-  }
   */
-
 
   /********************************************************************/
 
   p_sum = (uint *)calloc(p_num,sizeof(uint));
+  //uint *p_sum_temp = (uint *)calloc(p_num,sizeof(uint));
 
-  p_sum[0] = lL[t_num];
-  for(uint i = 1; i<p_num-1 ;i++){
-    p_sum[i] = lL[t_num * (i+1)] - lL[t_num * i];
+  if(!(p_sum_dev = diff_part(lL_dev,t_num,p_num,left))){
+    printf("p_sum prefix sum error.\n");
+    exit(1);
   }
-  p_sum[p_num-1] = left - lL[t_num*(p_num-1)];
 
+  res = cuMemcpyDtoH(p_sum,p_sum_dev,p_num * sizeof(uint)); 
+  if(res != CUDA_SUCCESS){
+    printf("cuMemcpyDtoH (p_sum) failed: res = %lu\n", (unsigned long)res);
+    exit(1);    
+  }
+
+  /*
+  for(uint i = 0; i<p_num-1 ;i++){
+    p_sum_temp[i] = lL[t_num * (i+1)] - lL[t_num * i];
+  }
+  p_sum_temp[p_num-1] = left - lL[t_num*(p_num-1)];
+
+  for(uint i = 0; i<p_num ; i++){
+    if(p_sum[i] != p_sum_temp[i]){
+      printf("error line number [%d]\tgpu value = %d cpu value = %d\n",i,p_sum[i],p_sum_temp[i]);
+    }
+  }
+  exit(1);
+  */
 
   /***********************************************
     resizing partition 
@@ -549,16 +556,12 @@ join()
 
 
   /****************presum*****************/
-
-  /*
   p_loc[0] = 0;
   for(int i=1 ; i<p_num ; i++){
     p_loc[i] = p_loc[i-1] + p_sum[i-1];
-  }
-  */
-  
+  }  
 
-  thrust::exclusive_scan(p_sum,p_sum + p_num,p_loc);
+  //thrust::exclusive_scan(p_sum,p_sum + p_num,p_loc);
 
   /***************************************/
 
@@ -592,14 +595,6 @@ join()
    end of resizing partition
 
   ***********************************/
-
-  /*
-  res = cuMemcpyHtoD(lL_dev, lL, p_num * t_num * sizeof(int));
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD (lL) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-  */
 
   gettimeofday(&time_hkernel_s, NULL);
 
@@ -636,19 +631,11 @@ join()
 
   res = cuCtxSynchronize();
   if(res != CUDA_SUCCESS) {
-    printf("cuCtxSynchronize() failed: res = %lu\n", (unsigned long int)res);
+    printf("left partition cuCtxSynchronize() failed: res = %lu\n", (unsigned long int)res);
     exit(1);
   }  
 
   gettimeofday(&time_hkernel_f, NULL);  
-
-  /*
-  res = cuMemcpyDtoH(plt, plt_dev, left * sizeof(TUPLE));
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemcpyDtoH (plt) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-  */
 
 
   /**************************************************************/
@@ -680,7 +667,6 @@ join()
     exit(1);
   }
 
-
   rL = (uint *)calloc(p_num * t_num,sizeof(uint));
   gettimeofday(&temp_f, NULL);
 
@@ -696,10 +682,11 @@ join()
     printf("cuMemcpyHtoD (rL) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
+
   gettimeofday(&temp_f, NULL);
 
   temper = (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
-  printf("Diff: %ld us (%ld ms)\n", temper, temper/1000);
+  printf("rL send time: %ld us (%ld ms)\n", temper, temper/1000);
 
 
   p_block_x = t_num < PART_C_NUM ? t_num : PART_C_NUM;
@@ -748,30 +735,10 @@ join()
 
   gettimeofday(&time_rhck_f, NULL);
 
-  gettimeofday(&temp_s, NULL);
-
-
-  /*
-  res = cuMemcpyDtoH(&(rL[1]), rL_dev, (t_num * p_num - 1) * sizeof(int));
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemcpyDtoH (rL) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-  */
-
-
-  gettimeofday(&temp_f, NULL);
-
-
-  temper = (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
-  printf("Diff: %ld us (%ld ms)\n", temper, temper/1000);
-
 
   gettimeofday(&temp_s, NULL);
 
   /**************************** prefix sum *************************************/
-
-  //thrust::exclusive_scan(rL,rL + t_num*p_num,rL);
 
   /*
   rL[0] = 0;
@@ -787,11 +754,13 @@ join()
     exit(1);
   }
 
+  /*
   res = cuMemcpyDtoH(rL,rL_dev,t_num * p_num * sizeof(uint)); 
   if(res != CUDA_SUCCESS){
     printf("cuMemcpyDtoH (rL2) failed: res = %lu\n", (unsigned long)res);
     exit(1);    
   }
+  */
 
   /********************************************************************/
 
@@ -802,12 +771,18 @@ join()
 
   gettimeofday(&temp_s, NULL);
 
-  uint *r_p;
+  uint *r_p =  (uint *)calloc(p_num+1,sizeof(uint));
   uint rdiff;
-  r_p = (uint *)calloc(p_num+1,sizeof(uint));
 
-  for(uint i = 0; i<p_num ;i++){
-    r_p[i] = rL[t_num * i];
+  r_p_dev = transport(rL_dev,t_num,p_num,right);
+
+  res = cuMemcpyDtoH(r_p,r_p_dev,(p_num+1) * sizeof(uint)); 
+  if(res != CUDA_SUCCESS){
+    printf("cuMemcpyDtoH (r_p) failed: res = %lu\n", (unsigned long)res);
+    exit(1);    
+  }
+
+  for(uint i = 0; i<p_num+1 ;i++){
     if(i==0){
       r_p_max = r_p[i];
     }else{
@@ -817,33 +792,10 @@ join()
       }
     }
   }
-  r_p[p_num] = right;
-
-  rdiff = r_p[p_num] - r_p[p_num-1];
-  if(rdiff > r_p_max){
-    r_p_max = rdiff;
-
-  }
-
-
 
   gettimeofday(&temp_f, NULL);
   tempest = (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
   printf("sum prefix Diff: %ld us (%ld ms)\n", tempest, tempest/1000);
-
-  gettimeofday(&temp_s, NULL);
-
-  /*
-  res = cuMemcpyHtoD(rL_dev, rL, p_num * t_num * sizeof(int));
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD (rL) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-  */
-
-  gettimeofday(&temp_f, NULL);
-  temper = (temp_f.tv_sec - temp_s.tv_sec) * 1000 * 1000 + (temp_f.tv_usec - temp_s.tv_usec);
-  printf("Diff: %ld us (%ld ms)\n", temper, temper/1000);
 
   gettimeofday(&time_rhk_s, NULL);
 
@@ -856,6 +808,7 @@ join()
     (void *)&t_num,
     (void *)&right
       
+
   };
 
   //グリッド・ブロックの指定、変数の指定、カーネルの実行を行う
@@ -954,12 +907,13 @@ join()
     exit(1);
   }
 
+  /*
   res = cuMemAlloc(&r_p_dev, (p_num+1) * sizeof(uint));
   if (res != CUDA_SUCCESS) {
     printf("cuMemAlloc (r_p) failed\n");
     exit(1);
   }
-
+  */
 
   count = (uint *)calloc(grid_x*block_x*grid_y+1,sizeof(uint));
 
@@ -981,11 +935,13 @@ join()
     exit(1);
   }
 
+  /*
   res = cuMemcpyHtoD(r_p_dev, r_p, (p_num+1) * sizeof(uint));
   if (res != CUDA_SUCCESS) {
     printf("cuMemcpyHtoD (count) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
+  */
 
   /*
     lt_dev       left table
@@ -1071,6 +1027,8 @@ join()
     exit(1);
   }
 
+
+  //getMaxValue(count_dev);
   res = cuMemcpyDtoH(count,count_dev,grid_x*block_x*grid_y * sizeof(uint)); 
   if(res != CUDA_SUCCESS){
     printf("cuMemcpyDtoH (count) failed: res = %lu\n", (unsigned long)res);
