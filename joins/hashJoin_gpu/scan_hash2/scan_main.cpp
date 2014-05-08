@@ -27,8 +27,13 @@ part_presum calculate difference of discrete element of array.
 #include <helper_cuda.h>
 #include <helper_functions.h>
 #include <cuda.h>
-#include <cuda_runtime.h>
+//#include <cuda_runtime.h>
 #include "scan_common.h"
+
+static uint iDivUp(uint dividend, uint divisor)
+{
+    return ((dividend % divisor) == 0) ? (dividend / divisor) : (dividend / divisor + 1);
+}
 
 CUdeviceptr presum(CUdeviceptr d_Input, uint arrayLength)
 {
@@ -99,7 +104,8 @@ CUdeviceptr presum(CUdeviceptr d_Input, uint arrayLength)
         }
         */
 
-        N = MAX_LARGE_ARRAY_SIZE * ( arrayLength/MAX_LARGE_ARRAY_SIZE + 1 );
+        N = MAX_LARGE_ARRAY_SIZE * iDivUp(arrayLength,MAX_LARGE_ARRAY_SIZE);
+        printf("presum memory value = %d\n",N);
         checkCudaErrors(cudaMalloc((void **)&d_Output, N * sizeof(uint)));      
         
         checkCudaErrors(cudaDeviceSynchronize());

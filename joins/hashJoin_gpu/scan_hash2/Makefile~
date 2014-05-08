@@ -91,13 +91,16 @@ endif
 INCLUDES      := -I$(CUDA_INC_PATH) -I. -I/usr/local/cuda/samples/6_Advanced/ -I/usr/local/cuda/samples/common/inc
 LDFLAGS       += $(LIBPATH_OPENGL)
 
-all: hj.cc join_gpu.cu partitioning.cu scan.o
+all: hj.cc join_gpu.cu partitioning.cu scan.o scan_main.o
 	$(NVCC) -o join_gpu.cubin join_gpu.cu
 	$(NVCC) -o partitioning.cubin partitioning.cu
-	gcc $(CFLAGS) -o $(TARGET) hj.cc scan.o $(LIBS) $(LDFLAGS) $(EXTRA_LDLAGS)
+	gcc $(CFLAGS) -o $(TARGET) hj.cc scan.o scan_main.o $(LIBS) $(LDFLAGS) $(EXTRA_LDLAGS)
 
 scan.o:	scan.cu scan_common.h
 	$(MNVCC) $(NVCCFLAGS) $(EXTRA_NVCCFLAGS) $(GENCODE_FLAGS) $(INCLUDES) -o $@ -c $<
+
+scan_main.o:scan_main.cpp scan_common.h
+	$(GCC) $(CCFLAGS) $(EXTRA_CCFLAGS) $(INCLUDES) -o $@ -c $<
 
 
 clean:

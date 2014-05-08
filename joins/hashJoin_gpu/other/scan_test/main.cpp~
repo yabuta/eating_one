@@ -174,7 +174,7 @@ int main(int argc, char **argv)
     for (uint arrayLength = MIN_LL_SIZE; arrayLength <= MAX_LL_SIZE; arrayLength <<= 1)
     {
 
-      //arrayLength = 3 * MAX_LARGE_ARRAY_SIZE;//MAX_LL_SIZE;
+      arrayLength = 27 * MAX_LARGE_ARRAY_SIZE;//MAX_LL_SIZE;
       uint N2 = arrayLength;
 
       printf("Running scan for %u elements (%u arrays)...\n", arrayLength, N2 / arrayLength);
@@ -223,7 +223,7 @@ int main(int argc, char **argv)
       globalFlag = globalFlag && localFlag;
       
       // Data log
-      if (arrayLength == MAX_LL_SIZE)
+      if (true)//(arrayLength == MAX_LL_SIZE)
         {
           printf("\n");
           printf("scan-Large, Throughput = %.4f MElements/s, Time = %.5f s, Size = %u Elements, NumDevsUsed = %u, Workgroup = %u\n",
@@ -234,6 +234,7 @@ int main(int argc, char **argv)
           
           
         }
+      break;
     }
 
 

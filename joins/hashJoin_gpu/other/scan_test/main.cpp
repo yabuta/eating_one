@@ -174,8 +174,8 @@ int main(int argc, char **argv)
     for (uint arrayLength = MIN_LL_SIZE; arrayLength <= MAX_LL_SIZE; arrayLength <<= 1)
     {
 
-      arrayLength = 27 * MAX_LARGE_ARRAY_SIZE;//MAX_LL_SIZE;
-      uint N2 = arrayLength;
+      //arrayLength = 27 * MAX_LARGE_ARRAY_SIZE;//MAX_LL_SIZE;
+      uint N2 = N;
 
       printf("Running scan for %u elements (%u arrays)...\n", arrayLength, N2 / arrayLength);
       checkCudaErrors(cudaDeviceSynchronize());

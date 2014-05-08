@@ -530,7 +530,7 @@ extern "C" void transport_gpu(
     //assert((arrayLength) <= MAX_BATCH_ELEMENTS);
 
     const uint blockCount = iDivUp(arrayLength , LOOP_PERTHREAD2*THREADBLOCK_SIZE);
-    diff_kernel<<<blockCount, THREADBLOCK_SIZE>>>(
+    transport_kernel<<<blockCount, THREADBLOCK_SIZE>>>(
         d_Dst,
         d_Src,
         diff,

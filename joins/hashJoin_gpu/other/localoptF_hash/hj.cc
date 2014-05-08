@@ -524,15 +524,13 @@ join()
 
   /****************presum*****************/
 
-  /*
   p_loc[0] = 0;
   for(int i=1 ; i<p_num ; i++){
     p_loc[i] = p_loc[i-1] + p_sum[i-1];
   }
-  */
   
 
-  thrust::exclusive_scan(p_sum,p_sum + p_num,p_loc);
+  //thrust::exclusive_scan(p_sum,p_sum + p_num,p_loc);
 
   /***************************************/
 

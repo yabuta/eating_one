@@ -493,7 +493,7 @@ join()
   p_sum = (int *)calloc(p_num,sizeof(int));
 
   //p_sum[0] = lL[t_num];
-  for(int i = 0; i<p_num-1 ;i++){
+  for(uint i = 0; i<p_num-1 ;i++){
     p_sum[i] = lL[t_num * (i+1)] - lL[t_num * i];
   }
   p_sum[p_num-1] = left - lL[t_num*(p_num-1)];
