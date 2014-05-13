@@ -35,11 +35,11 @@ static uint iDivUp(uint dividend, uint divisor)
     return ((dividend % divisor) == 0) ? (dividend / divisor) : (dividend / divisor + 1);
 }
 
-CUdeviceptr presum(CUdeviceptr d_Input, uint arrayLength)
+CUdeviceptr presum(CUdeviceptr *d_Input, uint arrayLength)
 {
   //printf("Starting...\n\n");
 
-    StopWatchInterface  *hTimer = NULL;
+  //StopWatchInterface  *hTimer = NULL;
     //sdkCreateTimer(&hTimer);
 
     uint N = 0;
@@ -51,7 +51,7 @@ CUdeviceptr presum(CUdeviceptr d_Input, uint arrayLength)
 
     if(arrayLength <= MAX_SHORT_ARRAY_SIZE && arrayLength > MIN_SHORT_ARRAY_SIZE)
       {    
-        for(uint i = 4; i<=MAX_SHORT_ARRAY_SIZE ; i<<1){
+        for(uint i = 4; i<=MAX_SHORT_ARRAY_SIZE ; i<<=1){
           if(arrayLength <= i){
             N = i;
           }
@@ -60,7 +60,7 @@ CUdeviceptr presum(CUdeviceptr d_Input, uint arrayLength)
 
         checkCudaErrors(cudaDeviceSynchronize());
 
-        scanExclusiveShort((uint *)d_Output, (uint *)d_Input, 1, N);
+        scanExclusiveShort((uint *)d_Output, (uint *)(*d_Input), 1, N);
         //szWorkgroup = scanExclusiveShort((uint *)d_Output, (uint *)d_Input, 1, N);
 
         checkCudaErrors(cudaDeviceSynchronize());
@@ -74,16 +74,18 @@ CUdeviceptr presum(CUdeviceptr d_Input, uint arrayLength)
         */
     }else if(arrayLength <= MAX_LARGE_ARRAY_SIZE)
     {
-      for(uint i = MIN_LARGE_ARRAY_SIZE; i<=MAX_LARGE_ARRAY_SIZE ; i<<1){
+
+      for(uint i = MIN_LARGE_ARRAY_SIZE; i<=MAX_LARGE_ARRAY_SIZE ; i<<=1){
         if(arrayLength <= i){
           N = i;
         }
       }
+
       checkCudaErrors(cudaMalloc((void **)&d_Output, N * sizeof(uint)));      
       
       checkCudaErrors(cudaDeviceSynchronize());
-      
-      scanExclusiveLarge((uint *)d_Output, (uint *)d_Input, 1, N);
+
+      scanExclusiveLarge((uint *)d_Output, (uint *)(*d_Input), 1, N);
       //szWorkgroup = scanExclusiveLarge((uint *)d_Output, (uint *)d_Input, 1, N);
       
       checkCudaErrors(cudaDeviceSynchronize());
@@ -96,21 +98,15 @@ CUdeviceptr presum(CUdeviceptr d_Input, uint arrayLength)
       */
     }else if(arrayLength <= MAX_LL_SIZE)
       {
-        /*
-        for(uint i = MIN_LL_SIZE; i<=MAX_LL_SIZE ; i<<=1){
-          if(arrayLength <= i){
-            N = i;
-          }
-        }
-        */
+
 
         N = MAX_LARGE_ARRAY_SIZE * iDivUp(arrayLength,MAX_LARGE_ARRAY_SIZE);
-        printf("presum memory value = %d\n",N);
+        //printf("presum memory value = %d\n",N);
         checkCudaErrors(cudaMalloc((void **)&d_Output, N * sizeof(uint)));      
         
         checkCudaErrors(cudaDeviceSynchronize());
 
-        scanExclusiveLL((uint *)d_Output, (uint *)d_Input, 1, N);
+        scanExclusiveLL((uint *)d_Output, (uint *)(*d_Input), 1, N);
         //szWorkgroup = scanExclusiveLL((uint *)d_Output, (uint *)d_Input, 1, N);
         
         checkCudaErrors(cudaDeviceSynchronize());
@@ -129,8 +125,8 @@ CUdeviceptr presum(CUdeviceptr d_Input, uint arrayLength)
 
     closeScan();
 
-    cuMemFree(d_Input);
-    //*d_input = d_Output;
+    cuMemFree(*d_Input);
+    *d_Input = d_Output;
 
     return d_Output;
 }
@@ -158,7 +154,7 @@ CUdeviceptr diff_part(CUdeviceptr d_Input , uint tnum , uint arrayLength, uint s
   checkCudaErrors(cudaDeviceSynchronize());
   
   //cudaDeviceReset();
-  // pass or fail (cumulative... all tests in the loop)
+  // pass or fail (cumulative... all tests in the loop)  
 
   return d_Output;
 

@@ -76,7 +76,7 @@ extern "C" void transport_gpu(
 
 
 extern "C" CUdeviceptr presum(
-    CUdeviceptr d_Input,
+    CUdeviceptr *d_Input,
     uint arrayLength
 );
 

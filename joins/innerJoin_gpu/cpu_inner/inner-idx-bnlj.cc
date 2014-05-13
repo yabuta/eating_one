@@ -104,7 +104,6 @@ main(int argc,char *argv[])
     printf("left=%d:right=%d\n",left,right);
   }
 
-  gettimeofday(&begin, NULL);
 
   createTuple();
 
@@ -145,6 +144,7 @@ main(int argc,char *argv[])
 
   // join
   //gettimeofday(&begin, NULL);
+  gettimeofday(&begin, NULL);
 
   for (int j = 0; j < right; j++) {
     int hash = rt[j].val % NB_BUCKET;

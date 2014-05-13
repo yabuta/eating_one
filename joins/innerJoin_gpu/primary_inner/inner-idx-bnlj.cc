@@ -278,9 +278,10 @@ void join(){
 
   createTuple();
 
-  gettimeofday(&begin, NULL);
-  createIndex();
   //gettimeofday(&begin, NULL);
+
+  createIndex();
+  gettimeofday(&begin, NULL);
   /****************************************************************/
 
 

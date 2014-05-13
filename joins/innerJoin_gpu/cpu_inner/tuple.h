@@ -28,4 +28,4 @@ typedef struct _BUCKET {
 
 } BUCKET;
 
-#define NB_BUCKET 1310720
+#define NB_BUCKET 1048576
