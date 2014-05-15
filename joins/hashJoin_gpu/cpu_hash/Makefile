@@ -20,3 +20,5 @@ $(T1): $(O1) tuple.h
 
 clean:
 	rm -f *~ *.o *.exe *.stackdump hash-part-*
+
+hj.o:tuple.h

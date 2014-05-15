@@ -48,7 +48,7 @@ static void getTuple(TUPLE *p,int n)
 
   p->key = getTupleId();
   for(uint i=0; i<NUM_VAL; i++){
-    p->val = n; // selectivity = 0.01 or to be 1 million tuple of jt
+    p->val = n; 
   }
 
 }
@@ -67,7 +67,7 @@ void createTuple()
   used = (uint *)calloc(SELECTIVITY,sizeof(uint));
 
   for (int i = 0; i < right; i++) {
-    if(i < RES_MAX){
+    if(i < right * MATCH_RATE){
       uint temp = rand()%SELECTIVITY;
       while(used[temp] == 1) temp = rand()%SELECTIVITY;
       used[temp] = 1;
@@ -80,7 +80,7 @@ void createTuple()
   free(used);
 
   for (int i = 0; i < left; i++) {
-    if(i < RES_MAX){
+    if(i < right * MATCH_RATE){
       getTuple(&(lt[i]),rt[i].val);
     }else{
       getTuple(&(lt[i]), 2 * SELECTIVITY + rand()%SELECTIVITY); 
