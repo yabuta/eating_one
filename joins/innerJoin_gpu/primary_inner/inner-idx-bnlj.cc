@@ -9,8 +9,11 @@
 #include <time.h>
 #include <sys/time.h>
 #include <cuda.h>
-#include <thrust/scan.h>
+#include <cuda_runtime.h>
+#include <helper_cuda.h>
+#include <helper_functions.h>
 #include "debug.h"
+#include "scan_common.h"
 #include "tuple.h"
 
 BUCKET *Bucket;
@@ -57,6 +60,8 @@ void createTuple()
   }
 
   srand((unsigned)time(NULL));
+  uint *used;
+  used = (uint *)calloc(SELECTIVITY,sizeof(uint));
 
   for (int i = 0; i < right; i++) {
     if(&(rt[i])==NULL){
@@ -68,10 +73,16 @@ void createTuple()
     memset(&(rt[i]),0,sizeof(TUPLE));
     rt[i].key = getTupleId();
 
-    for(int j = 0;j<NUM_VAL;j++){
-      rt[i].val = rand()%SELECTIVITY; // selectivity = 1.0
-      //rt[i].val = 1; // selectivity = 1.0
+
+    if(i < right*MATCH_RATE){
+      uint temp = rand()%SELECTIVITY;
+      while(used[temp] == 1) temp = rand()%SELECTIVITY;
+      used[temp] = 1;
+      rt[i].val = temp; // selectivity = 1.0
+    }else{
+      rt[i].val = SELECTIVITY + rand()%SELECTIVITY;
     }
+
 
   }
 
@@ -96,11 +107,12 @@ void createTuple()
     memset(&(lt[i]),0,sizeof(TUPLE));    
     lt[i].key = getTupleId();
 
-    for(int j = 0; j < NUM_VAL;j++){
-      lt[i].val = rand()%SELECTIVITY; // selectivity = 1.0
-      //lt[i].val = 1; // selectivity = 1.0
-    }
 
+    if(i < right * MATCH_RATE){
+      lt[i].val = rt[i].val; // selectivity = 1.0
+    }else{
+      lt[i].val = 2 * SELECTIVITY + rand()%SELECTIVITY;
+    }
   }
   
   /*********************************************************************************/
@@ -206,14 +218,15 @@ void join(){
   CUfunction function,c_function;
   CUmodule module,c_module;
   CUdeviceptr lt_dev, rt_dev, jt_dev,count_dev, pre_dev, bucket_dev, buckArray_dev ,idxcount_dev;
-  CUdeviceptr ltn_dev, rtn_dev;
+  CUdeviceptr ltn_dev, rtn_dev, jt_size_dev;
   unsigned int block_x, block_y, grid_x, grid_y;
   char fname[256];
   const char *path=".";
   struct timeval begin, end;
   struct timeval tv_cal_s, tv_cal_f,time_join_s,time_join_f,time_upload_s,time_upload_f,time_download_s,time_download_f;
-  struct timeval time_count_s,time_count_f,time_alloc_s,time_alloc_f,time_send_s,time_send_f;
-  struct timeval time_jdown_s,time_jdown_f,time_jup_s,time_jup_f,time_jkernel_s,time_jkernel_f;
+  struct timeval time_count_s,time_count_f,time_send_s,time_send_f;
+  struct timeval time_jdown_s,time_jdown_f,time_jkernel_s,time_jkernel_f;
+  struct timeval time_scan_s,time_scan_f;
   double time_cal;
 
 
@@ -281,6 +294,7 @@ void join(){
   //gettimeofday(&begin, NULL);
 
   createIndex();
+
   gettimeofday(&begin, NULL);
   /****************************************************************/
 
@@ -317,8 +331,6 @@ void join(){
    *lt,rt,countのメモリを割り当てる。
    *
    */
-  
-  gettimeofday(&time_alloc_s, NULL);
 
   /* lt */
   res = cuMemAlloc(&lt_dev, left * sizeof(TUPLE));
@@ -361,16 +373,15 @@ void join(){
     exit(1);
   }
 
-  /**********************************************************************************/
+  checkCudaErrors(cudaMemset((void *)count_dev,0,right*sizeof(int)));
 
-  gettimeofday(&time_alloc_f, NULL);
+  /**********************************************************************************/
 
 
   
   /********************** upload lt , rt , count ,bucket ,buck_array ,idxcount***********************/
 
 
-  gettimeofday(&time_count_s, NULL);
 
   gettimeofday(&time_send_s, NULL);
   res = cuMemcpyHtoD(lt_dev, lt, left * sizeof(TUPLE));
@@ -379,13 +390,6 @@ void join(){
     exit(1);
   }
   res = cuMemcpyHtoD(rt_dev, rt, right * sizeof(TUPLE));
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD (rt) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-  gettimeofday(&time_send_f, NULL);
-
-  res = cuMemcpyHtoD(count_dev, count, right * sizeof(int));
   if (res != CUDA_SUCCESS) {
     printf("cuMemcpyHtoD (rt) failed: res = %lu\n", (unsigned long)res);
     exit(1);
@@ -409,6 +413,9 @@ void join(){
     exit(1);
   }
 
+  gettimeofday(&time_send_f, NULL);
+
+
 
   /***************************************************************************/
 
@@ -425,6 +432,8 @@ void join(){
     count the number of match tuple
     
   *******************************************************************/
+
+  gettimeofday(&time_count_s, NULL);
 
 
   void *count_args[]={
@@ -466,79 +475,62 @@ void join(){
   }  
 
 
-  res = cuMemcpyDtoH(count, count_dev, right * sizeof(int));
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemcpyDtoH (count) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-
-
   /***************************************************************************************/
 
 
 
+  gettimeofday(&time_scan_s, NULL);
   /**************************** prefix sum *************************************/
 
-  //thrust::inclusive_scan(count,count + right,count);
-
-  for(int i = 1; i < right ; i++){
-    count[i] = count[i] + count[i-1];
+  if(!(presum(&count_dev,(uint)right))){
+    printf("count scan error\n");
+    exit(1);
   }
 
 
   /********************************************************************/
-
-
-  /*
-  for(int i = 0; i < right; i++){
-    printf("%d = %d\n",i,count[i]);
-  }
-  */
+  gettimeofday(&time_scan_f, NULL);
 
 
   //cpy count to GPU again      ***************************************
-  res = cuMemcpyHtoD(count_dev, count, right * sizeof(int));
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD (count) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-
 
   /**********************************************************************/
 
   gettimeofday(&time_count_f, NULL);
 
+
   /************************************************************************
-   p memory alloc and p upload
-   supplementary:
-   The reason that join table is "p" ,it's used sample program .
-   As possible I will change appriciate value.
+   jt memory alloc and jt upload
   ************************************************************************/
 
-  if(count[right-1] <= 0){
+  if(!(jt_size_dev = transport(count_dev,(uint)right))){
+    printf("transport error.\n");
+    exit(1);
+  }
+
+  res = cuMemcpyDtoH(count,jt_size_dev,sizeof(int));
+  if(res != CUDA_SUCCESS ){
+    printf("cuMemcpyDtoH (count) failed: res = %lu\n",(unsigned long)res);
+    exit(1);
+  }
+
+  uint jt_size = count[0];
+
+  if(jt_size <= 0){
     printf("no tuple is matched.\n");
     exit(1);
-  }else{
-    res = cuMemAlloc(&jt_dev, count[right-1] * sizeof(RESULT));
-    if (res != CUDA_SUCCESS) {
-      printf("cuMemAlloc (join) failed\n");
-      exit(1);
-    }
   }
+  
+  res = cuMemAlloc(&jt_dev, jt_size * sizeof(RESULT));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemAlloc (join) failed\n");
+    exit(1);
+  }
+  
+  checkCudaErrors(cudaMemset((void *)jt_dev,0,jt_size*sizeof(RESULT)));
 
 
   gettimeofday(&time_join_s, NULL);
-
-  gettimeofday(&time_jup_s, NULL);
-
-  res = cuMemcpyHtoD(jt_dev, jt, count[right-1] * sizeof(RESULT));
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD (join) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-
-  gettimeofday(&time_jup_f, NULL);
-
 
   gettimeofday(&time_jkernel_s, NULL);
 
@@ -586,7 +578,7 @@ void join(){
 
   gettimeofday(&time_jdown_s, NULL);
 
-  res = cuMemcpyDtoH(jt, jt_dev, count[right-1] * sizeof(RESULT));
+  res = cuMemcpyDtoH(jt, jt_dev, jt_size * sizeof(RESULT));
   if (res != CUDA_SUCCESS) {
     printf("cuMemcpyDtoH (p) failed: res = %lu\n", (unsigned long)res);
     exit(1);
@@ -645,23 +637,21 @@ void join(){
   gettimeofday(&end, NULL);
   printf("all time:\n");
   printDiff(begin, end);
-  printf("memory allocate time:\n");
-  printDiff(time_alloc_s,time_alloc_f);
-  printf("count time:\n");
-  printDiff(time_count_s,time_count_f);
   printf("data send time:\n");
   printDiff(time_send_s,time_send_f);
+  printf("count time:\n");
+  printDiff(time_count_s,time_count_f);
+  printf("count scan time:\n");
+  printDiff(time_scan_s,time_scan_f);
   printf("join time:\n");
   printDiff(time_join_s,time_join_f);
-  printf("upload time of jt:\n");
-  printDiff(time_jup_s,time_jup_f);
   printf("kernel launch time of join:\n");
   printDiff(time_jkernel_s,time_jkernel_f);
   printf("download time of jt:\n");
   printDiff(time_jdown_s,time_jdown_f);
 
 
-  printf("%d\n",count[right - 1]);
+  printf("%d\n",jt_size);
   
 
 

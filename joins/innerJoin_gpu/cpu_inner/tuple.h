@@ -6,6 +6,8 @@
 
 #define NUM_VAL 1
 
+#define MATCH_RATE 10/100
+
 #define JT_SIZE 1200000000
 #define SELECTIVITY 100000000
 

@@ -226,13 +226,13 @@ main(int argc,char *argv[])
 
   for (int i = 0; i < NB_BKTENT; i++) {
 
-    for (int j = 0; j < rcount[i]; j++) {
-      for (int k = 0; k < lcount[i]; k++) {
-        if (hrt[rlocation[i] + j].val == hlt[llocation[i] + k].val) {
-          result[resultVal].rkey = hrt[rlocation[i] + j].key;
-          result[resultVal].rval = hrt[rlocation[i] + j].val;
-          result[resultVal].skey = hlt[llocation[i] + k].key;
-          result[resultVal].sval = hlt[llocation[i] + k].val;
+    for (int j = 0; j < lcount[i]; j++) {
+      for (int k = 0; k < rcount[i]; k++) {
+        if (hlt[llocation[i] + j].val == hrt[rlocation[i] + k].val) {
+          result[resultVal].rkey = hrt[llocation[i] + j].key;
+          result[resultVal].rval = hrt[llocation[i] + j].val;
+          result[resultVal].skey = hlt[rlocation[i] + k].key;
+          result[resultVal].sval = hlt[rlocation[i] + k].val;
           resultVal++;
         }
       }

@@ -61,12 +61,27 @@ void createTuple()
   if (!(jt = (RESULT *)calloc(JT_SIZE, sizeof(RESULT)))) ERR;
 
   srand((unsigned)time(NULL));
+  uint *used;
+  used = (uint *)calloc(SELECTIVITY,sizeof(uint));
+
+
   for (int i = 0; i < right; i++) {
-    getTuple(&(rt[i]),rand()%SELECTIVITY);
+    if(i < right * MATCH_RATE){
+      uint temp = rand()%SELECTIVITY;
+      while(used[temp] == 1) temp = rand()%SELECTIVITY;
+      used[temp] = 1;
+      getTuple(&(rt[i]),temp);
+    }else{
+      getTuple(&(rt[i]),SELECTIVITY + rand()%SELECTIVITY);
+    }
   }
 
   for (int i = 0; i < left; i++) {
-    getTuple(&(lt[i]),rand()%SELECTIVITY);
+    if(i < right * MATCH_RATE){
+      getTuple(&(lt[i]),rt[i].val);
+    }else{
+      getTuple(&(lt[i]),2 * SELECTIVITY + rand()%SELECTIVITY);
+    }
   }
 
 
