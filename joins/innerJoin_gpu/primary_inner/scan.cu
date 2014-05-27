@@ -464,7 +464,6 @@ extern "C" size_t scanExclusiveLL(
         (uint *)d_Src,
         arrayLength / (4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE),
         array_temp
-        //arrayLength / (4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE)
     );
     getLastCudaError("scanExclusiveShared3() execution FAILED\n");
     checkCudaErrors(cudaDeviceSynchronize());

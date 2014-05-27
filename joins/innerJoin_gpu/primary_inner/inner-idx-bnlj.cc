@@ -158,9 +158,9 @@ createIndex(void)
 
   IDX *pidx = &Hidx;
   //int adr = -1; // address of tuple in the file
-  for (int i = 0; i < left; i++) {
+  for (int i = 0; i < right; i++) {
     if (!(pidx->nxt = (IDX *)calloc(1, sizeof(IDX)))) ERR; pidx = pidx->nxt;
-    pidx->val = lt[i].val;
+    pidx->val = rt[i].val;
     pidx->adr = i;
   }
 
@@ -179,7 +179,7 @@ createIndex(void)
 
   count = 0;
 
-  if (!(Bucket = (BUCKET *)calloc(left, sizeof(BUCKET)))) ERR;
+  if (!(Bucket = (BUCKET *)calloc(right, sizeof(BUCKET)))) ERR;
   for (int i = 0; i < NB_BKT_ENT; i++) {
     if(idxcount[i] == 0){
       Buck_array[i] = -1;
@@ -199,9 +199,7 @@ createIndex(void)
   }
 
 
-  printf("%d\t%d\n",Bucket[Buck_array[5]].val,Bucket[Buck_array[5]].adr);
-
-
+  //printf("%d\t%d\n",Bucket[Buck_array[5]].val,Bucket[Buck_array[5]].adr);
   while (Hidx.nxt) {
     IDX *tmp = Hidx.nxt; Hidx.nxt = Hidx.nxt->nxt; free(tmp);
   }
@@ -211,22 +209,24 @@ createIndex(void)
 
 void join(){
 
-  int *count;
+  //uint *count;
+  uint jt_size;
   CUresult res;
   CUdevice dev;
   CUcontext ctx;
   CUfunction function,c_function;
   CUmodule module,c_module;
-  CUdeviceptr lt_dev, rt_dev, jt_dev,count_dev, pre_dev, bucket_dev, buckArray_dev ,idxcount_dev;
+  CUdeviceptr lt_dev, rt_dev, jt_dev, pre_dev, bucket_dev, buckArray_dev ,idxcount_dev;
   CUdeviceptr ltn_dev, rtn_dev, jt_size_dev;
+  CUdeviceptr c_dev;
   unsigned int block_x, block_y, grid_x, grid_y;
   char fname[256];
   const char *path=".";
   struct timeval begin, end;
   struct timeval tv_cal_s, tv_cal_f,time_join_s,time_join_f,time_upload_s,time_upload_f,time_download_s,time_download_f;
-  struct timeval time_count_s,time_count_f,time_send_s,time_send_f;
+  struct timeval time_count_s,time_count_f,time_tsend_s,time_tsend_f,time_isend_s,time_isend_f;
   struct timeval time_jdown_s,time_jdown_f,time_jkernel_s,time_jkernel_f;
-  struct timeval time_scan_s,time_scan_f;
+  struct timeval time_scan_s,time_scan_f,time_alloc_s,time_alloc_f,time_cinit_s,time_cinit_f;
   double time_cal;
 
 
@@ -299,38 +299,25 @@ void join(){
   /****************************************************************/
 
 
-  block_x = left < BLOCK_SIZE_X ? left : BLOCK_SIZE_X;
-  block_y = right < BLOCK_SIZE_Y ? right : BLOCK_SIZE_Y;
+  //block_x = left < BLOCK_SIZE_X ? left : BLOCK_SIZE_X;
+  block_y = left < BLOCK_SIZE_Y ? left : BLOCK_SIZE_Y;
 
+  /*
   grid_x = left / block_x;
   if (left % block_x != 0)
     grid_x++;
-
+  */
   
-  grid_y = right / block_y;
+  grid_y = left / block_y;
   if (right % block_y != 0)
     grid_y++;
   
-
-  count = (int *)calloc(right,sizeof(int));
-
-
-  /*******************
-   send data:
-   BUCKET Bucket
-   TUPLE *rt
-   TUPLE *lt
-   RESULT *jt
-
-  ******************/
-
-
-
 
   /********************************************************************
    *lt,rt,countのメモリを割り当てる。
    *
    */
+  gettimeofday(&time_alloc_s, NULL);
 
   /* lt */
   res = cuMemAlloc(&lt_dev, left * sizeof(TUPLE));
@@ -345,7 +332,7 @@ void join(){
     exit(1);
   }
   /* bucket */
-  res = cuMemAlloc(&bucket_dev, left * sizeof(BUCKET));
+  res = cuMemAlloc(&bucket_dev, right * sizeof(BUCKET));
   if (res != CUDA_SUCCESS) {
     printf("cuMemAlloc (bucket) failed\n");
     exit(1);
@@ -367,23 +354,44 @@ void join(){
 
 
   /*count */
-  res = cuMemAlloc(&count_dev, right * sizeof(int));
+  res = cuMemAlloc(&c_dev, left * sizeof(uint));
   if (res != CUDA_SUCCESS) {
     printf("cuMemAlloc (count) failed\n");
     exit(1);
   }
 
-  checkCudaErrors(cudaMemset((void *)count_dev,0,right*sizeof(int)));
+  gettimeofday(&time_alloc_f, NULL);
+
+  gettimeofday(&time_cinit_s, NULL);
+
+  //checkCudaErrors(cudaMemset((void *)c_dev, 0, left*sizeof(uint)));
+
+  //checkCudaErrors(cudaMemset((void *)temp_dev, 0, left*sizeof(uint)));
+  //checkCudaErrors(cudaMemset((void *)jt_dev,0,jt_size*sizeof(RESULT)));
+
+  /*
+  printf("left = %d\n",left);
+  count = (uint *)calloc(left,sizeof(uint));
+
+  res = cuMemcpyHtoD(count_dev, count, left * sizeof(uint));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemcpyHtoD (count) failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+  */
+
+  gettimeofday(&time_cinit_f, NULL);
+
 
   /**********************************************************************************/
 
 
   
-  /********************** upload lt , rt , count ,bucket ,buck_array ,idxcount***********************/
+  /********************** upload lt , rt , bucket ,buck_array ,idxcount***********************/
 
 
+  gettimeofday(&time_tsend_s, NULL);
 
-  gettimeofday(&time_send_s, NULL);
   res = cuMemcpyHtoD(lt_dev, lt, left * sizeof(TUPLE));
   if (res != CUDA_SUCCESS) {
     printf("cuMemcpyHtoD (lt) failed: res = %lu\n", res);//conv(res));
@@ -395,7 +403,11 @@ void join(){
     exit(1);
   }
 
-  res = cuMemcpyHtoD(bucket_dev, Bucket, left * sizeof(BUCKET));
+  gettimeofday(&time_tsend_f, NULL);
+
+  gettimeofday(&time_isend_s, NULL);
+
+  res = cuMemcpyHtoD(bucket_dev, Bucket, right * sizeof(BUCKET));
   if (res != CUDA_SUCCESS) {
     printf("cuMemcpyHtoD (bucket) failed: res = %lu\n", (unsigned long)res);
     exit(1);
@@ -412,9 +424,7 @@ void join(){
     printf("cuMemcpyHtoD (rt) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
-
-  gettimeofday(&time_send_f, NULL);
-
+  gettimeofday(&time_isend_f, NULL);
 
 
   /***************************************************************************/
@@ -438,13 +448,12 @@ void join(){
 
   void *count_args[]={
     
-    //(void *)&lt_dev,
-    (void *)&rt_dev,
-    (void *)&count_dev,
+    (void *)&lt_dev,
+    (void *)&c_dev,
     (void *)&bucket_dev,
     (void *)&buckArray_dev,
     (void *)&idxcount_dev,
-    (void *)&right
+    (void *)&left
       
   };
 
@@ -481,40 +490,39 @@ void join(){
 
   gettimeofday(&time_scan_s, NULL);
   /**************************** prefix sum *************************************/
-
-  if(!(presum(&count_dev,(uint)right))){
+  
+  if(!(presum(&c_dev,(uint)left))){
     printf("count scan error\n");
     exit(1);
   }
 
-
   /********************************************************************/
   gettimeofday(&time_scan_f, NULL);
-
-
-  //cpy count to GPU again      ***************************************
-
-  /**********************************************************************/
 
   gettimeofday(&time_count_f, NULL);
 
 
+
   /************************************************************************
+   join
+
    jt memory alloc and jt upload
   ************************************************************************/
 
-  if(!(jt_size_dev = transport(count_dev,(uint)right))){
+  gettimeofday(&time_join_s, NULL);
+
+  if(!transport(c_dev,(uint)left,&jt_size)){
     printf("transport error.\n");
     exit(1);
   }
 
-  res = cuMemcpyDtoH(count,jt_size_dev,sizeof(int));
+/*
+  res = cuMemcpyDtoH(&jt_size,jt_size_dev,sizeof(int));
   if(res != CUDA_SUCCESS ){
     printf("cuMemcpyDtoH (count) failed: res = %lu\n",(unsigned long)res);
     exit(1);
   }
-
-  uint jt_size = count[0];
+*/
 
   if(jt_size <= 0){
     printf("no tuple is matched.\n");
@@ -526,24 +534,23 @@ void join(){
     printf("cuMemAlloc (join) failed\n");
     exit(1);
   }
+
+
+  //checkCudaErrors(cudaMemset((void *)jt_dev,0,jt_size*sizeof(RESULT)));
   
-  checkCudaErrors(cudaMemset((void *)jt_dev,0,jt_size*sizeof(RESULT)));
-
-
-  gettimeofday(&time_join_s, NULL);
 
   gettimeofday(&time_jkernel_s, NULL);
 
   void *kernel_args[]={
-    (void *)&lt_dev,
     (void *)&rt_dev,
+    (void *)&lt_dev,
     (void *)&jt_dev,
-    (void *)&count_dev,
+    (void *)&c_dev,
     (void *)&bucket_dev,
     (void *)&buckArray_dev,
     (void *)&idxcount_dev,
-    (void *)&left,
-    (void *)&right,    
+    (void *)&right,
+    (void *)&left    
   };
 
   //グリッド・ブロックの指定、変数の指定、カーネルの実行を行う
@@ -586,7 +593,17 @@ void join(){
 
   gettimeofday(&time_jdown_f, NULL);
 
-  /***************************************************************/
+
+  gettimeofday(&time_join_f, NULL);
+
+
+  gettimeofday(&end, NULL);
+
+
+
+  /***************************************************************
+  free GPU memory
+  ***************************************************************/
 
   res = cuMemFree(lt_dev);
   if (res != CUDA_SUCCESS) {
@@ -605,7 +622,7 @@ void join(){
     exit(1);
     }
 
-  res = cuMemFree(count_dev);
+  res = cuMemFree(c_dev);
   if (res != CUDA_SUCCESS) {
     printf("cuMemFree (count) failed: res = %lu\n", (unsigned long)res);
     exit(1);
@@ -630,15 +647,16 @@ void join(){
   }
 
 
-
-  gettimeofday(&time_join_f, NULL);
-
-
-  gettimeofday(&end, NULL);
   printf("all time:\n");
   printDiff(begin, end);
-  printf("data send time:\n");
-  printDiff(time_send_s,time_send_f);
+  printf("gpu memory alloc time:\n");
+  printDiff(time_alloc_s,time_alloc_f);
+  printf("table data send time:\n");
+  printDiff(time_tsend_s,time_tsend_f);
+  printf("index data send time:\n");
+  printDiff(time_isend_s,time_isend_f);
+  printf("count init time:\n");
+  printDiff(time_cinit_s,time_cinit_f);
   printf("count time:\n");
   printDiff(time_count_s,time_count_f);
   printf("count scan time:\n");

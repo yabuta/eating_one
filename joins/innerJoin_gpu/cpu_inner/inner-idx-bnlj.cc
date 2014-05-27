@@ -127,17 +127,17 @@ main(int argc,char *argv[])
   int count = 0;
   for (unsigned int i = 0; i < NB_BUCKET; i++) idxcount[i] = 0;
 
-  for (int i = 0; i < left; i++) {
-    int idx = lt[i].val % NB_BUCKET;
+  for (int i = 0; i < right; i++) {
+    int idx = rt[i].val % NB_BUCKET;
     idxcount[idx]++;
-    count++;
+    //count++;
   }
 
   //test
     
   count = 0;
 
-  if (!(Bucket = (BUCKET *)calloc(left, sizeof(BUCKET)))) ERR;
+  if (!(Bucket = (BUCKET *)calloc(right, sizeof(BUCKET)))) ERR;
   for (unsigned int i = 0; i < NB_BUCKET; i++) {
     if(idxcount[i] == 0){
       Buck_array[i] = -1;
@@ -147,12 +147,10 @@ main(int argc,char *argv[])
     count += idxcount[i];
 
   }
-    
-
   for (unsigned int i = 0; i < NB_BUCKET; i++) idxcount[i] = 0;
-  for (int i = 0; i < left; i++) {
-    int idx = lt[i].val % NB_BUCKET;
-    Bucket[Buck_array[idx] + idxcount[idx]].val = lt[i].val;
+  for (int i = 0; i < right; i++) {
+    int idx = rt[i].val % NB_BUCKET;
+    Bucket[Buck_array[idx] + idxcount[idx]].val = rt[i].val;
     Bucket[Buck_array[idx] + idxcount[idx]].adr = i;
     idxcount[idx]++;
   }
@@ -161,30 +159,19 @@ main(int argc,char *argv[])
   //gettimeofday(&begin, NULL);
   gettimeofday(&begin, NULL);
 
-  for (int j = 0; j < right; j++) {
-    int hash = rt[j].val % NB_BUCKET;
+  for (int j = 0; j < left; j++) {
+    int hash = lt[j].val % NB_BUCKET;
     for (int i = 0; i < idxcount[hash] ;i++ ) {
-      if (Bucket[Buck_array[hash] + i].val == rt[j].val) {
-        jt[resultVal].skey = lt[Bucket[Buck_array[hash] + i].adr].key;
-        jt[resultVal].sval = lt[Bucket[Buck_array[hash] + i].adr].val;
-        jt[resultVal].rkey = rt[j].key;
-        jt[resultVal].rval = rt[j].val;
+      if (Bucket[Buck_array[hash] + i].val == lt[j].val) {
+        jt[resultVal].skey = rt[Bucket[Buck_array[hash] + i].adr].key;
+        jt[resultVal].sval = rt[Bucket[Buck_array[hash] + i].adr].val;
+        jt[resultVal].rkey = lt[j].key;
+        jt[resultVal].rval = lt[j].val;
         resultVal++;
-        //printf("%d\t%d\n",Bucket[Buck_array[hash] + i].val,lt[j].val);
       }
     }
   }
   gettimeofday(&end, NULL);
-
-  /*
-  for(int i = 0;i<resultVal;i++){
-
-    if(i%100000 == 0){
-      printf("lid=%d\tlval=%d\trid=%d\trval=%d\n",jt[i].skey,jt[i].sval,jt[i].rkey,jt[i].rval);
-    }
-
-  }
-  */
 
   freeTuple();
 

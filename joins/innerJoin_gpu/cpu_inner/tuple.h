@@ -6,6 +6,9 @@
 
 #define NUM_VAL 1
 
+#define NB_BUCKET 134217728
+//#define NB_BUCKET 134217728
+
 #define MATCH_RATE 10/100
 
 #define JT_SIZE 1200000000
@@ -30,4 +33,3 @@ typedef struct _BUCKET {
 
 } BUCKET;
 
-#define NB_BUCKET 1048576

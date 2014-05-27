@@ -170,7 +170,7 @@ CUdeviceptr diff_part(CUdeviceptr d_Input , uint tnum , uint arrayLength, uint s
 
 }
 
-CUdeviceptr transport(CUdeviceptr d_Input , uint loc){
+uint transport(CUdeviceptr d_Input , uint loc, uint *res){
 
   CUdeviceptr d_Output;
   
@@ -181,9 +181,14 @@ CUdeviceptr transport(CUdeviceptr d_Input , uint loc){
   //szWorkgroup = scanExclusiveLarge((uint *)d_Output, (uint *)d_Input, pnum, N);
   checkCudaErrors(cudaDeviceSynchronize());
 
+  if(cuMemcpyDtoH(res,d_Output,sizeof(uint)) != CUDA_SUCCESS){
+    printf("cuMemcpyDtoH(d_Output) error.\n");
+    exit(1);
+  }
+
   // pass or fail (cumulative... all tests in the loop)
 
-  return d_Output;
+  return SUCCESS;
 
 
 }

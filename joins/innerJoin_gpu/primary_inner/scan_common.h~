@@ -66,9 +66,7 @@ extern "C" size_t diff_Part(
 extern "C" void transport_gpu(
     uint *d_Dst,
     uint *d_Src,
-    uint diff,
-    uint arrayLength,
-    uint size
+    uint loc
 );
 
 
@@ -86,9 +84,7 @@ extern "C" CUdeviceptr diff_part(
 
 extern "C" CUdeviceptr transport(
     CUdeviceptr d_Input,
-    uint tnum,
-    uint arrayLength,
-    uint size
+    uint loc
 );
 
 

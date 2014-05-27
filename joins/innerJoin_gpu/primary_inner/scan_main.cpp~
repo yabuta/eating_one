@@ -174,7 +174,7 @@ CUdeviceptr transport(CUdeviceptr d_Input , uint loc){
 
   CUdeviceptr d_Output;
   
-  checkCudaErrors(cudaMalloc((void **)&d_Output, sizeof(uint)));
+  checkCudaErrors(cudaMalloc((void **)&d_Output, sizeof(int)));
   checkCudaErrors(cudaDeviceSynchronize());
 
   transport_gpu((uint *)d_Output, (uint *)d_Input, loc);

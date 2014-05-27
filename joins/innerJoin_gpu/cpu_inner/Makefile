@@ -19,3 +19,5 @@ $(T1): $(01)
 
 clean:
 	rm -f *~ *.o *.exe *.stackdump hash-part-*
+
+inner-idx-bnlj.o:tuple.h

@@ -169,22 +169,6 @@ createPart()
   
 }
 
-/*
-int
-openPart(const char *partFile, int id)
-{
-  int fd;
-  char buf[BUFSIZ];
-
-  bzero(buf, sizeof(buf));
-  sprintf(buf, "hash-part-%s-%d", partFile, id);
-  fd = open(buf, O_RDONLY);
-  if (fd == -1) ERR;
-
-  return fd;
-}
-*/
-
 int 
 main(int argc,char *argv[])
 {
@@ -213,19 +197,10 @@ main(int argc,char *argv[])
   // Hash construction phase
   createPart();
 
-
-  /*
-  for (int i = 0; i < NB_BKTENT; i++) {
-    printf("%d\t%d\t%d\t%d\n",rlocation[i],rcount[i],llocation[i],lcount[i]);
-
-  }
-  */
-
   // Matching phase
   gettimeofday(&middle, NULL);
 
   for (int i = 0; i < NB_BKTENT; i++) {
-
     for (int j = 0; j < lcount[i]; j++) {
       for (int k = 0; k < rcount[i]; k++) {
         if (hlt[llocation[i] + j].val == hrt[rlocation[i] + k].val) {

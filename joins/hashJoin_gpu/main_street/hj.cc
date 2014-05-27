@@ -182,7 +182,7 @@ join()
   struct timeval time_hash_s,time_hash_f,time_hkernel_s,time_hkernel_f,time_lhash_s,time_lhash_f,time_rhash_s,time_rhash_f,time_lscan_s,time_lscan_f,time_rscan_s,time_rscan_f,time_cscan_s,time_cscan_f;
   struct timeval time_lhck_s,time_lhck_f,time_rhck_s,time_rhck_f,time_rhk_s,time_rhk_f;
   struct timeval time_count_s,time_count_f,time_ckernel_s,time_ckernel_f,time_alloc_s,time_alloc_f;
-  struct timeval temp_s,temp_f;
+  struct timeval temp_s,temp_f,time_start,time_stop;
   double time_cal;
   long temper=0,tempest=0;
   long uptime = 0;
@@ -387,7 +387,12 @@ join()
     p_grid_x++;
 
 
+  gettimeofday(&time_start, NULL);
   checkCudaErrors(cudaMemset((void *)lL_dev, 0 , p_num*t_num*sizeof(uint)));
+  gettimeofday(&time_stop, NULL);
+  printf("first runtime use\n");
+  printDiff(time_start,time_stop);
+
 
   gettimeofday(&time_lhck_s, NULL);
 
