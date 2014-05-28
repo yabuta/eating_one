@@ -126,17 +126,12 @@ main(int argc,char *argv[])
   
   int count = 0;
   for (unsigned int i = 0; i < NB_BUCKET; i++) idxcount[i] = 0;
-
   for (int i = 0; i < right; i++) {
     int idx = rt[i].val % NB_BUCKET;
     idxcount[idx]++;
     //count++;
   }
-
-  //test
-    
   count = 0;
-
   if (!(Bucket = (BUCKET *)calloc(right, sizeof(BUCKET)))) ERR;
   for (unsigned int i = 0; i < NB_BUCKET; i++) {
     if(idxcount[i] == 0){
@@ -145,7 +140,6 @@ main(int argc,char *argv[])
       Buck_array[i] = count;
     }
     count += idxcount[i];
-
   }
   for (unsigned int i = 0; i < NB_BUCKET; i++) idxcount[i] = 0;
   for (int i = 0; i < right; i++) {

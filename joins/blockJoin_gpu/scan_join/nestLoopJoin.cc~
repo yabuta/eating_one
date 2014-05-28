@@ -69,9 +69,6 @@ init(void)
       printf("right TUPLE allocate error.\n");
       exit(1);
     }
-
-    //０に初期化
-    memset(&(Tright[i]),0,sizeof(TUPLE));
     Tright[i].id = getTupleId();
 
     if(i < arg_right*MATCH_RATE){
@@ -84,6 +81,7 @@ init(void)
     }        
 
   }
+  free(used);
 
   /****************************************************************************/
 
@@ -102,19 +100,13 @@ init(void)
       exit(1);
     }
     
-    //０に初期化
-    memset(&(Tleft[i]),0,sizeof(TUPLE));    
     Tleft[i].id = getTupleId();
-
-    Tleft[i].val = rand()%SELECTIVITY; // selectivity for jt size = 1000000 
 
     if(i < arg_left * MATCH_RATE){
       Tleft[i].val = Tright[i].val;
     }else{
       Tleft[i].val = 2 * SELECTIVITY + rand()%SELECTIVITY;
     }
-
-
   }     
   
   /*********************************************************************************/
@@ -124,17 +116,6 @@ init(void)
   if (res != CUDA_SUCCESS) {
     printf("cuMemHostAlloc to JOIN_TUPLE failed: res = %lu\n", (unsigned long)res);
     exit(1);
-  }
-
-  for(int i=0;i < JT_SIZE;i++){
-    if(&(Tjoin[i])==NULL){
-      printf("left TUPLE allocate error.\n");
-      exit(1);
-    }
-
-    //０に初期化
-    memset(&(Tjoin[i]),0,sizeof(JOIN_TUPLE));
-    Tjoin[i].id = getTupleId();
   }
 
   /**********************************************************************************/
@@ -172,11 +153,11 @@ join()
   unsigned int block_x, block_y, grid_x, grid_y;
   char fname[256];
   const char *path=".";
-  struct timeval tv_cal_s, tv_cal_f,time_join_s,time_join_f,time_upload_s,time_upload_f,time_download_s,time_download_f;
-  struct timeval time_count_s,time_count_f,time_Cupload_s,time_Cupload_f,time_Cdownload_s,time_Cdownload_f;
-  struct timeval time_scan_s,time_scan_f,time_alloc_s,time_alloc_f,time_free_s,time_free_f;
-  struct timeval time_Pupload_s,time_Pupload_f,time_send_s,time_send_f;
-  double time_cal;
+  struct timeval time_join_s,time_join_f,time_download_s,time_download_f;
+  struct timeval time_count_s,time_count_f;
+  struct timeval time_scan_s,time_scan_f;
+  struct timeval time_send_s,time_send_f;
+  struct timeval begin,end;
 
   /******************** GPU init here ************************************************/
   //GPU仕様のために
@@ -237,7 +218,7 @@ join()
   init();
 
   /*全体の実行時間計測*/
-  gettimeofday(&tv_cal_s, NULL);
+  gettimeofday(&begin, NULL);
 
   /************** block_x * block_y is decided by BLOCK_SIZE. **************/
 
@@ -257,10 +238,13 @@ join()
   if (arg_right % block_y != 0)
     grid_y++;
 
-  uint gpu_size = grid_x * grid_y * block_y;
+  printf("grid_x = %d\tgrid_y = %d\tblock_y = %d\n",grid_x,grid_y,block_y);
 
+  uint gpu_size = grid_x * grid_y * block_y;
+  printf("gpu_size = %d\n",gpu_size);
+  
   //malloc memory and 0 for count
-  count = (int *)calloc(gpu_size,sizeof(int));
+  //count = (int *)calloc(gpu_size,sizeof(int));
 
   /********************************************************************************/
 
@@ -269,9 +253,7 @@ join()
    *
    */
 
-  
-  gettimeofday(&time_alloc_s, NULL);
-  /* lt */
+    /* lt */
   res = cuMemAlloc(&lt_dev, arg_left * sizeof(TUPLE));
   if (res != CUDA_SUCCESS) {
     printf("cuMemAlloc (lefttuple) failed\n");
@@ -284,23 +266,18 @@ join()
     exit(1);
   }
 
-  
-  res = cuMemAlloc(&count_dev, grid_x * grid_y * block_y * sizeof(int));
+  res = cuMemAlloc(&count_dev, gpu_size * sizeof(int));
   if (res != CUDA_SUCCESS) {
     printf("cuMemAlloc (count) failed\n");
     exit(1);
   }
 
-  gettimeofday(&time_alloc_f, NULL);
   /**********************************************************************************/
 
 
   
   /********************** upload lt , rt and count***********************/
 
-  /*count uploadの時間計測*/
-  gettimeofday(&time_count_s, NULL);
-  //gettimeofday(&time_Cupload_s, NULL);
 
   gettimeofday(&time_send_s, NULL);
   res = cuMemcpyHtoD(lt_dev, Tleft, arg_left * sizeof(TUPLE));
@@ -313,16 +290,7 @@ join()
     printf("cuMemcpyHtoD (rt) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
-
-  res = cuMemcpyHtoD(count_dev, count, grid_x * grid_y * block_y * sizeof(int));
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD (rt) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
   gettimeofday(&time_send_f, NULL);
-
-  //count uploadの時間計測
-  //gettimeofday(&time_Cupload_f, NULL);
 
 
   /***************************************************************************/
@@ -340,9 +308,9 @@ join()
     count the number of match tuple
     
   *******************************************************************/
-  //count.cuの時間計測
-  //gettimeofday(&time_count_s, NULL);
 
+  /*countの時間計測*/
+  gettimeofday(&time_count_s, NULL);
 
   void *count_args[]={
     
@@ -381,26 +349,6 @@ join()
     exit(1);
   }  
 
-  
-
-  //count.cuの時間計測
-  //gettimeofday(&time_count_f, NULL);
-
-
-  //count downloadの時間計測
-  //gettimeofday(&time_Cdownload_s, NULL);
-
-  /*
-  res = cuMemcpyDtoH(count, count_dev, grid_x * grid_y * block_y * sizeof(int));
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemcpyDtoH (count) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-  */
-
-  //count downloadの時間計測
-  //gettimeofday(&time_Cdownload_f, NULL);    
-
   /***************************************************************************************/
 
 
@@ -408,7 +356,6 @@ join()
   /**************************** prefix sum *************************************/
 
   gettimeofday(&time_scan_s, NULL);
-  //thrust::inclusive_scan(count,count+grid_x*grid_y*block_y,count);
 
   if(!(presum(&count_dev,(uint)gpu_size))){
     printf("count scan error.\n");
@@ -424,15 +371,6 @@ join()
     exit(1);
   }
 
-  //cpy count to GPU again      ***************************************
-  /*
-  res = cuMemcpyHtoD(count_dev, count, grid_x * grid_y * block_y * sizeof(int));
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD (count) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-  */
-
   gettimeofday(&time_count_f, NULL);
 
   /**********************************************************************/
@@ -440,10 +378,8 @@ join()
 
 
   /************************************************************************
-   p memory alloc and p upload
-   supplementary:
-   The reason that join table is "p" ,it's used sample program .
-   As possible I will change appriciate value.
+   jt memory alloc and jt upload
+
   ************************************************************************/
 
   if(jt_size<=0){
@@ -457,18 +393,6 @@ join()
     exit(1);
   }
 
-
-  //p uploadの時間計測
-  gettimeofday(&time_Pupload_s, NULL);    
-
-  res = cuMemcpyHtoD(jt_dev, Tjoin, jt_size * sizeof(JOIN_TUPLE));
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD (join) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-
-  //p uploadの時間計測
-  gettimeofday(&time_Pupload_f, NULL);    
 
   //実際のjoinの計算時間
   gettimeofday(&time_join_s, NULL);
@@ -526,7 +450,7 @@ join()
   //downloadの時間計測
   gettimeofday(&time_download_f, NULL);
   
-
+  gettimeofday(&end, NULL);
   /***************************************************************/
 
 
@@ -535,7 +459,6 @@ join()
   //free GPU memory***********************************************
 
 
-  gettimeofday(&time_free_s, NULL);
   res = cuMemFree(lt_dev);
   if (res != CUDA_SUCCESS) {
     printf("cuMemFree (lt) failed: res = %lu\n", (unsigned long)res);
@@ -559,52 +482,32 @@ join()
     exit(1);
   }
 
-  gettimeofday(&time_free_f, NULL);
   /********************************************************************/
 
 
 
   /***********   タプルを送ってダウンロードするまでの時間を計測する*************************/
-  gettimeofday(&tv_cal_f, NULL);
-  
-  
-  time_cal = (tv_cal_f.tv_sec - tv_cal_s.tv_sec)*1000*1000 + (tv_cal_f.tv_usec - tv_cal_s.tv_usec);
-  printf("Calculation all with Devise    : %6f(micro sec)\n", time_cal);
-  /*
-  time_cal = (time_Cupload_f.tv_sec - time_Cupload_s.tv_sec)*1000*1000 + (time_Cupload_f.tv_usec - time_Cupload_s.tv_usec);
-  printf("Calculation Cupload with Devise    : %6f(micro sec)\n", time_cal);
 
-  time_cal = (time_count_f.tv_sec - time_count_s.tv_sec)*1000*1000 + (time_count_f.tv_usec - time_count_s.tv_usec);
-  printf("Calculation count with Devise    : %6f(micro sec)\n", time_cal);
+  printf("\n\n");
+  printf("******************execution time********************************************\n\n");
 
-  time_cal = (time_Cdownload_f.tv_sec - time_Cdownload_s.tv_sec)*1000*1000 + (time_Cdownload_f.tv_usec - time_Cdownload_s.tv_usec);
-  printf("Calculation Cdownload with Devise    : %6f(micro sec)\n", time_cal);
-  */
-  time_cal = (time_alloc_f.tv_sec - time_alloc_s.tv_sec)*1000*1000 + (time_alloc_f.tv_usec - time_alloc_s.tv_usec);
-  printf("Calculation alloc with Devise    : %6f(micro sec)\n", time_cal);
+  printf("Calculation all with Devise\n");
+  printDiff(begin,end);
 
-  time_cal = (time_free_f.tv_sec - time_free_s.tv_sec)*1000*1000 + (time_free_f.tv_usec - time_free_s.tv_usec);
-  printf("Calculation free with Devise    : %6f(micro sec)\n", time_cal);
+  printf("Calculation send with Devise\n");
+  printDiff(time_send_s,time_send_f);
 
-  time_cal = (time_send_f.tv_sec - time_send_s.tv_sec)*1000*1000 + (time_send_f.tv_usec - time_send_s.tv_usec);
-  printf("Calculation send with Devise    : %6f(micro sec)\n", time_cal);
+  printf("Calculation count with Devise\n");
+  printDiff(time_count_s,time_count_f);
 
-
-  time_cal = (time_count_f.tv_sec - time_count_s.tv_sec)*1000*1000 + (time_count_f.tv_usec - time_count_s.tv_usec);
-  printf("Calculation count with Devise    : %6f(micro sec)\n", time_cal);
-
-
-  printf("scan time.\n");
+  printf("scan time\n");
   printDiff(time_scan_s,time_scan_f);
 
-  time_cal = (time_Pupload_f.tv_sec - time_Pupload_s.tv_sec)*1000*1000 + (time_Pupload_f.tv_usec - time_Pupload_s.tv_usec);
-  printf("Calculation Pupload with Devise    : %6f(micro sec)\n", time_cal);
+  printf("Calculation join with Devise\n");
+  printDiff(time_join_s,time_join_f);
 
-  time_cal = (time_join_f.tv_sec - time_join_s.tv_sec)*1000*1000 + (time_join_f.tv_usec - time_join_s.tv_usec);
-  printf("Calculation join with Devise    : %6f(micro sec)\n", time_cal);
-
-  time_cal = (time_download_f.tv_sec - time_download_s.tv_sec)*1000*1000 + (time_download_f.tv_usec - time_download_s.tv_usec);
-  printf("Calculation download with Devise    : %6f(micro sec)\n", time_cal);
+  printf("Calculation download with Devise\n");
+  printDiff(time_download_s,time_download_f);
 
   /****************************************************************************************/
 

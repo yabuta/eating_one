@@ -150,7 +150,7 @@ uint transport(CUdeviceptr d_Input , uint loc , uint *res){
   checkCudaErrors(cudaDeviceSynchronize());
 
   if(cuMemcpyDtoH(res,d_Output,sizeof(uint)) != CUDA_SUCCESS){
-    printf("cuMemcpyDtoH(d_Output) error");
+    printf("cuMemcpyDtoH(d_Output) error.\n");
     exit(1);
   }
 

@@ -11,6 +11,7 @@
 
 
 #include <assert.h>
+#include <sys/time.h>
 #include <helper_cuda.h>
 #include "scan_common.h"
 
@@ -247,25 +248,13 @@ __global__ void diff_kernel(
 __global__ void transport_kernel(
     uint *d_Data,
     uint *d_Src,
-    uint pnum,
-    uint length,
-    uint size
+    uint loc
+
 )
 {
 
-  uint pos = blockIdx.x * blockDim.x + threadIdx.x;
-  uint p_n = pnum;
-  uint len = length;
-  uint POS = pos * LOOP_PERTHREAD2;
-  uint i;
+  d_Data[0] = d_Src[loc-1];
 
-  for(i = POS ; (i < POS + LOOP_PERTHREAD2)&&(i < len); i++){      
-    d_Data[i] = d_Src[i * p_n];
-  }
-
-  if(i == len){
-    d_Data[len] = size;
-  }
 
 }
 
@@ -291,8 +280,18 @@ static uint *e_Buf;
 
 extern "C" void initScan(void)
 {
-    checkCudaErrors(cudaMalloc((void **)&d_Buf, (MAX_BATCH_ELEMENTS / (4 * THREADBLOCK_SIZE)) * sizeof(uint)));
-    checkCudaErrors(cudaMalloc((void **)&e_Buf, (MAX_BATCH_ELEMENTS / (4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE)) * sizeof(uint)));
+
+  struct timeval start,stop;
+
+  //here it is late
+  gettimeofday(&start,NULL);
+  cudaMalloc((void **)&d_Buf, (MAX_BATCH_ELEMENTS / (4 * THREADBLOCK_SIZE)) * sizeof(uint));
+  
+  checkCudaErrors(cudaMalloc((void **)&e_Buf, (MAX_BATCH_ELEMENTS / (4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE)) * sizeof(uint)));
+  gettimeofday(&stop,NULL);
+
+  printf("scan gpu malloc time.\n");
+  printDiff(start,stop);
 
 }
 
@@ -476,7 +475,6 @@ extern "C" size_t scanExclusiveLL(
         (uint *)d_Src,
         arrayLength / (4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE),
         array_temp
-        //arrayLength / (4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE)
     );
     getLastCudaError("scanExclusiveShared3() execution FAILED\n");
     checkCudaErrors(cudaDeviceSynchronize());
@@ -511,9 +509,6 @@ extern "C" size_t diff_Part(
 )
 {
 
-    //Check total batch size limit
-    //assert((arrayLength) <= MAX_BATCH_ELEMENTS);
-
     const uint blockCount = iDivUp(arrayLength , LOOP_PERTHREAD*THREADBLOCK_SIZE);
     diff_kernel<<<blockCount, THREADBLOCK_SIZE>>>(
         d_Dst,
@@ -529,27 +524,24 @@ extern "C" size_t diff_Part(
 }
 
 
+//transport input data to output per diff
 extern "C" void transport_gpu(
     uint *d_Dst,
     uint *d_Src,
-    uint diff,
-    uint arrayLength,
-    uint size
+    uint loc
 )
 {
 
     //Check total batch size limit
     //assert((arrayLength) <= MAX_BATCH_ELEMENTS);
 
-    const uint blockCount = iDivUp(arrayLength , LOOP_PERTHREAD2*THREADBLOCK_SIZE);
-    transport_kernel<<<blockCount, THREADBLOCK_SIZE>>>(
-        d_Dst,
-        d_Src,
-        diff,
-        arrayLength,
-        size
-    );
-    getLastCudaError("transport_gpu() execution FAILED\n");
-    checkCudaErrors(cudaDeviceSynchronize());
+  const uint blockCount = 1;//iDivUp(arrayLength , LOOP_PERTHREAD2*THREADBLOCK_SIZE);
+  transport_kernel<<<blockCount, 1>>>(
+                                                     d_Dst,
+                                                     d_Src,
+                                                     loc
+                                                     );
+  getLastCudaError("transport_gpu() execution FAILED\n");
+  checkCudaErrors(cudaDeviceSynchronize());
 
 }

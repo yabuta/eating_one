@@ -11,7 +11,6 @@
 #define JT_SIZE 120000000
 #define SELECTIVITY 100000000
 
-
 int right,left;
 
 typedef struct _TUPLE {
@@ -31,15 +30,6 @@ typedef struct _IDX {
   int adr;
   struct _IDX *nxt;
 } IDX;
-
-
-/*
-typedef struct _HASHOBJ {
-  int val;
-  int adr;
-    //struct _HASHOBJ *nxt;
-} HASHOBJ;
-*/
 
 typedef struct _BUCKET {
 

@@ -269,6 +269,16 @@ __global__ void transport_kernel(
 
 }
 
+__global__ void getValue_kernel(
+    uint *d_Data,
+    uint *d_Src,
+    uint loc
+)
+{
+  d_Data[0] = d_Src[loc-1];
+
+}
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -551,5 +561,27 @@ extern "C" void transport_gpu(
     );
     getLastCudaError("transport_gpu() execution FAILED\n");
     checkCudaErrors(cudaDeviceSynchronize());
+
+}
+
+
+//transport input data to output per diff
+extern "C" void getValue_gpu(
+    uint *d_Dst,
+    uint *d_Src,
+    uint loc
+)
+{
+
+    //Check total batch size limit
+    //assert((arrayLength) <= MAX_BATCH_ELEMENTS);
+
+  getValue_kernel<<<1, 1>>>(
+                            d_Dst,
+                            d_Src,
+                            loc
+                            );
+  getLastCudaError("transport_gpu() execution FAILED\n");
+  checkCudaErrors(cudaDeviceSynchronize());
 
 }

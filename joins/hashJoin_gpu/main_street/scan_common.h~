@@ -15,6 +15,14 @@
 #include <stdlib.h>
 #include <cuda.h>
 
+
+////////////////////////////////////////////////////////////////////////////////
+// Shortcut typename
+////////////////////////////////////////////////////////////////////////////////
+#define SUCCESS 1
+#define FALSE 0
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // Shortcut typename
 ////////////////////////////////////////////////////////////////////////////////
@@ -40,21 +48,18 @@ extern "C" void closeScan(void);
 extern "C" size_t scanExclusiveShort(
     uint *d_Dst,
     uint *d_Src,
-    uint batchSize,
     uint arrayLength
 );
 
 extern "C" size_t scanExclusiveLarge(
     uint *d_Dst,
     uint *d_Src,
-    uint batchSize,
     uint arrayLength
 );
 
 extern "C" size_t scanExclusiveLL(
     uint *d_Dst,
     uint *d_Src,
-    uint batchSize,
     uint arrayLength
 );
 
@@ -92,6 +97,12 @@ extern "C" CUdeviceptr transport(
     uint tnum,
     uint arrayLength,
     uint size
+);
+
+extern "C" uint getValue(
+    CUdeviceptr d_Input,
+    uint tnum,
+    uint res
 );
 
 

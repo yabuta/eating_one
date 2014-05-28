@@ -9,7 +9,7 @@ GPUで動かすため配列のほうが向いていると思ったので
 
 #define JT_SIZE 120000000
 #define SELECTIVITY 100000000
-#define MATCH_RATE 10/100
+#define MATCH_RATE 3/100
 
 
 typedef struct _TUPLE {
@@ -36,5 +36,5 @@ typedef struct _JOIN_TUPLE {
 
 //1blockでのスレッド数の定義。32*32=1024
 #define BLOCK_SIZE_X 4096
-#define BLOCK_SIZE_Y 256
+#define BLOCK_SIZE_Y 512
 

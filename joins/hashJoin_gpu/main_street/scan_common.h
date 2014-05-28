@@ -15,6 +15,14 @@
 #include <stdlib.h>
 #include <cuda.h>
 
+
+////////////////////////////////////////////////////////////////////////////////
+// Shortcut typename
+////////////////////////////////////////////////////////////////////////////////
+#define SUCCESS 1
+#define FALSE 0
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // Shortcut typename
 ////////////////////////////////////////////////////////////////////////////////
@@ -72,6 +80,15 @@ extern "C" void transport_gpu(
 );
 
 
+extern "C" void getValue_gpu(
+    uint *d_Dst,
+    uint *d_Src,
+    uint loc
+);
+
+
+
+
 extern "C" CUdeviceptr presum(
     CUdeviceptr *d_Input,
     uint arrayLength
@@ -89,6 +106,12 @@ extern "C" CUdeviceptr transport(
     uint tnum,
     uint arrayLength,
     uint size
+);
+
+extern "C" uint getValue(
+    CUdeviceptr d_Input,
+    uint tnum,
+    uint *res
 );
 
 

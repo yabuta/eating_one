@@ -15,6 +15,14 @@
 #include <stdlib.h>
 #include <cuda.h>
 
+
+////////////////////////////////////////////////////////////////////////////////
+// Shortcut typename
+////////////////////////////////////////////////////////////////////////////////
+#define SUCCESS 1
+#define FALSE 0
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // Shortcut typename
 ////////////////////////////////////////////////////////////////////////////////
@@ -63,7 +71,7 @@ extern "C" size_t diff_Part(
     uint size
 );
 
-extern "C" void transpart_gpu(
+extern "C" void transport_gpu(
     uint *d_Dst,
     uint *d_Src,
     uint diff,
@@ -72,12 +80,13 @@ extern "C" void transpart_gpu(
 );
 
 
-
-extern "C" void transport_gpu(
+extern "C" void getValue_gpu(
     uint *d_Dst,
     uint *d_Src,
-    uint diff
+    uint loc
 );
+
+
 
 
 extern "C" CUdeviceptr presum(
@@ -92,16 +101,17 @@ extern "C" CUdeviceptr diff_part(
     uint size
 );
 
-extern "C" CUdeviceptr transpart(
+extern "C" CUdeviceptr transport(
     CUdeviceptr d_Input,
     uint tnum,
     uint arrayLength,
     uint size
 );
 
-extern "C" CUdeviceptr transport(
+extern "C" uint getValue(
     CUdeviceptr d_Input,
-    uint tnum
+    uint tnum,
+    uint *res
 );
 
 

@@ -108,8 +108,6 @@ CUdeviceptr presum(CUdeviceptr *d_Input, uint arrayLength)
 
         N = MAX_LARGE_ARRAY_SIZE * iDivUp(arrayLength,MAX_LARGE_ARRAY_SIZE);
 
-        printf("N = %d\n",N);
-
         checkCudaErrors(cudaMalloc((void **)&d_Output, N * sizeof(uint)));      
         
         checkCudaErrors(cudaDeviceSynchronize());
@@ -170,33 +168,14 @@ CUdeviceptr diff_part(CUdeviceptr d_Input , uint tnum , uint arrayLength, uint s
 
 }
 
-CUdeviceptr transpart(CUdeviceptr d_Input , uint tnum, uint arrayLength, uint size){
+CUdeviceptr transport(CUdeviceptr d_Input , uint tnum , uint arrayLength, uint size){
 
   CUdeviceptr d_Output;
   
   checkCudaErrors(cudaMalloc((void **)&d_Output, (arrayLength+1) * sizeof(uint)));
   checkCudaErrors(cudaDeviceSynchronize());
 
-  transport_gpu((uint *)d_Output, (uint *)d_Input, tnum,arrayLength,size);
-  //szWorkgroup = scanExclusiveLarge((uint *)d_Output, (uint *)d_Input, pnum, N);
-  checkCudaErrors(cudaDeviceSynchronize());
-
-  // pass or fail (cumulative... all tests in the loop)
-
-  return d_Output;
-
-
-}
-
-
-CUdeviceptr transport(CUdeviceptr d_Input , uint tnum){
-
-  CUdeviceptr d_Output;
-  
-  checkCudaErrors(cudaMalloc((void **)&d_Output, sizeof(uint)));
-  checkCudaErrors(cudaDeviceSynchronize());
-
-  transport_gpu((uint *)d_Output, (uint *)d_Input, tnum);
+  transport_gpu((uint *)d_Output, (uint *)d_Input, tnum, arrayLength,size);
   //szWorkgroup = scanExclusiveLarge((uint *)d_Output, (uint *)d_Input, pnum, N);
   checkCudaErrors(cudaDeviceSynchronize());
 

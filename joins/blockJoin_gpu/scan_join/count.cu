@@ -60,13 +60,6 @@ void count(
 
   if(i<rtn_g){
     for(j = 0; j<BLOCK_SIZE_X &&((j+BLOCK_SIZE_X*blockIdx.x)<ltn_g);j++){
-      /*
-      if(&(Tleft[j])==NULL||&(Tright)==NULL){
-        printf("memory error in .cu.\n");
-        return;// -1;
-      } 
-      */
-      //tuple match or not
       if((Tleft[j].val==Tright.val)) {
         mcount++;
       }

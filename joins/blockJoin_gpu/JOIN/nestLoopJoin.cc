@@ -7,13 +7,9 @@
 #include <error.h>
 #include "debug.h"
 
-//#define MAX_LEFT 100
-//#define MAX_RIGHT 100
-
-#define VAL_NUM 1
 #define JT_SIZE 120000000
 #define SELECTIVITY 1000000
-
+#define MATCH_RATE 3/100
 
 int left;
 int right;
@@ -21,17 +17,15 @@ int right;
 typedef enum {LEFT, RIGHT} LR;
 
 typedef struct _TUPLE {
-  //struct timeval t;
   int id;
-  int val[VAL_NUM];
-  //struct _TUPLE *nxt;  
+  int val;
 } TUPLE;
 
 typedef struct _JOIN_TUPLE {
   //struct timeval t;
   int id;
-  int lval[VAL_NUM]; // left value
-  int rval[VAL_NUM]; // right value
+  int lval; // left value
+  int rval; // right value
   // the folloings are just for debug, not necessary
   int lid;
   int rid;
@@ -54,11 +48,8 @@ static void getTuple(TUPLE *p,int n)
 
   int i;
 
-  //gettimeofday(&p->t, NULL);
   p->id = getTupleId();
-  for(i=0;i<VAL_NUM;i++){
-    p->val[i] = n; // selectivity = 1.0
-  }
+  p->val = n; // selectivity = 1.0
 
 }
 
@@ -68,10 +59,9 @@ getJoinTuple(TUPLE *lt, TUPLE *rt,JOIN_TUPLE *jt)
   int i;
 
   jt->id = getTupleId();
-  for(i=0;i<VAL_NUM;i++){
-    jt->lval[i] = lt->val[i];
-    jt->rval[i] = rt->val[i];  
-  }
+  jt->lval = lt->val;
+  jt->rval = rt->val;  
+  
   // lid & rid are just for debug
   jt->lid = lt->id;
   jt->rid = rt->id;
@@ -89,9 +79,8 @@ join()
 
   for (i = 0 ; i < left ; i++) {
     for (j = 0 ; j < right ; j++) {
-      if(Tleft[i].val[0] == Tright[j].val[0]){
+      if(Tleft[i].val == Tright[j].val){
         getJoinTuple(&(Tleft[i]),&(Tright[j]),&(Tjoin[count]));
-        //getJoinTuple(&(Tleft[i]),&(Tright[j]),&(Tjoin[i*right+j]));
         count++;
       }
     }
@@ -110,13 +99,37 @@ init(void)
 
 
   srand((unsigned)time(NULL));
+  uint *used;
+  used = (uint *)calloc(SELECTIVITY,sizeof(uint));
+
   for (int i = 0; i < right; i++) {
-    getTuple(&(Tright[i]), rand()%SELECTIVITY);
+    if(&(Tright[i])==NULL){
+      printf("right TUPLE allocate error.\n");
+      exit(1);
+    }
+
+    if(i < right*MATCH_RATE){
+      uint temp = rand()%SELECTIVITY;
+      while(used[temp] == 1) temp = rand()%SELECTIVITY;
+      used[temp] = 1;
+      getTuple(&(Tright[i]),temp);
+    }else{
+      getTuple(&(Tright[i]),SELECTIVITY + rand()%SELECTIVITY);
+    }
   }
+  free(used);
 
   for (int i = 0; i < left; i++) {
-    getTuple(&(Tleft[i]), rand()%SELECTIVITY);
-  }
+    if(&(Tleft[i])==NULL){
+      printf("left TUPLE allocate error.\n");
+      exit(1);
+    }
+    if(i < right * MATCH_RATE){
+      getTuple(&(Tleft[i]), Tright[i].val);
+    }else{
+      getTuple(&(Tleft[i]), 2 * SELECTIVITY + rand()%SELECTIVITY);
+    }
+  }     
 }
 
 //メモリ解放のため新しく追加した関数。バグがあるかも

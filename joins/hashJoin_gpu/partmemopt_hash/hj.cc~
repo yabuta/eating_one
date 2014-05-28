@@ -160,7 +160,7 @@ join()
   //TUPLE *plt,*prt;
   RESULT result;
   int resultVal = 0;
-
+  uint jt_size;
   uint p_num,t_num;
   uint r_p_max;
   uint *l_p,*radix_num,*p_loc;
@@ -512,6 +512,8 @@ join()
 
   gettimeofday(&time_hkernel_s, NULL);
 
+  p_grid_x = p_grid_x * p_num/ONETH_PART_NUM;
+
   void *lpartition_args[]={
     
     (void *)&lt_dev,
@@ -557,6 +559,9 @@ join()
 
   gettimeofday(&time_lhash_f, NULL);
 
+  printf("ok\n");
+
+  exit(1);
 
   /****************************************************************
     right table partitioning for hash
@@ -671,6 +676,8 @@ join()
   }
 
   gettimeofday(&time_rhk_s, NULL);
+
+  p_grid_x = p_grid_x * p_num/ONETH_PART_NUM;
 
   void *rpartition_args[]={
     
@@ -854,6 +861,12 @@ join()
   /********************************************************************/
 
 
+  if(!getValue(count_dev,(uint)grid_x*block_x*grid_y,&jt_size)){
+    printf("getValue(count_dev) error.\n");
+    exit(1);
+  }
+
+  /*
   if(!(jt_size_dev = transport(count_dev, (uint)grid_x*block_x*grid_y))){
     printf("transport error.\n");
     exit(1);
@@ -866,6 +879,7 @@ join()
     printf("cuMemcpyDtoH (count) failed: res = %lu\n", (unsigned long)res);
     exit(1);    
   }
+  */
 
   printf("jt_size = %d\tx*b_x*y = %d\tl_p_num = %d\n",jt_size,grid_x*block_x*grid_y,l_p_num);
 
@@ -890,13 +904,14 @@ join()
   if(jt_size <= 0){
     printf("no tuple is matched.\n");
     exit(1);
-  }else{
-    res = cuMemAlloc(&jt_dev, jt_size * sizeof(RESULT));
-    if (res != CUDA_SUCCESS) {
-      printf("cuMemAlloc (jt) failed\n");
-      exit(1);
-    }
   }
+  
+  res = cuMemAlloc(&jt_dev, jt_size * sizeof(RESULT));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemAlloc (jt) failed\n");
+    exit(1);
+  }
+  
 
   checkCudaErrors(cudaMemset((void *)jt_dev, 0 , jt_size*sizeof(RESULT)));
 

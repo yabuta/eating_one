@@ -5,13 +5,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <pthread.h>
 #include <sys/time.h>
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <helper_cuda.h>
 #include <helper_functions.h>
-//#include <thrust/scan.h>
 #include <math.h>
 #include <ctype.h>
 #include "debug.h"
@@ -61,7 +59,6 @@ void createTuple()
     printf("cuMemHostAlloc to RIGHT_TUPLE failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
-
   srand((unsigned)time(NULL));
   uint *used;
   used = (uint *)calloc(SELECTIVITY,sizeof(uint));
@@ -71,11 +68,7 @@ void createTuple()
       printf("right TUPLE allocate error.\n");
       exit(1);
     }
-
-    //０に初期化
-    memset(&(rt[i]),0,sizeof(TUPLE));
     rt[i].key = getTupleId();
-
     if(i < right*MATCH_RATE){
       uint temp = rand()%SELECTIVITY;
       while(used[temp] == 1) temp = rand()%SELECTIVITY;
@@ -85,7 +78,7 @@ void createTuple()
       rt[i].val = SELECTIVITY + rand()%SELECTIVITY;
     }
   }
-
+  free(used);
 
   /****************************************************************************/
 
@@ -95,26 +88,19 @@ void createTuple()
     printf("cuMemHostAlloc to LEFT_TUPLE failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
-
   for (int i = 0; i < left; i++) {
     if(&(lt[i])==NULL){
       printf("left TUPLE allocate error.\n");
       exit(1);
     }
-    
-    //０に初期化
-    memset(&(lt[i]),0,sizeof(TUPLE));    
-    lt[i].key = getTupleId();
 
-    //lt[i].val = rand()%SELECTIVITY; // selectivity in tuple.h
+    lt[i].key = getTupleId();
 
     if(i < right*MATCH_RATE){
       lt[i].val = rt[i].val; // selectivity in tuple.h
     }else{
       lt[i].val = 2 * SELECTIVITY + rand()%SELECTIVITY;//rand()%SELECTIVITY; // selectivity in tuple.h
     }
-
-
   }
   
   /*********************************************************************************/
@@ -125,16 +111,6 @@ void createTuple()
   if (res != CUDA_SUCCESS) {
     printf("cuMemHostAlloc to JOIN_TUPLE failed: res = %lu\n", (unsigned long)res);
     exit(1);
-  }
-
-  for(int i=0;i < JT_SIZE;i++){
-    if(&(jt[i])==NULL){
-      printf("left TUPLE allocate error.\n");
-      exit(1);
-    }
-
-    //０に初期化
-    memset(&(jt[i]),0,sizeof(RESULT));
   }
 
   /**********************************************************************************/
@@ -160,7 +136,7 @@ join()
   //TUPLE *plt,*prt;
   RESULT result;
   int resultVal = 0;
-
+  uint jt_size;
   uint p_num,t_num;
   uint r_p_max;
   uint *l_p,*radix_num,*p_loc;
@@ -298,7 +274,6 @@ join()
 
   p_num = 0;
   double temp = left/B_ROW_NUM;
-
   if(temp < 2){
     p_num = 1;
   }else if(floor(log2(temp))==ceil(log2(temp))){
@@ -306,40 +281,32 @@ join()
   }else{
     p_num = pow(2,(int)log2(temp) + 1);
   }
-
-
   t_num = left/LEFT_PER_TH;
   if(left%LEFT_PER_TH != 0){
     t_num++;
   }
 
-  /*L */
-
-  //lL = (uint *)calloc(p_num * t_num,sizeof(uint));
-
   printf("%d\n",p_num * t_num);
 
-  /*lL, plt and prt alloc in GPU */
+  /*lL,plt and prt alloc in GPU */
   res = cuMemAlloc(&lL_dev, p_num * t_num * sizeof(uint));
   if (res != CUDA_SUCCESS) {
     printf("cuMemAlloc (lL) failed\n");
     exit(1);
   }
-
   res = cuMemAlloc(&plt_dev, left * sizeof(TUPLE));
   if (res != CUDA_SUCCESS) {
     printf("cuMemAlloc (plt) failed\n");
     exit(1);
   }
-
   res = cuMemAlloc(&prt_dev, right * sizeof(TUPLE));
   if (res != CUDA_SUCCESS) {
     printf("cuMemAlloc (prt) failed\n");
     exit(1);
   }
-
   printf("t_num=%d\tp_num=%d\n",t_num,p_num);
   
+
   /********************** upload lt , rt , count ,plt, prt, rL, lL***********************/
 
 
@@ -358,23 +325,11 @@ join()
 
   gettimeofday(&time_upload_f, NULL);  
 
-  /*
-  checkCudaErrors(cudaMemset((void *)prt_dev, 0 , left*sizeof(TUPLE)));
-
-  checkCudaErrors(cudaMemset((void *)plt_dev, 0 , right*sizeof(TUPLE)));
-  */
-
   /***************************************************************************/
-
-
-
   gettimeofday(&time_hash_s, NULL);
-
-
 
   /****************************************************************
     left table partitioning for hash
-
 
   ***************************************************************/
   table_type = LEFT;
@@ -390,9 +345,9 @@ join()
   gettimeofday(&time_start, NULL);
   checkCudaErrors(cudaMemset((void *)lL_dev, 0 , p_num*t_num*sizeof(uint)));
   gettimeofday(&time_stop, NULL);
+
   printf("first runtime use\n");
   printDiff(time_start,time_stop);
-
 
   gettimeofday(&time_lhck_s, NULL);
 
@@ -406,9 +361,7 @@ join()
     (void *)&table_type
       
   };
-
   //グリッド・ブロックの指定、変数の指定、カーネルの実行を行う
-
   res = cuLaunchKernel(
                        cp_function,    // CUfunction f
                        p_grid_x,        // gridDimX
@@ -426,7 +379,6 @@ join()
     printf("count cuLaunchKernel() failed: res = %lu\n", (unsigned long int)res);
     exit(1);
   }      
-
   res = cuCtxSynchronize();
   if(res != CUDA_SUCCESS) {
     printf("cuCtxSynchronize() failed: res = %lu\n", (unsigned long int)res);
@@ -454,7 +406,6 @@ join()
     printf("p_sum prefix sum error.\n");
     exit(1);
   }
-
   res = cuMemcpyDtoH(p_sum,p_sum_dev,p_num * sizeof(uint)); 
   if(res != CUDA_SUCCESS){
     printf("cuMemcpyDtoH (p_sum) failed: res = %lu\n", (unsigned long)res);
@@ -475,24 +426,18 @@ join()
       l_p_num += p_sum[i]/B_ROW_NUM + 1;
     }            
   }
-
-
   l_p = (uint *)calloc(l_p_num+1,sizeof(uint));
   radix_num = (uint *)calloc(l_p_num+1,sizeof(uint));
   p_loc = (uint *)calloc(p_num,sizeof(uint));
-
   l_p_num = 0;
   uint temp2 = 0;
-
 
   /****************presum*****************/
   p_loc[0] = 0;
   for(int i=1 ; i<p_num ; i++){
     p_loc[i] = p_loc[i-1] + p_sum[i-1];
   }  
-
   /***************************************/
-
   for(int i=0; i<p_num; i++){
     if(p_sum[i]/B_ROW_NUM < 1 || p_sum[i]==B_ROW_NUM){
       l_p[l_p_num] = p_loc[i];
@@ -514,10 +459,8 @@ join()
       }
     }
   }
-
   l_p[l_p_num] = left;
   radix_num[l_p_num] = p_num;
-
   /***************************
    end of resizing partition
 
@@ -533,12 +476,9 @@ join()
     (void *)&p_num,
     (void *)&t_num,
     (void *)&left,
-    (void *)&table_type
-      
+    (void *)&table_type      
   };
-
   //グリッド・ブロックの指定、変数の指定、カーネルの実行を行う
-
   res = cuLaunchKernel(
                        p_function,    // CUfunction f
                        p_grid_x,        // gridDimX
@@ -556,7 +496,6 @@ join()
     printf("count cuLaunchKernel() failed: res = %lu\n", (unsigned long int)res);
     exit(1);
   }      
-
   res = cuCtxSynchronize();
   if(res != CUDA_SUCCESS) {
     printf("left partition cuCtxSynchronize() failed: res = %lu\n", (unsigned long int)res);
@@ -581,7 +520,6 @@ join()
 
   gettimeofday(&time_rhash_s, NULL);
 
-  
   t_num = right/RIGHT_PER_TH;
   if(right%RIGHT_PER_TH != 0){
     t_num++;
@@ -594,7 +532,6 @@ join()
     printf("cuMemAlloc (rL) failed\n");
     exit(1);
   }
-
   checkCudaErrors(cudaMemset((void *)rL_dev, 0 , p_num*t_num*sizeof(uint)));
 
   p_block_x = t_num < PART_C_NUM ? t_num : PART_C_NUM;
@@ -632,8 +569,7 @@ join()
   if(res != CUDA_SUCCESS) {
     printf("count cuLaunchKernel() failed: res = %lu\n", (unsigned long int)res);
     exit(1);
-  }      
-
+  }
   res = cuCtxSynchronize();
   if(res != CUDA_SUCCESS) {
     printf("cuCtxSynchronize() failed: res = %lu\n", (unsigned long int)res);
@@ -647,31 +583,25 @@ join()
   /**************************** prefix sum *************************************/
 
   gettimeofday(&time_rscan_s, NULL);
-
   if(!(presum(&rL_dev,(uint)t_num*p_num))){
     printf("presum error\n");
     exit(1);
   }
-
   gettimeofday(&time_rscan_f, NULL);
 
   /********************************************************************/
 
   uint *r_p =  (uint *)calloc(p_num+1,sizeof(uint));
   uint rdiff;
-
   if(!(r_p_dev = transport(rL_dev,t_num,p_num,right))){
     printf("transport error.\n");
     exit(1);
   }
-
-
   res = cuMemcpyDtoH(r_p,r_p_dev,(p_num+1) * sizeof(uint)); 
   if(res != CUDA_SUCCESS){
     printf("cuMemcpyDtoH (r_p) failed: res = %lu\n", (unsigned long)res);
     exit(1);    
   }
-
   for(uint i = 0; i<p_num+1 ;i++){
     if(i==0){
       r_p_max = r_p[i];
@@ -752,7 +682,6 @@ join()
 
   block_x = r_p_max < BLOCK_SIZE_X ? r_p_max : BLOCK_SIZE_X;
   block_y = BLOCK_SIZE_Y;
-
   grid_x = l_p_num;
   grid_y = GRID_SIZE_Y;
 
@@ -762,30 +691,22 @@ join()
     printf("cuMemAlloc (count) failed\n");
     exit(1);
   }
-
   res = cuMemAlloc(&l_p_dev, (l_p_num+1) * sizeof(uint));
   if (res != CUDA_SUCCESS) {
     printf("cuMemAlloc (l_p) failed\n");
     exit(1);
   }
-
   res = cuMemAlloc(&radix_dev, (l_p_num+1) * sizeof(uint));
   if (res != CUDA_SUCCESS) {
     printf("cuMemAlloc (radix) failed\n");
     exit(1);
   }
-
-  count = (uint *)calloc(3,sizeof(uint));
-
-
   checkCudaErrors(cudaMemset((void *)count_dev, 0 , grid_x*block_x*grid_y*sizeof(uint)));
-
   res = cuMemcpyHtoD(l_p_dev, l_p, (l_p_num+1) * sizeof(uint));
   if (res != CUDA_SUCCESS) {
     printf("cuMemcpyHtoD (count) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
-
   res = cuMemcpyHtoD(radix_dev, radix_num, (l_p_num+1) * sizeof(uint));
   if (res != CUDA_SUCCESS) {
     printf("cuMemcpyHtoD (count) failed: res = %lu\n", (unsigned long)res);
@@ -817,9 +738,6 @@ join()
       
   };
 
-  int sharedMemBytes = B_ROW_NUM*sizeof(TUPLE);
-
-
   //グリッド・ブロックの指定、変数の指定、カーネルの実行を行う
 
   res = cuLaunchKernel(
@@ -830,7 +748,7 @@ join()
                        block_x,     // blockDimX
                        block_y,       // blockDimY
                        1,             // blockDimZ
-                       sharedMemBytes,             // sharedMemBytes
+                       0,             // sharedMemBytes
                        NULL,          // hStream
                        count_args,   // keunelParams
                        NULL           // extra
@@ -839,7 +757,6 @@ join()
     printf("count cuLaunchKernel() failed: res = %lu\n", (unsigned long int)res);
     exit(1);
   }      
-
   res = cuCtxSynchronize();
   if(res != CUDA_SUCCESS) {
     printf("cuCtxSynchronize() failed: res = %lu\n", (unsigned long int)res);
@@ -862,31 +779,16 @@ join()
 
   /********************************************************************/
 
-
-  CUdeviceptr jt_size_dev;
-
-  if(!(jt_size_dev = transport(count_dev, (uint)grid_x*block_x*grid_y, 2, (uint)right))){
-    printf("transport error.\n");
+  if(!getValue(count_dev,(uint)grid_x*block_x*grid_y,&jt_size)){
+    printf("getValue(count_dev) error.\n");
     exit(1);
   }
-
-  //getMaxValue(count_dev);
-  res = cuMemcpyDtoH(count,jt_size_dev,3 * sizeof(uint)); 
-  if(res != CUDA_SUCCESS){
-    printf("cuMemcpyDtoH (count) failed: res = %lu\n", (unsigned long)res);
-    exit(1);    
-  }
-
-  uint jt_size = count[1];
 
   printf("jt_size = %d\tx*b_x*y = %d\tl_p_num = %d\n",jt_size,grid_x*block_x*grid_y,l_p_num);
 
   gettimeofday(&time_count_f, NULL);
 
   /***************************************************************************************/
-
-
-
 
 
   /************************************************************************
@@ -902,24 +804,13 @@ join()
   if(jt_size <= 0){
     printf("no tuple is matched.\n");
     exit(1);
-  }else{
-    res = cuMemAlloc(&jt_dev, jt_size * sizeof(RESULT));
-    if (res != CUDA_SUCCESS) {
-      printf("cuMemAlloc (jt) failed\n");
-      exit(1);
-    }
   }
-
-  checkCudaErrors(cudaMemset((void *)jt_dev, 0 , jt_size*sizeof(RESULT)));
-
-  /*
-  res = cuMemcpyHtoD(jt_dev, jt, jt_size * sizeof(RESULT));
+  res = cuMemAlloc(&jt_dev, jt_size * sizeof(RESULT));
   if (res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD (join) failed: res = %lu\n", (unsigned long)res);
+    printf("cuMemAlloc (jt) failed\n");
     exit(1);
   }
-  */
-
+  
   gettimeofday(&time_jkernel_s, NULL);
 
   void *kernel_args[]={
@@ -1101,23 +992,11 @@ join()
   printf("join download time:\n");
   printDiff(time_jdown_s,time_jdown_f);
 
-  /*
-  printf("count time:\n");
-  printDiff(time_count_s,time_count_f);
-  printf("upload time of jt:\n");
-  printDiff(time_jup_s,time_jup_f);
-  printf("download time of jt:\n");
-  printDiff(time_jdown_s,time_jdown_f);
-  */
-
-
-  //free(lL);
-  //free(rL);
   free(p_sum);
   free(l_p);
   free(radix_num);
   free(p_loc);
-
+  free(r_p);
 
 
   //finish GPU   ****************************************************

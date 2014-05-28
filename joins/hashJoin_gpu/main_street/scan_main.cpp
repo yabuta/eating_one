@@ -185,3 +185,25 @@ CUdeviceptr transport(CUdeviceptr d_Input , uint tnum , uint arrayLength, uint s
 
 
 }
+
+uint getValue(CUdeviceptr d_Input , uint loc , uint *res){
+
+  CUdeviceptr d_Output;
+  
+  checkCudaErrors(cudaMalloc((void **)&d_Output, sizeof(int)));
+  checkCudaErrors(cudaDeviceSynchronize());
+
+  getValue_gpu((uint *)d_Output, (uint *)d_Input, loc);
+  checkCudaErrors(cudaDeviceSynchronize());
+
+  if(cuMemcpyDtoH(res,d_Output,sizeof(uint)) != CUDA_SUCCESS){
+    printf("cuMemcpyDtoH(d_Output) error.\n");
+    exit(1);
+  }
+
+  cuMemFree(d_Output);
+
+  return SUCCESS;
+
+
+}

@@ -160,7 +160,7 @@ join()
   //TUPLE *plt,*prt;
   RESULT result;
   int resultVal = 0;
-
+  uint jt_size;
   uint p_num,t_num;
   uint r_p_max;
   uint *l_p,*radix_num,*p_loc;
@@ -652,7 +652,7 @@ join()
   uint *r_p =  (uint *)calloc(p_num+1,sizeof(uint));
   uint rdiff;
 
-  if(!(r_p_dev = transpart(rL_dev,t_num,p_num,right))){
+  if(!(r_p_dev = transport(rL_dev,t_num,p_num,right))){
     printf("transport error.\n");
     exit(1);
   }
@@ -861,6 +861,12 @@ join()
   /********************************************************************/
 
 
+  if(!getValue(count_dev,(uint)grid_x*block_x*grid_y,&jt_size)){
+    printf("getValue(count_dev) error.\n");
+    exit(1);
+  }
+
+  /*
   if(!(jt_size_dev = transport(count_dev, (uint)grid_x*block_x*grid_y))){
     printf("transport error.\n");
     exit(1);
@@ -873,6 +879,7 @@ join()
     printf("cuMemcpyDtoH (count) failed: res = %lu\n", (unsigned long)res);
     exit(1);    
   }
+  */
 
   printf("jt_size = %d\tx*b_x*y = %d\tl_p_num = %d\n",jt_size,grid_x*block_x*grid_y,l_p_num);
 
@@ -897,13 +904,14 @@ join()
   if(jt_size <= 0){
     printf("no tuple is matched.\n");
     exit(1);
-  }else{
-    res = cuMemAlloc(&jt_dev, jt_size * sizeof(RESULT));
-    if (res != CUDA_SUCCESS) {
-      printf("cuMemAlloc (jt) failed\n");
-      exit(1);
-    }
   }
+  
+  res = cuMemAlloc(&jt_dev, jt_size * sizeof(RESULT));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemAlloc (jt) failed\n");
+    exit(1);
+  }
+  
 
   checkCudaErrors(cudaMemset((void *)jt_dev, 0 , jt_size*sizeof(RESULT)));
 

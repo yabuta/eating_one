@@ -6,6 +6,12 @@ primary_inner
 sudo ./InnerExe 1000 1000
 
 
+scan_inner
+scan等hash joinで得た改善方法を適応している
+実行方法
+./InnerExe 1048576 1048576
+
+
 
 ori_innerはGPU化する前のinner index joinが入っている
 実行方法

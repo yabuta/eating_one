@@ -69,9 +69,6 @@ init(void)
       printf("right TUPLE allocate error.\n");
       exit(1);
     }
-
-    //０に初期化
-    memset(&(Tright[i]),0,sizeof(TUPLE));
     Tright[i].id = getTupleId();
 
     if(i < arg_right*MATCH_RATE){
@@ -84,6 +81,7 @@ init(void)
     }        
 
   }
+  free(used);
 
   /****************************************************************************/
 
@@ -102,19 +100,13 @@ init(void)
       exit(1);
     }
     
-    //０に初期化
-    memset(&(Tleft[i]),0,sizeof(TUPLE));    
     Tleft[i].id = getTupleId();
 
-    Tleft[i].val = rand()%SELECTIVITY; // selectivity for jt size = 1000000 
-
-    if(i < arg_left * MATCH_RATE){
+    if(i < arg_right * MATCH_RATE){
       Tleft[i].val = Tright[i].val;
     }else{
       Tleft[i].val = 2 * SELECTIVITY + rand()%SELECTIVITY;
     }
-
-
   }     
   
   /*********************************************************************************/
@@ -124,17 +116,6 @@ init(void)
   if (res != CUDA_SUCCESS) {
     printf("cuMemHostAlloc to JOIN_TUPLE failed: res = %lu\n", (unsigned long)res);
     exit(1);
-  }
-
-  for(int i=0;i < JT_SIZE;i++){
-    if(&(Tjoin[i])==NULL){
-      printf("left TUPLE allocate error.\n");
-      exit(1);
-    }
-
-    //０に初期化
-    memset(&(Tjoin[i]),0,sizeof(JOIN_TUPLE));
-    Tjoin[i].id = getTupleId();
   }
 
   /**********************************************************************************/

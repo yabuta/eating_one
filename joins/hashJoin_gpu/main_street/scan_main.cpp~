@@ -61,7 +61,7 @@ CUdeviceptr presum(CUdeviceptr *d_Input, uint arrayLength)
 
         checkCudaErrors(cudaDeviceSynchronize());
 
-        scanExclusiveShort((uint *)d_Output, (uint *)(*d_Input), 1, N);
+        scanExclusiveShort((uint *)d_Output, (uint *)(*d_Input), N);
         //szWorkgroup = scanExclusiveShort((uint *)d_Output, (uint *)d_Input, 1, N);
 
         checkCudaErrors(cudaDeviceSynchronize());
@@ -91,7 +91,7 @@ CUdeviceptr presum(CUdeviceptr *d_Input, uint arrayLength)
       
       checkCudaErrors(cudaDeviceSynchronize());
 
-      scanExclusiveLarge((uint *)d_Output, (uint *)(*d_Input), 1, N);
+      scanExclusiveLarge((uint *)d_Output, (uint *)(*d_Input), N);
       //szWorkgroup = scanExclusiveLarge((uint *)d_Output, (uint *)d_Input, 1, N);
       
       checkCudaErrors(cudaDeviceSynchronize());
@@ -112,7 +112,7 @@ CUdeviceptr presum(CUdeviceptr *d_Input, uint arrayLength)
         
         checkCudaErrors(cudaDeviceSynchronize());
 
-        scanExclusiveLL((uint *)d_Output, (uint *)(*d_Input), 1, N);
+        scanExclusiveLL((uint *)d_Output, (uint *)(*d_Input), N);
         //szWorkgroup = scanExclusiveLL((uint *)d_Output, (uint *)d_Input, 1, N);
         
         checkCudaErrors(cudaDeviceSynchronize());

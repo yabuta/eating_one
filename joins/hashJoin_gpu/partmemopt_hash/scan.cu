@@ -243,7 +243,8 @@ __global__ void diff_kernel(
 
 }
 
-__global__ void transpart_kernel(
+
+__global__ void transport_kernel(
     uint *d_Data,
     uint *d_Src,
     uint pnum,
@@ -268,18 +269,15 @@ __global__ void transpart_kernel(
 
 }
 
-
-__global__ void transport_kernel(
+__global__ void getValue_kernel(
     uint *d_Data,
     uint *d_Src,
-    uint pnum
+    uint loc
 )
 {
-
-  d_Data[0] = d_Src[pnum-1];
+  d_Data[0] = d_Src[loc-1];
 
 }
-
 
 
 
@@ -541,7 +539,7 @@ extern "C" size_t diff_Part(
 }
 
 
-extern "C" void transpart_gpu(
+extern "C" void transport_gpu(
     uint *d_Dst,
     uint *d_Src,
     uint diff,
@@ -550,12 +548,11 @@ extern "C" void transpart_gpu(
 )
 {
 
-
     //Check total batch size limit
     //assert((arrayLength) <= MAX_BATCH_ELEMENTS);
 
     const uint blockCount = iDivUp(arrayLength , LOOP_PERTHREAD2*THREADBLOCK_SIZE);
-    transpart_kernel<<<blockCount, THREADBLOCK_SIZE>>>(
+    transport_kernel<<<blockCount, THREADBLOCK_SIZE>>>(
         d_Dst,
         d_Src,
         diff,
@@ -564,26 +561,27 @@ extern "C" void transpart_gpu(
     );
     getLastCudaError("transport_gpu() execution FAILED\n");
     checkCudaErrors(cudaDeviceSynchronize());
+
 }
 
 
-extern "C" void transport_gpu(
+//transport input data to output per diff
+extern "C" void getValue_gpu(
     uint *d_Dst,
     uint *d_Src,
-    uint diff
+    uint loc
 )
 {
 
     //Check total batch size limit
     //assert((arrayLength) <= MAX_BATCH_ELEMENTS);
 
-  const uint blockCount = 1;//iDivUp(arrayLength , LOOP_PERTHREAD2*THREADBLOCK_SIZE);
-    transport_kernel<<<blockCount, 1>>>(
-        d_Dst,
-        d_Src,
-        diff
-    );
-    getLastCudaError("transport_gpu() execution FAILED\n");
-    checkCudaErrors(cudaDeviceSynchronize());
+  getValue_kernel<<<1, 1>>>(
+                            d_Dst,
+                            d_Src,
+                            loc
+                            );
+  getLastCudaError("transport_gpu() execution FAILED\n");
+  checkCudaErrors(cudaDeviceSynchronize());
 
 }
