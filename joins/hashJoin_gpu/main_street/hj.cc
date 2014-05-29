@@ -69,7 +69,7 @@ void createTuple()
       exit(1);
     }
     rt[i].key = getTupleId();
-    if(i < right*MATCH_RATE){
+    if(i < right *MATCH_RATE){
       uint temp = rand()%SELECTIVITY;
       while(used[temp] == 1) temp = rand()%SELECTIVITY;
       used[temp] = 1;
@@ -96,7 +96,7 @@ void createTuple()
 
     lt[i].key = getTupleId();
 
-    if(i < right*MATCH_RATE){
+    if(i < right *MATCH_RATE){
       lt[i].val = rt[i].val; // selectivity in tuple.h
     }else{
       lt[i].val = 2 * SELECTIVITY + rand()%SELECTIVITY;//rand()%SELECTIVITY; // selectivity in tuple.h

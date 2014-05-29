@@ -19,7 +19,7 @@ TUPLE *rt;
 TUPLE *lt;
 RESULT *jt;
 
-int right,left;
+uint right,left;
 
 void
 printDiff(struct timeval begin, struct timeval end)
@@ -40,17 +40,6 @@ getTupleId(void)
   return ++id;
 }
 
-static void getTuple(TUPLE *p,int n)
-{
-
-  int i;
-
-  p->key = getTupleId();
-  for(i=0; i<NUM_VAL; i++){
-    p->val = n; // selectivity = 0.01
-  }
-
-}
 
 void createTuple()
 {
@@ -63,26 +52,39 @@ void createTuple()
   srand((unsigned)time(NULL));
   uint *used;
   used = (uint *)calloc(SELECTIVITY,sizeof(uint));
+  uint diff;
+  if(MATCH_RATE != 0){
+    diff = 1/MATCH_RATE;
+  }else{
+    diff = 1;
+  }
+  uint counter = 0;
 
-
-  for (int i = 0; i < right; i++) {
-    if(i < right * MATCH_RATE){
+  for (uint i = 0; i < right; i++) {
+    rt[i].key = getTupleId();
+    if(i%diff == 0 && counter < right*MATCH_RATE){
       uint temp = rand()%SELECTIVITY;
       while(used[temp] == 1) temp = rand()%SELECTIVITY;
       used[temp] = 1;
-      getTuple(&(rt[i]),temp);
+      rt[i].val = temp;
+      counter++;
     }else{
-      getTuple(&(rt[i]),SELECTIVITY + rand()%SELECTIVITY);
+      rt[i].val = SELECTIVITY + rand()%SELECTIVITY;
+    }
+  }
+  free(used);
+
+  counter = 0;
+  for (uint i = 0; i < left; i++) {
+    lt[i].key = getTupleId();
+    if(i%diff == 0 && counter < right*MATCH_RATE){
+      lt[i].val = rt[i].val;
+      counter++;
+    }else{
+      lt[i].val = 2 * SELECTIVITY + rand()%SELECTIVITY;
     }
   }
 
-  for (int i = 0; i < left; i++) {
-    if(i < right * MATCH_RATE){
-      getTuple(&(lt[i]),rt[i].val);
-    }else{
-      getTuple(&(lt[i]),2 * SELECTIVITY + rand()%SELECTIVITY);
-    }
-  }
 
 
 }
@@ -126,7 +128,7 @@ main(int argc,char *argv[])
   
   int count = 0;
   for (unsigned int i = 0; i < NB_BUCKET; i++) idxcount[i] = 0;
-  for (int i = 0; i < right; i++) {
+  for (uint i = 0; i < right; i++) {
     int idx = rt[i].val % NB_BUCKET;
     idxcount[idx]++;
     //count++;
@@ -142,7 +144,7 @@ main(int argc,char *argv[])
     count += idxcount[i];
   }
   for (unsigned int i = 0; i < NB_BUCKET; i++) idxcount[i] = 0;
-  for (int i = 0; i < right; i++) {
+  for (uint i = 0; i < right; i++) {
     int idx = rt[i].val % NB_BUCKET;
     Bucket[Buck_array[idx] + idxcount[idx]].val = rt[i].val;
     Bucket[Buck_array[idx] + idxcount[idx]].adr = i;
@@ -153,7 +155,7 @@ main(int argc,char *argv[])
   //gettimeofday(&begin, NULL);
   gettimeofday(&begin, NULL);
 
-  for (int j = 0; j < left; j++) {
+  for (uint j = 0; j < left; j++) {
     int hash = lt[j].val % NB_BUCKET;
     for (int i = 0; i < idxcount[hash] ;i++ ) {
       if (Bucket[Buck_array[hash] + i].val == lt[j].val) {

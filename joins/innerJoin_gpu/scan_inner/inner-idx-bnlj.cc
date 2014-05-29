@@ -61,24 +61,33 @@ void createTuple()
   srand((unsigned)time(NULL));
   uint *used;
   used = (uint *)calloc(SELECTIVITY,sizeof(uint));
+  uint diff;
+  if(MATCH_RATE != 0){
+    diff = 1/MATCH_RATE;
+  }else{
+    diff = 1;
+  }
+  uint counter = 0;
+
   for (int i = 0; i < right; i++) {
     if(&(rt[i])==NULL){
       printf("right TUPLE allocate error.\n");
       exit(1);
     }
     rt[i].key = getTupleId();
-    if(i < right*MATCH_RATE){
+    if(i%diff == 0 && counter < right*MATCH_RATE){
       uint temp = rand()%SELECTIVITY;
       while(used[temp] == 1) temp = rand()%SELECTIVITY;
       used[temp] = 1;
       rt[i].val = temp; // selectivity = 1.0
+      counter++;
     }else{
       rt[i].val = SELECTIVITY + rand()%SELECTIVITY;
     }
   }
 
   free(used);
-
+  counter = 0;
 
 
   //LEFT_TUPLEへのGPUでも参照できるメモリの割り当て*******************************
@@ -87,6 +96,7 @@ void createTuple()
     printf("cuMemHostAlloc to LEFT_TUPLE failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
+  
 
   for (int i = 0; i < left; i++) {
     if(&(lt[i])==NULL){
@@ -94,8 +104,9 @@ void createTuple()
       exit(1);
     }    
     lt[i].key = getTupleId();
-    if(i < right * MATCH_RATE){
+    if(i%diff == 0 && counter < right*MATCH_RATE){
       lt[i].val = rt[i].val; // selectivity = 1.0
+      counter++;
     }else{
       lt[i].val = 2 * SELECTIVITY + rand()%SELECTIVITY;
     }
@@ -163,7 +174,7 @@ void join(){
   CUdeviceptr lt_dev, rt_dev, jt_dev, bucket_dev, buckArray_dev ,idxcount_dev;
   CUdeviceptr ltn_dev, rtn_dev, jt_size_dev;
   CUdeviceptr c_dev,temp_dev;
-  unsigned int block_x, block_y, grid_x, grid_y;
+  unsigned int block_x, grid_x;
   char fname[256];
   const char *path=".";
   struct timeval begin, end;
@@ -233,25 +244,16 @@ void join(){
 
   createTuple();
 
-
   createIndex();
 
 
   gettimeofday(&begin, NULL);
   /****************************************************************/
 
-  //block_x = left < BLOCK_SIZE_X ? left : BLOCK_SIZE_X;
-  block_y = left < BLOCK_SIZE_Y ? left : BLOCK_SIZE_Y;
-
-  /*
+  block_x = left < BLOCK_SIZE_X ? left : BLOCK_SIZE_X;
   grid_x = left / block_x;
-  if (left % block_x != 0)
+  if (right % block_x != 0)
     grid_x++;
-  */
-  
-  grid_y = left / block_y;
-  if (right % block_y != 0)
-    grid_y++;
   
 
   /********************************************************************
@@ -412,11 +414,11 @@ void join(){
 
   res = cuLaunchKernel(
                        c_function,    // CUfunction f
-                       1,        // gridDimX
-                       grid_y,        // gridDimY
+                       grid_x,        // gridDimX
+                       1,        // gridDimY
                        1,             // gridDimZ
-                       1,       // blockDimX
-                       block_y,       // blockDimY
+                       block_x,       // blockDimX
+                       1,       // blockDimY
                        1,             // blockDimZ
                        0,             // sharedMemBytes
                        NULL,          // hStream
@@ -499,11 +501,11 @@ void join(){
   //グリッド・ブロックの指定、変数の指定、カーネルの実行を行う
   res = cuLaunchKernel(
                        function,      // CUfunction f
-                       1,        // gridDimX
-                       grid_y,        // gridDimY
+                       grid_x,        // gridDimX
+                       1,        // gridDimY
                        1,             // gridDimZ
-                       1,       // blockDimX
-                       block_y,       // blockDimY
+                       block_x,       // blockDimX
+                       1,       // blockDimY
                        1,             // blockDimZ
                        0,             // sharedMemBytes
                        NULL,          // hStream

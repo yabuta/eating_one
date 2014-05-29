@@ -19,25 +19,26 @@ __global__ void join(
 {
 
 
-  int y = blockIdx.y * blockDim.y + threadIdx.y;
+  int x = blockIdx.x * blockDim.x + threadIdx.x;
 
 
   uint writeloc = 0;
-  if(y > 0){
-    writeloc = count[y-1];
+  if(x > 0){
+    writeloc = count[x-1];
   }
 
-  if(y < left){
-    int idx = lt[y].val % NB_BKT_ENT;
+  if(x < left){
+    int val = lt[x].val;
+    int idx = val % NB_BKT_ENT;
     int idx_c = idxcount[idx];
     int buck_a = buck_array[idx];
 
     if(buck_a != -1){
       int i = 0;
       for(int k = 0; k < idx_c; k++){
-        if(bucket[buck_a + k].val == lt[y].val){
-          jt[writeloc + i].rkey = lt[y].key;
-          jt[writeloc + i].rval = lt[y].val;
+        if(bucket[buck_a + k].val == val){
+          jt[writeloc + i].rkey = lt[x].key;
+          jt[writeloc + i].rval = val;
           jt[writeloc + i].lkey = rt[bucket[buck_a + k].adr].key;
           jt[writeloc + i].lval = rt[bucket[buck_a + k].adr].val;
           

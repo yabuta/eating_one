@@ -9,7 +9,7 @@ __global__ void join(
           TUPLE *rt,
           TUPLE *lt,
           RESULT *jt,
-          int *count,
+          uint *count,
           BUCKET *bucket,
           int *buck_array,
           int *idxcount,
@@ -22,7 +22,7 @@ __global__ void join(
   int y = blockIdx.y * blockDim.y + threadIdx.y;
 
 
-  int writeloc = 0;
+  uint writeloc = 0;
   if(y > 0){
     writeloc = count[y-1];
   }

@@ -78,7 +78,7 @@
 
 #define JT_SIZE 120000000 //max result tuple size
 #define SELECTIVITY 100000000  //the range of random value for tuple
-#define MATCH_RATE 3/100          //match rate (selectivity)
+#define MATCH_RATE 3/100          //match rate (selectivity,%)
 
 #define LEFT 0
 #define RIGHT 1
