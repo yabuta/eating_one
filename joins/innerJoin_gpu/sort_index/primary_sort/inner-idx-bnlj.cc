@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
-//#include <time.h>
 #include <sys/time.h>
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -93,21 +92,23 @@ void createTuple()
     printf("cuMemHostAlloc to LEFT_TUPLE failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
-  
 
-  for (int i = 0; i < left; i++) {
-    if(&(lt[i])==NULL){
-      printf("left TUPLE allocate error.\n");
-      exit(1);
-    }    
+  uint l_diff;
+  if(MATCH_RATE != 0){
+    l_diff = left/(MATCH_RATE*right);
+  }else{
+    l_diff = 1;
+  }
+  for (uint i = 0; i < left; i++) {
     lt[i].key = getTupleId();
-    if(i%diff == 0 && counter < right*MATCH_RATE){
-      lt[i].val = rt[i].val; // selectivity = 1.0
+    if(i%l_diff == 0 && counter < MATCH_RATE*right){
+      lt[i].val = rt[counter*diff].val;
       counter++;
     }else{
       lt[i].val = 2 * SELECTIVITY + rand()%SELECTIVITY;
     }
   }
+
 
 }
 
@@ -198,7 +199,7 @@ void join(){
   char fname[256];
   const char *path=".";
   struct timeval begin, end;
-  struct timeval time_join_s,time_join_f;
+  struct timeval time_join_s,time_join_f,time_send_s,time_send_f;
   struct timeval time_count_s,time_count_f,time_tsend_s,time_tsend_f,time_isend_s,time_isend_f;
   struct timeval time_jdown_s,time_jdown_f,time_jkernel_s,time_jkernel_f;
   struct timeval time_scan_s,time_scan_f,time_alloc_s,time_alloc_f,time_index_s,time_index_f;
@@ -315,7 +316,7 @@ void join(){
   
   /********************** upload lt , rt , bucket ,buck_array ,idxcount***********************/
 
-
+  gettimeofday(&time_send_s, NULL);
   gettimeofday(&time_tsend_s, NULL);
 
   res = cuMemcpyHtoD(lt_dev, lt, left * sizeof(TUPLE));
@@ -340,7 +341,7 @@ void join(){
   }
 
   gettimeofday(&time_isend_f, NULL);
-
+  gettimeofday(&time_send_f, NULL);
 
   /***************************************************************************/
 
@@ -479,6 +480,8 @@ void join(){
 
   gettimeofday(&time_jkernel_f, NULL);
 
+  gettimeofday(&time_join_f, NULL);
+
   gettimeofday(&time_jdown_s, NULL);
 
   res = cuMemcpyDtoH(jt, jt_dev, jt_size * sizeof(RESULT));
@@ -488,9 +491,6 @@ void join(){
   }
 
   gettimeofday(&time_jdown_f, NULL);
-
-
-  gettimeofday(&time_join_f, NULL);
 
 
   gettimeofday(&end, NULL);
@@ -539,9 +539,10 @@ void join(){
   printf("gpu memory alloc time:\n");
   printDiff(time_alloc_s,time_alloc_f);
   printf("\n");
+  printf("data send time:\n");
+  printDiff(time_send_s,time_send_f);
   printf("table data send time:\n");
   printDiff(time_tsend_s,time_tsend_f);
-  printf("\n");
   printf("index data send time:\n");
   printDiff(time_isend_s,time_isend_f);
   printf("\n");

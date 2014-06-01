@@ -1,0 +1,7 @@
+hash joinのCPU実装
+
+
+実行方法：
+./Hjexe left_tuple_num right_tuple_num
+
+ex) ./Hjexe 1048576 1048576

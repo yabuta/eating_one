@@ -39,10 +39,7 @@ CUdeviceptr presum(CUdeviceptr *d_Input, uint arrayLength)
 
     uint N = 0;
     CUdeviceptr d_Output;
-    struct timeval start,stop;
-    gettimeofday(&start, NULL);
     initScan();
-    gettimeofday(&stop, NULL);
 
     if(arrayLength <= MAX_SHORT_ARRAY_SIZE && arrayLength > MIN_SHORT_ARRAY_SIZE)
       {    
@@ -101,10 +98,6 @@ CUdeviceptr presum(CUdeviceptr *d_Input, uint arrayLength)
 
     cuMemFree(*d_Input);
     *d_Input = d_Output;
-
-    
-    printf("inside scan time:\n");
-    printDiff(start,stop);
 
     return d_Output;
 }

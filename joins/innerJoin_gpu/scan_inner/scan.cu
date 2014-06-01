@@ -281,17 +281,9 @@ static uint *e_Buf;
 extern "C" void initScan(void)
 {
 
-  struct timeval start,stop;
-
-  //here it is late
-  gettimeofday(&start,NULL);
   cudaMalloc((void **)&d_Buf, (MAX_BATCH_ELEMENTS / (4 * THREADBLOCK_SIZE)) * sizeof(uint));
   
   checkCudaErrors(cudaMalloc((void **)&e_Buf, (MAX_BATCH_ELEMENTS / (4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE)) * sizeof(uint)));
-  gettimeofday(&stop,NULL);
-
-  printf("scan gpu malloc time.\n");
-  printDiff(start,stop);
 
 }
 
