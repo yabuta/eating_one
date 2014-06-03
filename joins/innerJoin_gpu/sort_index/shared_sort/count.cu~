@@ -42,26 +42,25 @@ void count(
    *だから、xがleft、yがrightに対応しているよ
    */
 
-  int i = blockIdx.y * blockDim.y + threadIdx.y;
+  int x = blockIdx.x * blockDim.x + threadIdx.x;
   
-  if(i < left){
-    int idx = lt[i].val;
+  if(x < left){
+    int idx = lt[x].val;
     uint temp = 0;
     uint bidx = search(bucket,idx,right);
-    uint x = bidx;
-    while(bucket[x].val == idx){
+    uint seq = bidx;
+    while(bucket[seq].val == idx){
       temp++;
-      if(x == 0) break;
-      x--;
+      if(seq == 0) break;
+      seq--;
     }
-    x = bidx+1;
-    while(bucket[x].val == idx){
+    seq = bidx+1;
+    while(bucket[seq].val == idx){
       temp++;
-      if(x == right-1) break;
-      x++;
+      if(seq == right-1) break;
+      seq++;
     }
-    count[i] = temp;
-
+    count[x] = temp;
   }
 
 }

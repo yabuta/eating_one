@@ -330,13 +330,14 @@ void join(){
 
   gettimeofday(&time_tsend_f, NULL);
 
-  gettimeofday(&time_isend_s, NULL);
 
   res = cuMemcpyHtoD(bucket_dev, Bucket, right * sizeof(BUCKET));
   if (res != CUDA_SUCCESS) {
     printf("cuMemcpyHtoD (bucket) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
+
+  gettimeofday(&time_isend_s, NULL);
 
   res = cuMemcpyHtoD(buckArray_dev, Buck_array, NB_BKT_ENT * sizeof(int));
   if (res != CUDA_SUCCESS) {

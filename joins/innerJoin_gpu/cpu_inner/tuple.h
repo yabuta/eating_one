@@ -1,6 +1,6 @@
 #define NB_BUCKET 134217728 //radix
 
-#define MATCH_RATE 1.00  //match rate setting
+#define MATCH_RATE 0.1  //match rate setting
 
 #define JT_SIZE 1200000000
 #define SELECTIVITY 100000000

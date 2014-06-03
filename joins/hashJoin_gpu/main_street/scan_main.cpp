@@ -35,7 +35,7 @@ static uint iDivUp(uint dividend, uint divisor)
     return ((dividend % divisor) == 0) ? (dividend / divisor) : (dividend / divisor + 1);
 }
 
-CUdeviceptr presum(CUdeviceptr *d_Input, uint arrayLength)
+uint presum(CUdeviceptr *d_Input, uint arrayLength)
 {
   //printf("Starting...\n\n");
 
@@ -128,7 +128,7 @@ CUdeviceptr presum(CUdeviceptr *d_Input, uint arrayLength)
       cuMemFree(d_Output);
       closeScan();
 
-      return NULL;      
+      return FALSE;      
     }
 
     closeScan();
@@ -136,7 +136,8 @@ CUdeviceptr presum(CUdeviceptr *d_Input, uint arrayLength)
     cuMemFree(*d_Input);
     *d_Input = d_Output;
 
-    return d_Output;
+    //return *d_Input;
+    return SUCCESS;
 }
 
 

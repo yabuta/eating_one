@@ -94,23 +94,6 @@ void createTuple()
     printf("cuMemHostAlloc to LEFT_TUPLE failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
-  
-  /*
-  for (int i = 0; i < left; i++) {
-    if(&(lt[i])==NULL){
-      printf("left TUPLE allocate error.\n");
-      exit(1);
-    }    
-    lt[i].key = getTupleId();
-    if(i%diff == 0 && counter < right*MATCH_RATE){
-      lt[i].val = rt[i].val; // selectivity = 1.0
-      counter++;
-    }else{
-      lt[i].val = 2 * SELECTIVITY + rand()%SELECTIVITY;
-    }
-  }
-  */
-
 
   counter = 0;
   uint l_diff;

@@ -32,38 +32,37 @@ __global__ void join(
 {
 
 
-  int y = blockIdx.y * blockDim.y + threadIdx.y;
+  int x = blockIdx.x * blockDim.x + threadIdx.x;
 
 
   uint writeloc = 0;
-  if(y > 0){
-    writeloc = count[y-1];
+  if(x > 0){
+    writeloc = count[x-1];
   }
 
-  if(y < left){
-    int idx = lt[y].val;
-    uint lkey = lt[y].key;
+  if(x < left){
+    int idx = lt[x].val;
+    uint lkey = lt[x].key;
     uint bidx = search(bucket,idx,right);
-    uint x = bidx;
-    uint i = 0;
-    while(bucket[x].val == idx){
-      jt[writeloc + i].rkey = lkey;
-      jt[writeloc + i].rval = idx;
-      jt[writeloc + i].lkey = rt[bucket[x].adr].key;
-      jt[writeloc + i].lval = rt[bucket[x].adr].val;      
-      i++;
-      if(x == 0) break;
-      x--;
+    uint seq = bidx;
+    while(bucket[seq].val == idx){
+      jt[writeloc].rkey = lkey;
+      jt[writeloc].rval = idx;
+      jt[writeloc].lkey = rt[bucket[seq].adr].key;
+      jt[writeloc].lval = rt[bucket[seq].adr].val;      
+      writeloc++;
+      if(seq == 0) break;
+      seq--;
     }
-    x = bidx+1;
-    while(bucket[x].val == idx){
-      jt[writeloc + i].rkey = lkey;
-      jt[writeloc + i].rval = idx;
-      jt[writeloc + i].lkey = rt[bucket[x].adr].key;
-      jt[writeloc + i].lval = rt[bucket[x].adr].val;      
-      i++;
-      if(x == right) break;
-      x++;
+    seq = bidx+1;
+    while(bucket[seq].val == idx){
+      jt[writeloc].rkey = lkey;
+      jt[writeloc].rval = idx;
+      jt[writeloc].lkey = rt[bucket[seq].adr].key;
+      jt[writeloc].lval = rt[bucket[seq].adr].val;      
+      writeloc++;
+      if(seq == right-1) break;
+      seq++;
     }
   }
 

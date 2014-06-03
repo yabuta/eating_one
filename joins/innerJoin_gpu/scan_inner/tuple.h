@@ -2,7 +2,7 @@
 //#define NB_BUFR (SZ_PAGE * 2 / sizeof(TUPLE))
 //#define NB_BUFS (SZ_PAGE * 16 / sizeof(TUPLE))
 #define BLOCK_SIZE_X 1024
-#define NB_BKT_ENT 1048576
+#define NB_BKT_ENT 16777216
 
 
 /*

@@ -128,7 +128,7 @@ CUdeviceptr presum(CUdeviceptr *d_Input, uint arrayLength)
       cuMemFree(d_Output);
       closeScan();
 
-      return NULL;      
+      return FALSE;      
     }
 
     closeScan();
@@ -136,7 +136,8 @@ CUdeviceptr presum(CUdeviceptr *d_Input, uint arrayLength)
     cuMemFree(*d_Input);
     *d_Input = d_Output;
 
-    return d_Output;
+    //return *d_Input;
+    return SUCCESS;
 }
 
 
@@ -182,6 +183,28 @@ CUdeviceptr transport(CUdeviceptr d_Input , uint tnum , uint arrayLength, uint s
   // pass or fail (cumulative... all tests in the loop)
 
   return d_Output;
+
+
+}
+
+uint getValue(CUdeviceptr d_Input , uint loc , uint *res){
+
+  CUdeviceptr d_Output;
+  
+  checkCudaErrors(cudaMalloc((void **)&d_Output, sizeof(int)));
+  checkCudaErrors(cudaDeviceSynchronize());
+
+  getValue_gpu((uint *)d_Output, (uint *)d_Input, loc);
+  checkCudaErrors(cudaDeviceSynchronize());
+
+  if(cuMemcpyDtoH(res,d_Output,sizeof(uint)) != CUDA_SUCCESS){
+    printf("cuMemcpyDtoH(d_Output) error.\n");
+    exit(1);
+  }
+
+  cuMemFree(d_Output);
+
+  return SUCCESS;
 
 
 }

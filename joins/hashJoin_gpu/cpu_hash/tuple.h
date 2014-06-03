@@ -1,4 +1,4 @@
-#define NB_BKTENT 524288// the number of partitions
+#define NB_BKTENT 524288 // the number of partitions
 
 
 //最適hash値

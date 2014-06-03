@@ -1,0 +1,12 @@
+sort index join
+
+indexをpartitionではなくsortした配列にし、join時に二分探索をするindex join
+
+実行方法：
+
+./InnerExe left_table_num right_table_num
+
+ex) ./InnerExe 1048576 1048576
+
+
+match rate変更はtuple.hを変更。

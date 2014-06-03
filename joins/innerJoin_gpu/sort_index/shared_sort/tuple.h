@@ -1,10 +1,10 @@
 //#define SZ_PAGE 40960
 //#define NB_BUFR (SZ_PAGE * 2 / sizeof(TUPLE))
 //#define NB_BUFS (SZ_PAGE * 16 / sizeof(TUPLE))
-#define BLOCK_SIZE_X 128
-#define BLOCK_SIZE_Y 512
+//#define BLOCK_SIZE_X 128
+#define BLOCK_SIZE_X 256
 
-#define MATCH_RATE 10
+#define MATCH_RATE 0.1
 
 #define JT_SIZE 120000000
 #define SELECTIVITY 100000000
