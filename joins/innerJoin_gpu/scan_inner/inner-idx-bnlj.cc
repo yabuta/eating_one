@@ -65,37 +65,24 @@ void createTuple()
   }else{
     diff = 1;
   }
-  uint counter = 0;
 
   for (int i = 0; i < right; i++) {
-    if(&(rt[i])==NULL){
-      printf("right TUPLE allocate error.\n");
-      exit(1);
-    }
     rt[i].key = getTupleId();
-    if(i%diff == 0 && counter < right*MATCH_RATE){
-      uint temp = rand()%SELECTIVITY;
-      while(used[temp] == 1) temp = rand()%SELECTIVITY;
-      used[temp] = 1;
-      rt[i].val = temp; // selectivity = 1.0
-      counter++;
-    }else{
-      rt[i].val = SELECTIVITY + rand()%SELECTIVITY;
-    }
+    uint temp = rand()%SELECTIVITY;
+    while(used[temp] == 1) temp = rand()%SELECTIVITY;
+    used[temp] = 1;
+    rt[i].val = temp; // selectivity = 1.0
   }
 
-  free(used);
-  counter = 0;
-
-
   //LEFT_TUPLEへのGPUでも参照できるメモリの割り当て*******************************
+  uint counter = 0;
+
   res = cuMemHostAlloc((void**)&lt,left * sizeof(TUPLE),CU_MEMHOSTALLOC_DEVICEMAP);
   if (res != CUDA_SUCCESS) {
     printf("cuMemHostAlloc to LEFT_TUPLE failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
 
-  counter = 0;
   uint l_diff;
   if(MATCH_RATE != 0){
     l_diff = left/(MATCH_RATE*right);
@@ -108,9 +95,12 @@ void createTuple()
       lt[i].val = rt[counter*diff].val;
       counter++;
     }else{
-      lt[i].val = 2 * SELECTIVITY + rand()%SELECTIVITY;
+      uint temp = rand()%SELECTIVITY;
+      while(used[temp] == 1) temp = rand()%SELECTIVITY;
+      lt[i].val = temp; // selectivity = 1.0
     }
   }
+  free(used);
 
 }
 
@@ -330,21 +320,17 @@ void join(){
 
   gettimeofday(&time_tsend_f, NULL);
 
-
+  gettimeofday(&time_isend_s, NULL);
   res = cuMemcpyHtoD(bucket_dev, Bucket, right * sizeof(BUCKET));
   if (res != CUDA_SUCCESS) {
     printf("cuMemcpyHtoD (bucket) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
-
-  gettimeofday(&time_isend_s, NULL);
-
   res = cuMemcpyHtoD(buckArray_dev, Buck_array, NB_BKT_ENT * sizeof(int));
   if (res != CUDA_SUCCESS) {
     printf("cuMemcpyHtoD (BuckArray) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
-
   res = cuMemcpyHtoD(idxcount_dev, idxcount, NB_BKT_ENT * sizeof(int));
   if (res != CUDA_SUCCESS) {
     printf("cuMemcpyHtoD (rt) failed: res = %lu\n", (unsigned long)res);
