@@ -4,7 +4,7 @@
 //#define BLOCK_SIZE_X 128
 #define BLOCK_SIZE_X 256
 
-#define MATCH_RATE 1.0
+#define MATCH_RATE 0.01
 
 #define JT_SIZE 120000000
 #define SELECTIVITY 100000000
@@ -22,13 +22,13 @@ typedef struct _RESULT {
   int lkey;
   int lval;
 } RESULT;
-
+/*
 typedef struct _IDX {
   int val;
   int adr;
   struct _IDX *nxt;
 } IDX;
-
+*/
 typedef struct _BUCKET {
 
     int val;

@@ -22,13 +22,13 @@ typedef struct _RESULT {
   int lkey;
   int lval;
 } RESULT;
-
+/*
 typedef struct _IDX {
   int val;
   int adr;
   struct _IDX *nxt;
 } IDX;
-
+*/
 typedef struct _BUCKET {
 
     int val;

@@ -55,18 +55,15 @@ void createTuple()
   }else{
     diff = 1;
   }
-  uint counter = 0;
-
   for (uint i = 0; i < right; i++) {
     rt[i].key = getTupleId();
     uint temp = rand()%SELECTIVITY;
     while(used[temp] == 1) temp = rand()%SELECTIVITY;
     used[temp] = 1;
     rt[i].val = temp;
-    counter++;
   }
 
-  counter = 0;
+  uint counter = 0;
   uint l_diff;
   if(MATCH_RATE != 0){
     l_diff = left/(MATCH_RATE*right);
@@ -165,13 +162,13 @@ binary search
 
 uint search(BUCKET *b,int num,uint right)
 {
-  uint m,l,r;
+  int m,l,r;
   l=0;
   r=right-1;
   do{
     m=(l+r)/2;
     if(num < b[m].val)r=m-1;else l=m+1;
-  }while(l<=r&&num!=b[m].val);
+  }while((l<=r) && (num!=b[m].val));
 
   return m;
 }
@@ -185,7 +182,8 @@ main(int argc,char *argv[])
   //RESULT result;
   int resultVal = 0;
   struct timeval begin, end,index_s,index_f;
-  struct timeval s_s,s_f,w_s,w_f;
+  //  struct timeval s_s,s_f,w_s,w_f;
+  //  long sea=0,wri=0;
 
   if(argc>3){
     printf("引数が多い\n");
@@ -207,7 +205,6 @@ main(int argc,char *argv[])
   createIndex();
   gettimeofday(&index_f, NULL);
 
-  long sea=0,wri=0;
 
   // join
   gettimeofday(&begin, NULL);
@@ -215,22 +212,12 @@ main(int argc,char *argv[])
   for (uint j = 0; j < left; j++) {
 
     //一致するタプルをBucketから探索し、その周辺で合致するものを探す。
-    gettimeofday(&s_s, NULL);
+    //gettimeofday(&s_s, NULL);
     uint bidx = search(Bucket,lt[j].val,right);
-    gettimeofday(&s_f, NULL);
-    sea += (s_f.tv_sec - s_s.tv_sec) * 1000 * 1000 + (s_f.tv_usec - s_s.tv_usec);    
+    //gettimeofday(&s_f, NULL);
+    //sea += (s_f.tv_sec - s_s.tv_sec) * 1000 * 1000 + (s_f.tv_usec - s_s.tv_usec);    
 
-    gettimeofday(&w_s, NULL);
-    if(Bucket[bidx].val == lt[j].val){
-      jt[resultVal].lkey = lt[j].key;
-      jt[resultVal].lval = lt[j].val;
-      jt[resultVal].rkey = rt[Bucket[bidx].adr].key;
-      jt[resultVal].rval = rt[Bucket[bidx].adr].val;      
-      resultVal++;
-    }
-    gettimeofday(&w_f, NULL);
-    wri += (w_f.tv_sec - w_s.tv_sec) * 1000 * 1000 + (w_f.tv_usec - w_s.tv_usec);    
-    /*
+    //gettimeofday(&w_s, NULL);
     uint x = bidx;
     while(Bucket[x].val == lt[j].val){
       jt[resultVal].lkey = lt[j].key;
@@ -251,14 +238,15 @@ main(int argc,char *argv[])
       if(x == right-1) break;
       x++;
     }
-    */
+    //gettimeofday(&w_f, NULL);
+    //wri += (w_f.tv_sec - w_s.tv_sec) * 1000 * 1000 + (w_f.tv_usec - w_s.tv_usec);    
 
   }
   gettimeofday(&end, NULL);
 
   freeTuple();
 
-  printf("search time = %ldms\nwrite time = %ldms\n",sea/1000,wri/1000);
+  //printf("search time = %ldms\nwrite time = %ldms\n",sea/1000,wri/1000);
 
   printf("*******execution time****************\n");
   printDiff(begin, end);

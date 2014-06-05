@@ -159,7 +159,7 @@ void qsort(int p,int q)
 void createIndex(void)
 {
 
-  if (!(Bucket = (BUCKET *)calloc(right, sizeof(BUCKET)))) ERR;
+  if (!(Bucket = (BUCKET *)malloc(right * sizeof(BUCKET)))) ERR;
   for(uint i=0; i<right ; i++){
     Bucket[i].val = rt[i].val;
     Bucket[i].adr = i;
@@ -394,7 +394,18 @@ void join(){
 
   /***************************************************************************************/
 
+  /*
+  TUPLE temp_a;
 
+  res = cuMemcpyDtoH(&temp_a, lt_dev, sizeof(TUPLE));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemcpyDtoH (temp_a) failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+  printf("key = %d\n",temp_a.key);
+  printf("ok\n");
+  exit(1);
+  */
 
   /**************************** prefix sum *************************************/
   gettimeofday(&time_scan_s, NULL);

@@ -8,7 +8,7 @@ extern "C" {
 
 __device__
 uint search(BUCKET *b,int num,uint right){
-  uint m,l,r;
+  int m,l,r;
   l=0;
   r=right-1;
   do{

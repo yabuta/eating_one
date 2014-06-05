@@ -13,7 +13,7 @@ extern "C" {
 
 __device__
 uint search(BUCKET *b,int num,uint right){
-  uint m,l,r;
+  int m,l,r;
   l=0;
   r=right-1;
   do{
@@ -43,7 +43,6 @@ void count(
    */
 
   int x = blockIdx.x * blockDim.x + threadIdx.x;
-  
   if(x < left){
     int idx = lt[x].val;
     uint temp = 0;
