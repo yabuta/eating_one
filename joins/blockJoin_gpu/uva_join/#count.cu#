@@ -25,10 +25,8 @@ void count(
 
   int j;
     
-  //i,jの方向を間違えないように
   /*
-   *x軸が縦の方向、y軸が横の方向だよ。
-   *だから、xがleft、yがrightに対応しているよ
+   *xがleft、yがrightに対応している
    */
 
   //i:the number of y element k:the number of one brefore x element * the total y element

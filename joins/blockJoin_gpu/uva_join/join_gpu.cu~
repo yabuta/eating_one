@@ -1,21 +1,14 @@
-/*
-count the number of tuple matching criteria for join
-
-*/
-
 #include <stdio.h>
 #include <stdint.h>
 #include <cuda.h>
 #include <sys/time.h>
 #include "tuple.h"
 
-
 extern "C" {
-
-__global__
-void count(
+__global__ void join(
           TUPLE *lt,
           TUPLE *rt,
+          JOIN_TUPLE *p,
           int *count,
           int ltn,
           int rtn
@@ -31,42 +24,54 @@ void count(
    *だから、xがleft、yがrightに対応しているよ
    */
 
-  //i:the number of y element k:the number of one brefore x element * the total y element
+  //int j = blockIdx.x * blockDim.x + threadIdx.x;
   int i = blockIdx.y * blockDim.y + threadIdx.y;
-  int k = blockIdx.x * gridDim.y * blockDim.y;
-
-  
-  /*
-    transport tuple data to shared memory from global memory
-   */
 
   __shared__ TUPLE Tleft[BLOCK_SIZE_X];
   if(threadIdx.y==0){
     for(j=0;(j<BLOCK_SIZE_X)&&((j+BLOCK_SIZE_X*blockIdx.x)<ltn);j++){
       Tleft[j] = lt[j + BLOCK_SIZE_X * blockIdx.x];
     }
+
   }
 
   __syncthreads();  
 
   TUPLE Tright = rt[i];
 
-  /*
-    count loop
-   */
+  //the first write location
+
+  int writeloc = 0;
+  if(i != 0){
+    writeloc = count[i + blockIdx.x*blockDim.y*gridDim.y -1];
+  }
   int ltn_g = ltn;
   int rtn_g = rtn;
-  uint mcount = 0;
 
   if(i<rtn_g){
     for(j = 0; j<BLOCK_SIZE_X &&((j+BLOCK_SIZE_X*blockIdx.x)<ltn_g);j++){
+      /*
+      if(&(Tleft[j])==NULL||&(Tright)==NULL||&(p[writeloc])==NULL){
+        printf("memory error in .cu.\n");
+        return;// -1;
+      }
+      */
+ 
       if((Tleft[j].val==Tright.val)) {
-        mcount++;
+        
+        p[writeloc].lval = Tleft[j].val;
+        p[writeloc].rval = Tright.val;        
+
+        // lid & rid are just for debug
+        p[writeloc].lid = Tleft[j].id;
+        p[writeloc].rid = Tright.id;
+        
+        writeloc++;
+        
       }
     }
   }    
-  count[i + k] = mcount;
-
-}
+    
+}    
 
 }

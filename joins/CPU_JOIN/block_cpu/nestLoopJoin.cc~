@@ -8,8 +8,8 @@
 #include "debug.h"
 
 #define JT_SIZE 120000000
-#define SELECTIVITY 1000000
-#define MATCH_RATE 0.1
+#define SELECTIVITY 10000000
+#define MATCH_RATE 1.00  //match rate setting
 
 int left;
 int right;
@@ -102,23 +102,17 @@ init(void)
   }else{
     diff = 1;
   }
-  uint counter = 0;
 
   for (uint i = 0; i < right; i++) {
     Tright[i].id = getTupleId();
-    if(i%diff == 0 && counter < MATCH_RATE*right){
-      uint temp = rand()%SELECTIVITY;
-      while(used[temp] == 1) temp = rand()%SELECTIVITY;
-      used[temp] = 1;
-      Tright[i].val = temp;
-      counter++;
-    }else{
-      Tright[i].val = SELECTIVITY + rand()%SELECTIVITY;
-    }
+    uint temp = rand()%SELECTIVITY;
+    while(used[temp] == 1) temp = rand()%SELECTIVITY;
+    used[temp] = 1;
+    Tright[i].val = temp;
   }
   free(used);
 
-  counter = 0;
+  uint counter = 0;
   uint l_diff;
   if(MATCH_RATE != 0){
     l_diff = left/(MATCH_RATE*right);
@@ -131,7 +125,9 @@ init(void)
       Tleft[i].val = Tright[counter*diff].val;
       counter++;
     }else{
-      Tleft[i].val = 2 * SELECTIVITY + rand()%SELECTIVITY;
+      uint temp = rand()%SELECTIVITY;
+      while(used[temp] == 1) temp = rand()%SELECTIVITY;
+      Tleft[i].val = temp;
     }
   }
 }

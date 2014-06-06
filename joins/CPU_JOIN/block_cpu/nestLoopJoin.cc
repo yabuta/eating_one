@@ -102,23 +102,16 @@ init(void)
   }else{
     diff = 1;
   }
-  uint counter = 0;
 
   for (uint i = 0; i < right; i++) {
     Tright[i].id = getTupleId();
-    if(i%diff == 0 && counter < MATCH_RATE*right){
-      uint temp = rand()%SELECTIVITY;
-      while(used[temp] == 1) temp = rand()%SELECTIVITY;
-      used[temp] = 1;
-      Tright[i].val = temp;
-      counter++;
-    }else{
-      Tright[i].val = SELECTIVITY + rand()%SELECTIVITY;
-    }
+    uint temp = rand()%SELECTIVITY;
+    while(used[temp] == 1) temp = rand()%SELECTIVITY;
+    used[temp] = 1;
+    Tright[i].val = temp;
   }
-  free(used);
 
-  counter = 0;
+  uint counter = 0;
   uint l_diff;
   if(MATCH_RATE != 0){
     l_diff = left/(MATCH_RATE*right);
@@ -131,9 +124,13 @@ init(void)
       Tleft[i].val = Tright[counter*diff].val;
       counter++;
     }else{
-      Tleft[i].val = 2 * SELECTIVITY + rand()%SELECTIVITY;
+      uint temp = rand()%SELECTIVITY;
+      while(used[temp] == 1) temp = rand()%SELECTIVITY;
+      Tleft[i].val = temp;
     }
   }
+  free(used);
+
 }
 
 //メモリ解放のため新しく追加した関数。バグがあるかも

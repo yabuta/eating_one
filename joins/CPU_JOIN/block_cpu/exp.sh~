@@ -1,8 +1,8 @@
-./ExeNestLoop 100000 100000
-./ExeNestLoop 100000 100000
-./ExeNestLoop 100000 100000
-./ExeNestLoop 100000 100000
-./ExeNestLoop 100000 100000
+./ExeNestLoop $1 $1
+./ExeNestLoop $1 $1
+./ExeNestLoop $1 $1
+./ExeNestLoop $1 $1
+./ExeNestLoop $1 $1
 
 
 #./ExeNestLoop 5 5

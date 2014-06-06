@@ -59,23 +59,16 @@ void createTuple()
   }else{
     diff = 1;
   }
-  uint counter = 0;
 
   for (uint i = 0; i < right; i++) {
     rt[i].key = getTupleId();
-    if(i%diff == 0 && counter < MATCH_RATE*right){
-      uint temp = rand()%SELECTIVITY;
-      while(used[temp] == 1) temp = rand()%SELECTIVITY;
-      used[temp] = 1;
-      rt[i].val = temp;
-      counter++;
-    }else{
-      rt[i].val = SELECTIVITY + rand()%SELECTIVITY;
-    }
+    uint temp = rand()%SELECTIVITY;
+    while(used[temp] == 1) temp = rand()%SELECTIVITY;
+    used[temp] = 1;
+    rt[i].val = temp;
   }
-  free(used);
 
-  counter = 0;
+  uint counter = 0;
   uint l_diff;
   if(MATCH_RATE != 0){
     l_diff = left/(MATCH_RATE*right);
@@ -88,9 +81,12 @@ void createTuple()
       lt[i].val = rt[counter*diff].val;
       counter++;
     }else{
-      lt[i].val = 2 * SELECTIVITY + rand()%SELECTIVITY;
+      uint temp = rand()%SELECTIVITY;
+      while(used[temp] == 1) temp = rand()%SELECTIVITY;
+      lt[i].val = temp;
     }
   }
+  free(used);
   
 
 }
@@ -118,7 +114,7 @@ main(int argc,char *argv[])
   if(argc>3){
     printf("引数が多い\n");
     return 0;
-  }else if(argc<2){
+  }else if(argc<3){
     printf("引数が足りない\n");
     return 0;
   }else{

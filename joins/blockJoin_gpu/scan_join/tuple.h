@@ -13,7 +13,7 @@ GPUで動かすため配列のほうが向いていると思ったので
 
 #define JT_SIZE 120000000
 #define SELECTIVITY 100000000
-#define MATCH_RATE 1.00
+#define MATCH_RATE 0.1
 
 
 typedef struct _TUPLE {

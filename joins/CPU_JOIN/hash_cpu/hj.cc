@@ -60,33 +60,6 @@ void createTuple()
   if (!(hlt = (TUPLE *)calloc(left, sizeof(TUPLE)))) ERR;
   if (!(jt = (RESULT *)calloc(JT_SIZE, sizeof(RESULT)))) ERR;
 
-  /*
-  srand((unsigned)time(NULL));
-  uint *used;
-  used = (uint *)calloc(SELECTIVITY,sizeof(uint));
-
-  for (int i = 0; i < right; i++) {
-    if(i < right * MATCH_RATE){
-      uint temp = rand()%SELECTIVITY;
-      while(used[temp] == 1) temp = rand()%SELECTIVITY;
-      used[temp] = 1;
-      getTuple(&(rt[i]),temp);//rand()%SELECTIVITY);
-    }else{
-      getTuple(&(rt[i]),SELECTIVITY + rand()%SELECTIVITY);
-    }
-  }
-
-  free(used);
-
-  for (int i = 0; i < left; i++) {
-    if(i < right * MATCH_RATE){
-      getTuple(&(lt[i]),rt[i].val);
-    }else{
-      getTuple(&(lt[i]), 2 * SELECTIVITY + rand()%SELECTIVITY); 
-    }
-  }
-  */
-
   srand((unsigned)time(NULL));
   uint *used;
   used = (uint *)calloc(SELECTIVITY,sizeof(uint));
@@ -97,23 +70,17 @@ void createTuple()
   }else{
     diff = 1;
   }
-  uint counter = 0;
 
   for (uint i = 0; i < right; i++) {
     rt[i].key = getTupleId();
-    if(i%diff == 0 && counter < MATCH_RATE*right){
-      uint temp = rand()%SELECTIVITY;
-      while(used[temp] == 1) temp = rand()%SELECTIVITY;
-      used[temp] = 1;
-      rt[i].val = temp;
-      counter++;
-    }else{
-      rt[i].val = SELECTIVITY + rand()%SELECTIVITY;
-    }
+    uint temp = rand()%SELECTIVITY;
+    while(used[temp] == 1) temp = rand()%SELECTIVITY;
+    used[temp] = 1;
+    rt[i].val = temp;
   }
-  free(used);
 
-  counter = 0;
+  /*left init*/
+  uint counter = 0;
   uint l_diff;
   if(MATCH_RATE != 0){
     l_diff = left/(MATCH_RATE*right);
@@ -126,10 +93,14 @@ void createTuple()
       lt[i].val = rt[counter*diff].val;
       counter++;
     }else{
-      lt[i].val = 2 * SELECTIVITY + rand()%SELECTIVITY;
+      uint temp = rand()%SELECTIVITY;
+      while(used[temp] == 1) temp = rand()%SELECTIVITY;
+      used[temp] = 1;
+      lt[i].val = temp;
     }
   }
-
+  free(used);
+  
 }
 
 void freeTuple(){
