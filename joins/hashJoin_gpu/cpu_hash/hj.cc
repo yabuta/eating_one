@@ -61,27 +61,38 @@ void createTuple()
   if (!(jt = (RESULT *)calloc(JT_SIZE, sizeof(RESULT)))) ERR;
 
   srand((unsigned)time(NULL));
-  uint *used;
+  uint *used;//usedなnumberをstoreする
   used = (uint *)calloc(SELECTIVITY,sizeof(uint));
-  uint diff;
-
-  if(MATCH_RATE != 0){
-    diff = 1/MATCH_RATE;
-  }else{
-    diff = 1;
+  for(uint i=0; i<SELECTIVITY ;i++){
+    used[i] = i;
   }
+  uint selec = SELECTIVITY;
 
+  //uniqueなnumberをvalにassignする
   for (uint i = 0; i < right; i++) {
+    if(&(rt[i])==NULL){
+      printf("right TUPLE allocate error.\n");
+      exit(1);
+    }
     rt[i].key = getTupleId();
-    uint temp = rand()%SELECTIVITY;
-    while(used[temp] == 1) temp = rand()%SELECTIVITY;
-    used[temp] = 1;
-    rt[i].val = temp;
+    uint temp = rand()%selec;
+    uint temp2 = used[temp];
+    selec = selec-1;
+    used[temp] = used[selec];
+
+    rt[i].val = temp2; 
+
   }
 
-  /*left init*/
-  uint counter = 0;
-  uint l_diff;
+
+  uint counter = 0;//matchするtupleをcountする。
+  uint *used_r;
+  used_r = (uint *)calloc(right,sizeof(uint));
+  for(uint i=0; i<right ; i++){
+    used_r[i] = i;
+  }
+  uint rg = right;
+  uint l_diff;//
   if(MATCH_RATE != 0){
     l_diff = left/(MATCH_RATE*right);
   }else{
@@ -90,16 +101,32 @@ void createTuple()
   for (uint i = 0; i < left; i++) {
     lt[i].key = getTupleId();
     if(i%l_diff == 0 && counter < MATCH_RATE*right){
-      lt[i].val = rt[counter*diff].val;
+      uint temp = rand()%rg;
+      uint temp2 = used_r[temp];
+      rg = rg-1;
+      used[temp] = used[rg];
+
+      lt[i].val = rt[temp2].val;      
       counter++;
     }else{
-      uint temp = rand()%SELECTIVITY;
-      while(used[temp] == 1) temp = rand()%SELECTIVITY;
-      used[temp] = 1;
-      lt[i].val = temp;
+      uint temp = rand()%selec;
+      uint temp2 = used[temp];
+      selec = selec-1;
+      used[temp] = used[selec];
+      lt[i].val = temp2; 
+      
     }
   }
+
+  printf("%d\n",counter);
+
+  
   free(used);
+  free(used_r);
+
+  
+
+
   
 }
 

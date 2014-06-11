@@ -19,7 +19,7 @@ BUCKET *Bucket;
 int Buck_array[NB_BKT_ENT];
 int idxcount[NB_BKT_ENT];
 
-IDX Hidx;
+//IDX Hidx;
 
 TUPLE *rt;
 TUPLE *lt;
@@ -49,6 +49,7 @@ void createTuple()
 
   //メモリ割り当てを行う
   //タプルに初期値を代入
+
   //RIGHT_TUPLEへのGPUでも参照できるメモリの割り当て****************************
   res = cuMemHostAlloc((void**)&rt,right * sizeof(TUPLE),CU_MEMHOSTALLOC_DEVICEMAP);
   if (res != CUDA_SUCCESS) {
@@ -56,34 +57,46 @@ void createTuple()
     exit(1);
   }
 
+
   srand((unsigned)time(NULL));
-  uint *used;
+  uint *used;//usedなnumberをstoreする
   used = (uint *)calloc(SELECTIVITY,sizeof(uint));
-  uint diff;
-  if(MATCH_RATE != 0){
-    diff = 1/MATCH_RATE;
-  }else{
-    diff = 1;
+  for(uint i=0; i<SELECTIVITY ;i++){
+    used[i] = i;
+  }
+  uint selec = SELECTIVITY;
+
+  //uniqueなnumberをvalにassignする
+  for (uint i = 0; i < right; i++) {
+    if(&(rt[i])==NULL){
+      printf("right TUPLE allocate error.\n");
+      exit(1);
+    }
+    rt[i].key = getTupleId();
+    uint temp = rand()%selec;
+    uint temp2 = used[temp];
+    selec = selec-1;
+    used[temp] = used[selec];
+
+    rt[i].val = temp2; 
   }
 
-  for (int i = 0; i < right; i++) {
-    rt[i].key = getTupleId();
-    uint temp = rand()%SELECTIVITY;
-    while(used[temp] == 1) temp = rand()%SELECTIVITY;
-    used[temp] = 1;
-    rt[i].val = temp; // selectivity = 1.0
-  }
 
   //LEFT_TUPLEへのGPUでも参照できるメモリの割り当て*******************************
-  uint counter = 0;
-
   res = cuMemHostAlloc((void**)&lt,left * sizeof(TUPLE),CU_MEMHOSTALLOC_DEVICEMAP);
   if (res != CUDA_SUCCESS) {
     printf("cuMemHostAlloc to LEFT_TUPLE failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
 
-  uint l_diff;
+  uint counter = 0;//matchするtupleをcountする。
+  uint *used_r;
+  used_r = (uint *)calloc(right,sizeof(uint));
+  for(uint i=0; i<right ; i++){
+    used_r[i] = i;
+  }
+  uint rg = right;
+  uint l_diff;//
   if(MATCH_RATE != 0){
     l_diff = left/(MATCH_RATE*right);
   }else{
@@ -92,15 +105,31 @@ void createTuple()
   for (uint i = 0; i < left; i++) {
     lt[i].key = getTupleId();
     if(i%l_diff == 0 && counter < MATCH_RATE*right){
-      lt[i].val = rt[counter*diff].val;
+      uint temp = rand()%rg;
+      uint temp2 = used_r[temp];
+      rg = rg-1;
+      used[temp] = used[rg];
+      
+      lt[i].val = rt[temp2].val;      
       counter++;
     }else{
-      uint temp = rand()%SELECTIVITY;
-      while(used[temp] == 1) temp = rand()%SELECTIVITY;
-      lt[i].val = temp; // selectivity = 1.0
+      uint temp = rand()%selec;
+      uint temp2 = used[temp];
+      selec = selec-1;
+      used[temp] = used[selec];
+      lt[i].val = temp2; 
     }
   }
+  
   free(used);
+  free(used_r);
+
+
+  res = cuMemHostAlloc((void**)&jt,JT_SIZE * sizeof(RESULT),CU_MEMHOSTALLOC_DEVICEMAP);
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemHostAlloc to LEFT_TUPLE failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
 
 }
 
@@ -243,7 +272,7 @@ void join(){
 
   block_x = left < BLOCK_SIZE_X ? left : BLOCK_SIZE_X;
   grid_x = left / block_x;
-  if (right % block_x != 0)
+  if (left % block_x != 0)
     grid_x++;
   
 
@@ -288,7 +317,7 @@ void join(){
 
 
   /*count */
-  res = cuMemAlloc(&c_dev, left * sizeof(uint));
+  res = cuMemAlloc(&c_dev, (left+1) * sizeof(uint));
   if (res != CUDA_SUCCESS) {
     printf("cuMemAlloc (count) failed\n");
     exit(1);
@@ -410,7 +439,7 @@ void join(){
   /**************************** prefix sum *************************************/
   gettimeofday(&time_scan_s, NULL);
 
-  if(!(presum(&c_dev,(uint)left))){
+  if(!(presum(&c_dev,(uint)left+1))){
     printf("count scan error\n");
     exit(1);
   }
@@ -432,80 +461,82 @@ void join(){
 
   gettimeofday(&time_join_s, NULL);
 
-  if(!transport(c_dev,(uint)left,&jt_size)){
+  if(!transport(c_dev,(uint)left+1,&jt_size)){
     printf("transport error.\n");
     exit(1);
   }
 
   if(jt_size <= 0){
     printf("no tuple is matched.\n");
-    exit(1);
-  }
+
+  }else{
   
-  res = cuMemAlloc(&jt_dev, jt_size * sizeof(RESULT));
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemAlloc (join) failed\n");
-    exit(1);
+    res = cuMemAlloc(&jt_dev, jt_size * sizeof(RESULT));
+    if (res != CUDA_SUCCESS) {
+      printf("cuMemAlloc (join) failed\n");
+      exit(1);
+    }
+
+    //jt = (RESULT *)malloc(jt_size*sizeof(RESULT));
+
+    gettimeofday(&time_jkernel_s, NULL);
+
+    void *kernel_args[]={
+      (void *)&rt_dev,
+      (void *)&lt_dev,
+      (void *)&jt_dev,
+      (void *)&c_dev,
+      (void *)&bucket_dev,
+      (void *)&buckArray_dev,
+      (void *)&idxcount_dev,
+      (void *)&right,
+      (void *)&left    
+    };
+
+    //グリッド・ブロックの指定、変数の指定、カーネルの実行を行う
+    res = cuLaunchKernel(
+                         function,      // CUfunction f
+                         grid_x,        // gridDimX
+                         1,        // gridDimY
+                         1,             // gridDimZ
+                         block_x,       // blockDimX
+                         1,       // blockDimY
+                         1,             // blockDimZ
+                         0,             // sharedMemBytes
+                         NULL,          // hStream
+                         kernel_args,   // keunelParams
+                         NULL           // extra
+                         );
+    if(res != CUDA_SUCCESS) {
+      printf("join cuLaunchKernel() failed: res = %lu\n", (unsigned long int)res);
+      exit(1);
+    }  
+
+
+
+    res = cuCtxSynchronize();
+    if(res != CUDA_SUCCESS) {
+      printf("cuCtxSynchronize() failed: res = %lu\n", (unsigned long int)res);
+      exit(1);
+    }  
+
+    gettimeofday(&time_jkernel_f, NULL);
+
+    gettimeofday(&time_join_f, NULL);
+
+
+    gettimeofday(&time_jdown_s, NULL);
+
+    res = cuMemcpyDtoH(jt, jt_dev, jt_size * sizeof(RESULT));
+    if (res != CUDA_SUCCESS) {
+      printf("cuMemcpyDtoH (p) failed: res = %lu\n", (unsigned long)res);
+      exit(1);
+    }
+    printf("jt_size = %d\n",jt_size*sizeof(RESULT)/1000);
+
+    gettimeofday(&time_jdown_f, NULL);
+
   }
-
-  jt = (RESULT *)malloc(jt_size*sizeof(RESULT));
-
-  gettimeofday(&time_jkernel_s, NULL);
-
-  void *kernel_args[]={
-    (void *)&rt_dev,
-    (void *)&lt_dev,
-    (void *)&jt_dev,
-    (void *)&c_dev,
-    (void *)&bucket_dev,
-    (void *)&buckArray_dev,
-    (void *)&idxcount_dev,
-    (void *)&right,
-    (void *)&left    
-  };
-
-  //グリッド・ブロックの指定、変数の指定、カーネルの実行を行う
-  res = cuLaunchKernel(
-                       function,      // CUfunction f
-                       grid_x,        // gridDimX
-                       1,        // gridDimY
-                       1,             // gridDimZ
-                       block_x,       // blockDimX
-                       1,       // blockDimY
-                       1,             // blockDimZ
-                       0,             // sharedMemBytes
-                       NULL,          // hStream
-                       kernel_args,   // keunelParams
-                       NULL           // extra
-                       );
-  if(res != CUDA_SUCCESS) {
-    printf("join cuLaunchKernel() failed: res = %lu\n", (unsigned long int)res);
-    exit(1);
-  }  
-
-
-
-  res = cuCtxSynchronize();
-  if(res != CUDA_SUCCESS) {
-    printf("cuCtxSynchronize() failed: res = %lu\n", (unsigned long int)res);
-    exit(1);
-  }  
-
-  gettimeofday(&time_jkernel_f, NULL);
-
-  gettimeofday(&time_join_f, NULL);
-
-
-  gettimeofday(&time_jdown_s, NULL);
-
-  res = cuMemcpyDtoH(jt, jt_dev, jt_size * sizeof(RESULT));
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemcpyDtoH (p) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-
-  gettimeofday(&time_jdown_f, NULL);
-
   gettimeofday(&end, NULL);
 
 
@@ -600,6 +631,12 @@ void join(){
 
   //finish GPU   ****************************************************
   res = cuModuleUnload(module);
+  if (res != CUDA_SUCCESS) {
+    printf("cuModuleUnload module failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }  
+
+  res = cuModuleUnload(c_module);
   if (res != CUDA_SUCCESS) {
     printf("cuModuleUnload module failed: res = %lu\n", (unsigned long)res);
     exit(1);

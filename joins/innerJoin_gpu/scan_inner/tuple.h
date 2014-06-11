@@ -27,10 +27,10 @@
 #define NB_BKT_ENT 67108864
 
 */
-#define MATCH_RATE 0.1
+#define MATCH_RATE 0.01
 
 #define JT_SIZE 120000000
-#define SELECTIVITY 100000000
+#define SELECTIVITY 1000000000
 
 
 int right,left;
@@ -47,12 +47,13 @@ typedef struct _RESULT {
   int lval;
 } RESULT;
 
+/*
 typedef struct _IDX {
   int val;
   int adr;
   struct _IDX *nxt;
 } IDX;
-
+*/
 
 /*
 typedef struct _HASHOBJ {

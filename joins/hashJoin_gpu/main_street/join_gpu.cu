@@ -47,8 +47,12 @@ void count(
       }
     }
   }
-
   count[x] = count_x_temp;
+
+  if(x == left-1){
+    count[x+1] = 0;
+  }
+
 
 }
 

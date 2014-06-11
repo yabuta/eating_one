@@ -34,16 +34,6 @@ void count(
 
   __syncthreads();
 
-  /*
-  int x_limit = 0;
-
-  if(r_p[radix[blockIdx.x]+1] - r_p[radix[blockIdx.x]]%GRID_SIZE_Y == 0){
-    x_limit = (r_p[radix[blockIdx.x]+1] - r_p[radix[blockIdx.x]])/GRID_SIZE_Y;
-  }else{
-    x_limit = (r_p[radix[blockIdx.x]+1] - r_p[radix[blockIdx.x]])/GRID_SIZE_Y + 1;
-  }
-  */
-
   int temp=0;
   int temp2 = r_p[radix[blockIdx.x]+1];
   int temp3 = lp[blockIdx.x+1] - lp[blockIdx.x];
@@ -53,7 +43,6 @@ void count(
     temp = rt[k].val;
     for(int i=0; i<temp3 ;i++){
       if(sub_lt[i].val == temp){
-        //count[x]++;
         count_x_temp++;
       }
     }

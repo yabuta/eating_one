@@ -7,7 +7,7 @@
 #define MATCH_RATE 0.1
 
 #define JT_SIZE 1200000000
-#define SELECTIVITY 100000000
+#define SELECTIVITY 1000000000
 
 
 typedef struct _TUPLE {

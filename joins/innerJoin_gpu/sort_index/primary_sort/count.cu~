@@ -12,15 +12,12 @@ count the number of tuple matching criteria for join
 extern "C" {
 
 __device__
-int search(BUCKET *b,int num,uint right){
+uint search(BUCKET *b,int num,uint right){
   int m,l,r;
   l=0;
   r=right-1;
   do{
     m=(l+r)/2;
-    if(m<0) return -m;
-    if(m>=right) return -m;
-
     if(num < b[m].val)r=m-1;else l=m+1;
   }while(l<=r&&num!=b[m].val);
 
@@ -49,16 +46,7 @@ void count(
   if(x < left){
     int idx = lt[x].val;
     uint temp = 0;
-    int bidx = search(bucket,idx,right);
-
-    if(bidx<0){
-      lt[0].key = bidx;
-      return;
-    }
-    lt[0].key = 1;
-    return;
-
-
+    uint bidx = search(bucket,idx,right);
     uint seq = bidx;
     while(bucket[seq].val == idx){
       temp++;

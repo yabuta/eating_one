@@ -17,7 +17,7 @@
 
 //All three kernels run 512 threads per workgroup
 //Must be a power of two
-#define THREADBLOCK_SIZE 512
+#define THREADBLOCK_SIZE 1024
 #define LOOP_PERTHREAD 16
 #define LOOP_PERTHREAD2 16
 

@@ -168,7 +168,7 @@ uint search(BUCKET *b,int num,uint right)
   do{
     m=(l+r)/2;
     if(num < b[m].val)r=m-1;else l=m+1;
-  }while((l<=r) && (num!=b[m].val));
+  }while(l<=r&&num!=b[m].val);
 
   return m;
 }
@@ -212,12 +212,7 @@ main(int argc,char *argv[])
   for (uint j = 0; j < left; j++) {
 
     //一致するタプルをBucketから探索し、その周辺で合致するものを探す。
-    //gettimeofday(&s_s, NULL);
     uint bidx = search(Bucket,lt[j].val,right);
-    //gettimeofday(&s_f, NULL);
-    //sea += (s_f.tv_sec - s_s.tv_sec) * 1000 * 1000 + (s_f.tv_usec - s_s.tv_usec);    
-
-    //gettimeofday(&w_s, NULL);
     uint x = bidx;
     while(Bucket[x].val == lt[j].val){
       jt[resultVal].lkey = lt[j].key;
@@ -238,8 +233,6 @@ main(int argc,char *argv[])
       if(x == right-1) break;
       x++;
     }
-    //gettimeofday(&w_f, NULL);
-    //wri += (w_f.tv_sec - w_s.tv_sec) * 1000 * 1000 + (w_f.tv_usec - w_s.tv_usec);    
 
   }
   gettimeofday(&end, NULL);

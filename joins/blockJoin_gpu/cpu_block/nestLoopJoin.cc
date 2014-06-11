@@ -8,8 +8,8 @@
 #include "debug.h"
 
 #define JT_SIZE 120000000
-#define SELECTIVITY 10000000
-#define MATCH_RATE 1.00  //match rate setting
+#define SELECTIVITY 100000000
+#define MATCH_RATE 0.1  //match rate setting
 
 int left;
 int right;
@@ -24,7 +24,6 @@ typedef struct _TUPLE {
 typedef struct _JOIN_TUPLE {
   int lval; // left value
   int rval; // right value
-  // the folloings are just for debug, not necessary
   int lid;
   int rid;
 } JOIN_TUPLE;
@@ -92,28 +91,40 @@ init(void)
   if (!(Tleft = (TUPLE *)calloc(left, sizeof(TUPLE)))) ERR;
   if (!(Tjoin = (JOIN_TUPLE *)calloc(JT_SIZE, sizeof(JOIN_TUPLE)))) ERR;
 
+
   srand((unsigned)time(NULL));
-  uint *used;
+  uint *used;//usedなnumberをstoreする
   used = (uint *)calloc(SELECTIVITY,sizeof(uint));
-  uint diff;
-
-  if(MATCH_RATE != 0){
-    diff = 1/MATCH_RATE;
-  }else{
-    diff = 1;
+  for(uint i=0; i<SELECTIVITY ;i++){
+    used[i] = i;
   }
+  uint selec = SELECTIVITY;
 
+  //uniqueなnumberをvalにassignする
   for (uint i = 0; i < right; i++) {
+    if(&(Tright[i])==NULL){
+      printf("right TUPLE allocate error.\n");
+      exit(1);
+    }
     Tright[i].id = getTupleId();
-    uint temp = rand()%SELECTIVITY;
-    while(used[temp] == 1) temp = rand()%SELECTIVITY;
-    used[temp] = 1;
-    Tright[i].val = temp;
-  }
-  free(used);
+    uint temp = rand()%selec;
+    uint temp2 = used[temp];
+    selec = selec-1;
+    used[temp] = used[selec];
 
-  uint counter = 0;
-  uint l_diff;
+    Tright[i].val = temp2; 
+    
+  }
+
+
+  uint counter = 0;//matchするtupleをcountする。
+  uint *used_r;
+  used_r = (uint *)calloc(right,sizeof(uint));
+  for(uint i=0; i<right ; i++){
+    used_r[i] = i;
+  }
+  uint rg = right;
+  uint l_diff;//
   if(MATCH_RATE != 0){
     l_diff = left/(MATCH_RATE*right);
   }else{
@@ -122,14 +133,26 @@ init(void)
   for (uint i = 0; i < left; i++) {
     Tleft[i].id = getTupleId();
     if(i%l_diff == 0 && counter < MATCH_RATE*right){
-      Tleft[i].val = Tright[counter*diff].val;
+      uint temp = rand()%rg;
+      uint temp2 = used_r[temp];
+      rg = rg-1;
+      used[temp] = used[rg];
+
+      Tleft[i].val = Tright[temp2].val;      
+      
       counter++;
     }else{
-      uint temp = rand()%SELECTIVITY;
-      while(used[temp] == 1) temp = rand()%SELECTIVITY;
-      Tleft[i].val = temp;
+      uint temp = rand()%selec;
+      uint temp2 = used[temp];
+      selec = selec-1;
+      used[temp] = used[selec];
+      Tleft[i].val = temp2; 
     }
   }
+  free(used);
+  free(used_r);
+
+
 }
 
 //メモリ解放のため新しく追加した関数。バグがあるかも

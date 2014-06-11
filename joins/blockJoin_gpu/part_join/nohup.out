@@ -1,0 +1,2172 @@
+right num :4194304
+left num :4194304
+419431
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+Starting...
+ll = 0	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6566	total = 6566
+
+Starting...
+ll = 0	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6509	total = 13075
+
+Starting...
+ll = 0	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6590	total = 19665
+
+Starting...
+ll = 0	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6616	total = 26281
+
+Starting...
+ll = 0	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6608	total = 32889
+
+Starting...
+ll = 0	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6607	total = 39496
+
+Starting...
+ll = 0	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6692	total = 46188
+
+Starting...
+ll = 0	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6241	total = 52429
+
+Starting...
+ll = 524288	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6727	total = 59156
+
+Starting...
+ll = 524288	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6602	total = 65758
+
+Starting...
+ll = 524288	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6556	total = 72314
+
+Starting...
+ll = 524288	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6716	total = 79030
+
+Starting...
+ll = 524288	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6688	total = 85718
+
+Starting...
+ll = 524288	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6638	total = 92356
+
+Starting...
+ll = 524288	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6805	total = 99161
+
+Starting...
+ll = 524288	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 5697	total = 104858
+
+Starting...
+ll = 1048576	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6684	total = 111542
+
+Starting...
+ll = 1048576	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6787	total = 118329
+
+Starting...
+ll = 1048576	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6799	total = 125128
+
+Starting...
+ll = 1048576	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6871	total = 131999
+
+Starting...
+ll = 1048576	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6622	total = 138621
+
+Starting...
+ll = 1048576	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6793	total = 145414
+
+Starting...
+ll = 1048576	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6847	total = 152261
+
+Starting...
+ll = 1048576	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 5026	total = 157287
+
+Starting...
+ll = 1572864	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6983	total = 164270
+
+Starting...
+ll = 1572864	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6935	total = 171205
+
+Starting...
+ll = 1572864	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6934	total = 178139
+
+Starting...
+ll = 1572864	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6791	total = 184930
+
+Starting...
+ll = 1572864	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6920	total = 191850
+
+Starting...
+ll = 1572864	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6760	total = 198610
+
+Starting...
+ll = 1572864	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6763	total = 205373
+
+Starting...
+ll = 1572864	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 4343	total = 209716
+
+Starting...
+ll = 2097152	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6948	total = 216664
+
+Starting...
+ll = 2097152	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6965	total = 223629
+
+Starting...
+ll = 2097152	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6925	total = 230554
+
+Starting...
+ll = 2097152	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6886	total = 237440
+
+Starting...
+ll = 2097152	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7053	total = 244493
+
+Starting...
+ll = 2097152	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6854	total = 251347
+
+Starting...
+ll = 2097152	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6996	total = 258343
+
+Starting...
+ll = 2097152	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 3801	total = 262144
+
+Starting...
+ll = 2621440	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6895	total = 269039
+
+Starting...
+ll = 2621440	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7182	total = 276221
+
+Starting...
+ll = 2621440	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6964	total = 283185
+
+Starting...
+ll = 2621440	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7050	total = 290235
+
+Starting...
+ll = 2621440	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7031	total = 297266
+
+Starting...
+ll = 2621440	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6995	total = 304261
+
+Starting...
+ll = 2621440	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7094	total = 311355
+
+Starting...
+ll = 2621440	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 3218	total = 314573
+
+Starting...
+ll = 3145728	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7039	total = 321612
+
+Starting...
+ll = 3145728	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7192	total = 328804
+
+Starting...
+ll = 3145728	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7236	total = 336040
+
+Starting...
+ll = 3145728	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6977	total = 343017
+
+Starting...
+ll = 3145728	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7151	total = 350168
+
+Starting...
+ll = 3145728	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7138	total = 357306
+
+Starting...
+ll = 3145728	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7172	total = 364478
+
+Starting...
+ll = 3145728	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 2524	total = 367002
+
+Starting...
+ll = 3670016	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7180	total = 374182
+
+Starting...
+ll = 3670016	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7333	total = 381515
+
+Starting...
+ll = 3670016	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7347	total = 388862
+
+Starting...
+ll = 3670016	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7184	total = 396046
+
+Starting...
+ll = 3670016	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7120	total = 403166
+
+Starting...
+ll = 3670016	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7245	total = 410411
+
+Starting...
+ll = 3670016	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7180	total = 417591
+
+Starting...
+ll = 3670016	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 1840	total = 419431
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 354677711 us (354677 ms)
+Calculation send with Devise
+Diff: 1362 us (1 ms)
+Calculation count with Devise
+Diff: 2451219 us (2451 ms)
+scan time
+Diff: 108088 us (108 ms)
+Calculation join with Devise
+Diff: 3091175 us (3091 ms)
+Calculation download with Devise
+Diff: 33 us (0 ms)
+the number of total match tuple = 419431
+[0]:left  4240885 	:right:      184
+join[0]:left = 22603688	right = 22603688
+
+[1]:left  4296915 	:right:      474
+join[0]:left = 29169480	right = 29169480
+
+[2]:left  4327775 	:right:       35
+join[0]:left = 67672439	right = 67672439
+
+right num :4194304
+left num :4194304
+419431
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+Starting...
+ll = 0	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6605	total = 6605
+
+Starting...
+ll = 0	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6597	total = 13202
+
+Starting...
+ll = 0	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6512	total = 19714
+
+Starting...
+ll = 0	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6622	total = 26336
+
+Starting...
+ll = 0	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6611	total = 32947
+
+Starting...
+ll = 0	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6541	total = 39488
+
+Starting...
+ll = 0	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6572	total = 46060
+
+Starting...
+ll = 0	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6369	total = 52429
+
+Starting...
+ll = 524288	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6780	total = 59209
+
+Starting...
+ll = 524288	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6760	total = 65969
+
+Starting...
+ll = 524288	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6772	total = 72741
+
+Starting...
+ll = 524288	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6676	total = 79417
+
+Starting...
+ll = 524288	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6580	total = 85997
+
+Starting...
+ll = 524288	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6660	total = 92657
+
+Starting...
+ll = 524288	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6561	total = 99218
+
+Starting...
+ll = 524288	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 5640	total = 104858
+
+Starting...
+ll = 1048576	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6696	total = 111554
+
+Starting...
+ll = 1048576	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6801	total = 118355
+
+Starting...
+ll = 1048576	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6805	total = 125160
+
+Starting...
+ll = 1048576	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6807	total = 131967
+
+Starting...
+ll = 1048576	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6875	total = 138842
+
+Starting...
+ll = 1048576	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6685	total = 145527
+
+Starting...
+ll = 1048576	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6699	total = 152226
+
+Starting...
+ll = 1048576	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 5061	total = 157287
+
+Starting...
+ll = 1572864	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6895	total = 164182
+
+Starting...
+ll = 1572864	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6900	total = 171082
+
+Starting...
+ll = 1572864	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6711	total = 177793
+
+Starting...
+ll = 1572864	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6769	total = 184562
+
+Starting...
+ll = 1572864	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6850	total = 191412
+
+Starting...
+ll = 1572864	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6936	total = 198348
+
+Starting...
+ll = 1572864	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6903	total = 205251
+
+Starting...
+ll = 1572864	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 4465	total = 209716
+
+Starting...
+ll = 2097152	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6851	total = 216567
+
+Starting...
+ll = 2097152	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7072	total = 223639
+
+Starting...
+ll = 2097152	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7045	total = 230684
+
+Starting...
+ll = 2097152	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6859	total = 237543
+
+Starting...
+ll = 2097152	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6879	total = 244422
+
+Starting...
+ll = 2097152	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6914	total = 251336
+
+Starting...
+ll = 2097152	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7001	total = 258337
+
+Starting...
+ll = 2097152	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 3807	total = 262144
+
+Starting...
+ll = 2621440	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7098	total = 269242
+
+Starting...
+ll = 2621440	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7073	total = 276315
+
+Starting...
+ll = 2621440	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6994	total = 283309
+
+Starting...
+ll = 2621440	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7012	total = 290321
+
+Starting...
+ll = 2621440	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6976	total = 297297
+
+Starting...
+ll = 2621440	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7065	total = 304362
+
+Starting...
+ll = 2621440	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6987	total = 311349
+
+Starting...
+ll = 2621440	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 3224	total = 314573
+
+Starting...
+ll = 3145728	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7197	total = 321770
+
+Starting...
+ll = 3145728	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7168	total = 328938
+
+Starting...
+ll = 3145728	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7060	total = 335998
+
+Starting...
+ll = 3145728	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7188	total = 343186
+
+Starting...
+ll = 3145728	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7043	total = 350229
+
+Starting...
+ll = 3145728	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7108	total = 357337
+
+Starting...
+ll = 3145728	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7176	total = 364513
+
+Starting...
+ll = 3145728	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 2489	total = 367002
+
+Starting...
+ll = 3670016	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7171	total = 374173
+
+Starting...
+ll = 3670016	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7324	total = 381497
+
+Starting...
+ll = 3670016	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7293	total = 388790
+
+Starting...
+ll = 3670016	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7182	total = 395972
+
+Starting...
+ll = 3670016	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7170	total = 403142
+
+Starting...
+ll = 3670016	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7205	total = 410347
+
+Starting...
+ll = 3670016	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7394	total = 417741
+
+Starting...
+ll = 3670016	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 1690	total = 419431
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 354672668 us (354672 ms)
+Calculation send with Devise
+Diff: 1361 us (1 ms)
+Calculation count with Devise
+Diff: 2451076 us (2451 ms)
+scan time
+Diff: 107951 us (107 ms)
+Calculation join with Devise
+Diff: 3091152 us (3091 ms)
+Calculation download with Devise
+Diff: 27 us (0 ms)
+the number of total match tuple = 419431
+[0]:left  4263575 	:right:      413
+join[0]:left = 55569411	right = 55569411
+
+[1]:left  4292675 	:right:      318
+join[0]:left = 79538935	right = 79538935
+
+[2]:left  4410355 	:right:       82
+join[0]:left = 39068817	right = 39068817
+
+right num :4194304
+left num :4194304
+419431
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+Starting...
+ll = 0	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6599	total = 6599
+
+Starting...
+ll = 0	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6638	total = 13237
+
+Starting...
+ll = 0	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6606	total = 19843
+
+Starting...
+ll = 0	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6645	total = 26488
+
+Starting...
+ll = 0	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6610	total = 33098
+
+Starting...
+ll = 0	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6611	total = 39709
+
+Starting...
+ll = 0	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6435	total = 46144
+
+Starting...
+ll = 0	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6285	total = 52429
+
+Starting...
+ll = 524288	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6746	total = 59175
+
+Starting...
+ll = 524288	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6604	total = 65779
+
+Starting...
+ll = 524288	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6612	total = 72391
+
+Starting...
+ll = 524288	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6807	total = 79198
+
+Starting...
+ll = 524288	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6630	total = 85828
+
+Starting...
+ll = 524288	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6623	total = 92451
+
+Starting...
+ll = 524288	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6753	total = 99204
+
+Starting...
+ll = 524288	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 5654	total = 104858
+
+Starting...
+ll = 1048576	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6764	total = 111622
+
+Starting...
+ll = 1048576	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6717	total = 118339
+
+Starting...
+ll = 1048576	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6798	total = 125137
+
+Starting...
+ll = 1048576	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6800	total = 131937
+
+Starting...
+ll = 1048576	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6859	total = 138796
+
+Starting...
+ll = 1048576	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6810	total = 145606
+
+Starting...
+ll = 1048576	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6675	total = 152281
+
+Starting...
+ll = 1048576	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 5006	total = 157287
+
+Starting...
+ll = 1572864	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6775	total = 164062
+
+Starting...
+ll = 1572864	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6945	total = 171007
+
+Starting...
+ll = 1572864	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6866	total = 177873
+
+Starting...
+ll = 1572864	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6649	total = 184522
+
+Starting...
+ll = 1572864	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6988	total = 191510
+
+Starting...
+ll = 1572864	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6859	total = 198369
+
+Starting...
+ll = 1572864	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6832	total = 205201
+
+Starting...
+ll = 1572864	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 4515	total = 209716
+
+Starting...
+ll = 2097152	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6926	total = 216642
+
+Starting...
+ll = 2097152	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7040	total = 223682
+
+Starting...
+ll = 2097152	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7028	total = 230710
+
+Starting...
+ll = 2097152	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7024	total = 237734
+
+Starting...
+ll = 2097152	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6763	total = 244497
+
+Starting...
+ll = 2097152	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6840	total = 251337
+
+Starting...
+ll = 2097152	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6935	total = 258272
+
+Starting...
+ll = 2097152	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 3872	total = 262144
+
+Starting...
+ll = 2621440	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7052	total = 269196
+
+Starting...
+ll = 2621440	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7027	total = 276223
+
+Starting...
+ll = 2621440	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7087	total = 283310
+
+Starting...
+ll = 2621440	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6963	total = 290273
+
+Starting...
+ll = 2621440	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7051	total = 297324
+
+Starting...
+ll = 2621440	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7000	total = 304324
+
+Starting...
+ll = 2621440	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7110	total = 311434
+
+Starting...
+ll = 2621440	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 3139	total = 314573
+
+Starting...
+ll = 3145728	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7202	total = 321775
+
+Starting...
+ll = 3145728	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7200	total = 328975
+
+Starting...
+ll = 3145728	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6970	total = 335945
+
+Starting...
+ll = 3145728	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7073	total = 343018
+
+Starting...
+ll = 3145728	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7177	total = 350195
+
+Starting...
+ll = 3145728	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7061	total = 357256
+
+Starting...
+ll = 3145728	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7197	total = 364453
+
+Starting...
+ll = 3145728	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 2549	total = 367002
+
+Starting...
+ll = 3670016	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7206	total = 374208
+
+Starting...
+ll = 3670016	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7212	total = 381420
+
+Starting...
+ll = 3670016	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7232	total = 388652
+
+Starting...
+ll = 3670016	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7302	total = 395954
+
+Starting...
+ll = 3670016	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7255	total = 403209
+
+Starting...
+ll = 3670016	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7259	total = 410468
+
+Starting...
+ll = 3670016	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7127	total = 417595
+
+Starting...
+ll = 3670016	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 1836	total = 419431
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 410693998 us (410693 ms)
+Calculation send with Devise
+Diff: 1362 us (1 ms)
+Calculation count with Devise
+Diff: 3377025 us (3377 ms)
+scan time
+Diff: 111700 us (111 ms)
+Calculation join with Devise
+Diff: 3820082 us (3820 ms)
+Calculation download with Devise
+Diff: 29 us (0 ms)
+the number of total match tuple = 419431
+[0]:left  4264365 	:right:      889
+join[0]:left =  8158972	right =  8158972
+
+[1]:left  4402875 	:right:      578
+join[0]:left = 65275731	right = 65275731
+
+[2]:left  4435295 	:right:      757
+join[0]:left = 90574019	right = 90574019
+
+right num :4194304
+left num :4194304
+419431
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+Starting...
+ll = 0	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6650	total = 6650
+
+Starting...
+ll = 0	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6505	total = 13155
+
+Starting...
+ll = 0	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6666	total = 19821
+
+Starting...
+ll = 0	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6452	total = 26273
+
+Starting...
+ll = 0	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6540	total = 32813
+
+Starting...
+ll = 0	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6613	total = 39426
+
+Starting...
+ll = 0	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6585	total = 46011
+
+Starting...
+ll = 0	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6418	total = 52429
+
+Starting...
+ll = 524288	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6644	total = 59073
+
+Starting...
+ll = 524288	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6715	total = 65788
+
+Starting...
+ll = 524288	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6707	total = 72495
+
+Starting...
+ll = 524288	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6642	total = 79137
+
+Starting...
+ll = 524288	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6649	total = 85786
+
+Starting...
+ll = 524288	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6749	total = 92535
+
+Starting...
+ll = 524288	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6588	total = 99123
+
+Starting...
+ll = 524288	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 5735	total = 104858
+
+Starting...
+ll = 1048576	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6747	total = 111605
+
+Starting...
+ll = 1048576	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6815	total = 118420
+
+Starting...
+ll = 1048576	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6754	total = 125174
+
+Starting...
+ll = 1048576	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6856	total = 132030
+
+Starting...
+ll = 1048576	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6777	total = 138807
+
+Starting...
+ll = 1048576	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6633	total = 145440
+
+Starting...
+ll = 1048576	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6655	total = 152095
+
+Starting...
+ll = 1048576	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 5192	total = 157287
+
+Starting...
+ll = 1572864	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6798	total = 164085
+
+Starting...
+ll = 1572864	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6929	total = 171014
+
+Starting...
+ll = 1572864	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6840	total = 177854
+
+Starting...
+ll = 1572864	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6848	total = 184702
+
+Starting...
+ll = 1572864	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6880	total = 191582
+
+Starting...
+ll = 1572864	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6834	total = 198416
+
+Starting...
+ll = 1572864	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6803	total = 205219
+
+Starting...
+ll = 1572864	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 4497	total = 209716
+
+Starting...
+ll = 2097152	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6993	total = 216709
+
+Starting...
+ll = 2097152	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6791	total = 223500
+
+Starting...
+ll = 2097152	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7026	total = 230526
+
+Starting...
+ll = 2097152	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6954	total = 237480
+
+Starting...
+ll = 2097152	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7006	total = 244486
+
+Starting...
+ll = 2097152	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6929	total = 251415
+
+Starting...
+ll = 2097152	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6985	total = 258400
+
+Starting...
+ll = 2097152	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 3744	total = 262144
+
+Starting...
+ll = 2621440	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6956	total = 269100
+
+Starting...
+ll = 2621440	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7072	total = 276172
+
+Starting...
+ll = 2621440	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7079	total = 283251
+
+Starting...
+ll = 2621440	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 6964	total = 290215
+
+Starting...
+ll = 2621440	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7054	total = 297269
+
+Starting...
+ll = 2621440	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7094	total = 304363
+
+Starting...
+ll = 2621440	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7063	total = 311426
+
+Starting...
+ll = 2621440	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 3147	total = 314573
+
+Starting...
+ll = 3145728	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7202	total = 321775
+
+Starting...
+ll = 3145728	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7204	total = 328979
+
+Starting...
+ll = 3145728	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7050	total = 336029
+
+Starting...
+ll = 3145728	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7090	total = 343119
+
+Starting...
+ll = 3145728	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7047	total = 350166
+
+Starting...
+ll = 3145728	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7128	total = 357294
+
+Starting...
+ll = 3145728	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7262	total = 364556
+
+Starting...
+ll = 3145728	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 2446	total = 367002
+
+Starting...
+ll = 3670016	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7166	total = 374168
+
+Starting...
+ll = 3670016	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7151	total = 381319
+
+Starting...
+ll = 3670016	rr = 1048576	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7272	total = 388591
+
+Starting...
+ll = 3670016	rr = 1572864	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7330	total = 395921
+
+Starting...
+ll = 3670016	rr = 2097152	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7252	total = 403173
+
+Starting...
+ll = 3670016	rr = 2621440	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7298	total = 410471
+
+Starting...
+ll = 3670016	rr = 3145728	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 7084	total = 417555
+
+Starting...
+ll = 3670016	rr = 3670016	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+N = 536870912
+End...
+ jt_size = 1876	total = 419431
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 455694861 us (455694 ms)
+Calculation send with Devise
+Diff: 1364 us (1 ms)
+Calculation count with Devise
+Diff: 3408866 us (3408 ms)
+scan time
+Diff: 122381 us (122 ms)
+Calculation join with Devise
+Diff: 3871979 us (3871 ms)
+Calculation download with Devise
+Diff: 31 us (0 ms)
+the number of total match tuple = 419431
+[0]:left  4194305 	:right:   481263
+join[0]:left = 15119350	right = 15119350
+
+[1]:left  4383115 	:right:      427
+join[0]:left = 38507137	right = 38507137
+
+[2]:left  4451425 	:right:      175
+join[0]:left = 86063439	right = 86063439
+

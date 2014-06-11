@@ -61,6 +61,11 @@ void count(
     }
     count[x] = temp;
   }
+  if(x == left-1){
+    count[x+1] = 0;
+
+  }
+
 
 }
 

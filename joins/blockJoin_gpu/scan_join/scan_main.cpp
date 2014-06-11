@@ -153,3 +153,27 @@ uint transport(CUdeviceptr d_Input , uint loc , uint *res){
 
 
 }
+
+
+uint add(CUdeviceptr d_Input , uint loc , uint loc2, uint *res){
+
+  CUdeviceptr d_Output;
+  
+  checkCudaErrors(cudaMalloc((void **)&d_Output, sizeof(int)));
+  checkCudaErrors(cudaDeviceSynchronize());
+
+  add_gpu((uint *)d_Output, (uint *)d_Input, loc,loc2);
+  //szWorkgroup = scanExclusiveLarge((uint *)d_Output, (uint *)d_Input, pnum, N);
+  checkCudaErrors(cudaDeviceSynchronize());
+
+  if(cuMemcpyDtoH(res,d_Output,sizeof(uint)) != CUDA_SUCCESS){
+    printf("cuMemcpyDtoH(d_Output) error.\n");
+    exit(1);
+  }
+
+  // pass or fail (cumulative... all tests in the loop)
+
+  return SUCCESS;
+
+
+}

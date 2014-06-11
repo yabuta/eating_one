@@ -62,10 +62,30 @@ extern "C" size_t scanExclusiveLL(
     uint arrayLength
 );
 
+//scanを行う関数
+extern "C" CUdeviceptr presum(
+    CUdeviceptr *d_Input,
+    uint arrayLength
+);
+
+//////////////////////////////////////////////////////////////////////////////
+////other
+//////////////////////////////////////////////////////////////////////////////
+
+
 extern "C" size_t diff_Part(
     uint *d_Dst,
     uint *d_Src,
     uint diff,
+    uint arrayLength,
+    uint size
+);
+
+
+//d_Inputの一定間隔tnumごとの値を取得する
+extern "C" CUdeviceptr diff_part(
+    CUdeviceptr d_Input,
+    uint tnum,
     uint arrayLength,
     uint size
 );
@@ -77,18 +97,7 @@ extern "C" void transport_gpu(
 );
 
 
-extern "C" CUdeviceptr presum(
-    CUdeviceptr *d_Input,
-    uint arrayLength
-);
-
-extern "C" CUdeviceptr diff_part(
-    CUdeviceptr d_Input,
-    uint tnum,
-    uint arrayLength,
-    uint size
-);
-
+//d_Inputのlocにあるデータを取得する
 extern "C" uint transport(
     CUdeviceptr d_Input,
     uint loc,
@@ -96,6 +105,22 @@ extern "C" uint transport(
 );
 
 
+extern "C" void add_gpu(
+    uint *d_Dst,
+    uint *d_Src,
+    uint loc,
+    uint loc2
+);
+
+
+
+//d_Inputのlocとloc2のvalueをaddして返す
+extern "C" uint add(
+    CUdeviceptr d_Input,
+    uint loc,
+    uint loc2,
+    uint *res
+);
 
 
 ////////////////////////////////////////////////////////////////////////////////

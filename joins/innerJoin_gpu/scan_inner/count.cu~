@@ -23,28 +23,22 @@ void count(
           ) 
 
 {
-    
-  //i,jの方向を間違えないように
-  /*
-   *x軸が縦の方向、y軸が横の方向だよ。
-   *だから、xがleft、yがrightに対応しているよ
-   */
 
-  int i = blockIdx.y * blockDim.y + threadIdx.y;
+  int x = blockIdx.x * blockDim.x + threadIdx.x;
   
-  if(i < left){
-    int idx = lt[i].val % NB_BKT_ENT;
+  if(x < left){
+    int val = lt[x].val;
+    int idx = val % NB_BKT_ENT;
     int idx_c = idxcount[idx];
     int buck_a = buck_array[idx];
     uint temp = 0;
 
     for(int k = 0; k < idx_c; k++){
-      if(bucket[buck_a + k].val == lt[i].val){
+      if(bucket[buck_a + k].val == val){
         temp++;
       }    
     }
-
-    count[i] = temp;
+    count[x] = temp;
 
   }
 

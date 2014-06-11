@@ -5,6 +5,57 @@
 #include "tuple.h"
 
 extern "C" {
+
+__global__
+void count(
+          TUPLE *lt,
+          TUPLE *rt,
+          int *count,
+          int ltn,
+          int rtn
+          ) 
+
+{
+
+  int i = blockIdx.x * blockDim.x + threadIdx.x;
+  int k = blockIdx.y * gridDim.x * blockDim.x;
+
+  
+  /*
+    transport tuple data to shared memory from global memory
+   */
+
+  __shared__ TUPLE Tright[BLOCK_SIZE_Y];
+  for(uint j=0;threadIdx.x+j*BLOCK_SIZE_X<BLOCK_SIZE_Y&&(threadIdx.x+j*BLOCK_SIZE_X+BLOCK_SIZE_Y*blockIdx.y)<rtn;j++){
+    Tright[threadIdx.x + j*BLOCK_SIZE_X] = rt[threadIdx.x + j*BLOCK_SIZE_X + BLOCK_SIZE_Y * blockIdx.y];
+  }
+
+  __syncthreads();  
+
+  TUPLE Tleft = lt[i];
+
+  /*
+    count loop
+   */
+  int ltn_g = ltn;
+  int rtn_g = rtn;
+  uint mcount = 0;
+
+  if(i<ltn_g){
+    for(uint j = 0; j<BLOCK_SIZE_Y &&((j+BLOCK_SIZE_Y*blockIdx.y)<rtn_g);j++){
+      if((Tright[j].val==Tleft.val)) {
+        mcount++;
+      }
+    }
+    count[i + k] = mcount;  
+    if(i+k == blockDim.x*gridDim.x*gridDim.y){
+      count[i+k+1] = mcount;
+    }
+  }    
+
+}
+
+
 __global__ void join(
           TUPLE *lt,
           TUPLE *rt,
@@ -16,50 +67,35 @@ __global__ void join(
 
 {
 
-  int j;
-    
-  //i,jの方向を間違えないように
-  /*
-   *x軸が縦の方向、y軸が横の方向だよ。
-   *だから、xがleft、yがrightに対応しているよ
-   */
+  int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-  //int j = blockIdx.x * blockDim.x + threadIdx.x;
-  int i = blockIdx.y * blockDim.y + threadIdx.y;
-
-  __shared__ TUPLE Tleft[BLOCK_SIZE_X];
-  if(threadIdx.y==0){
-    for(j=0;(j<BLOCK_SIZE_X)&&((j+BLOCK_SIZE_X*blockIdx.x)<ltn);j++){
-      Tleft[j] = lt[j + BLOCK_SIZE_X * blockIdx.x];
-    }
-
+  __shared__ TUPLE Tright[BLOCK_SIZE_Y];
+  for(uint j=0;threadIdx.x+j*BLOCK_SIZE_X<BLOCK_SIZE_Y&&(threadIdx.x+j*BLOCK_SIZE_X+BLOCK_SIZE_Y*blockIdx.y)<rtn;j++){
+    Tright[threadIdx.x + j*BLOCK_SIZE_X] = rt[threadIdx.x + j*BLOCK_SIZE_X + BLOCK_SIZE_Y * blockIdx.y];
   }
-
   __syncthreads();  
 
-  TUPLE Tright = rt[i];
+
+  TUPLE Tleft = lt[i];
 
   //the first write location
 
   int writeloc = 0;
   if(i != 0){
-    writeloc = count[i + blockIdx.x*blockDim.y*gridDim.y -1];
+    writeloc = count[i + blockIdx.y*blockDim.x*gridDim.x];
   }
   int ltn_g = ltn;
   int rtn_g = rtn;
 
-  if(i<rtn_g){
-    for(j = 0; j<BLOCK_SIZE_X &&((j+BLOCK_SIZE_X*blockIdx.x)<ltn_g);j++){
+  if(i<ltn_g){
+    for(uint j = 0; j<BLOCK_SIZE_Y &&((j+BLOCK_SIZE_Y*blockIdx.y)<rtn_g);j++){
  
-      if((Tleft[j].val==Tright.val)) {
-        
-        p[writeloc].lval = Tleft[j].val;
-        p[writeloc].rval = Tright.val;        
+      if((Tright[j].val==Tleft.val)) {
 
-        // lid & rid are just for debug
-        p[writeloc].lid = Tleft[j].id;
-        p[writeloc].rid = Tright.id;
-        
+        p[writeloc].rid = Tright[j].id;
+        p[writeloc].rval = Tright[j].val;
+        p[writeloc].lid = Tleft.val;        
+        p[writeloc].lval = Tleft.id;        
         writeloc++;
         
       }
