@@ -1,9 +1,7 @@
 #define BLOCK_SIZE_X 1024 //cuda block size of join and count kernel 
 #define BLOCK_SIZE_Y 1
 #define GRID_SIZE_Y 1
-#define PARTITION_SHARED 32 * 1024 /4
 #define PART_C_NUM 256   //cuda block size of hash partition count
-#define ONETH_PART_NUM 32*1024/(4*PART_C_NUM)
 #define LEFT_PER_TH 8192
 #define RIGHT_PER_TH 8192       //the number of tuple per one thread of hash partition 
 #define B_ROW_NUM 128      //the number of sub left tuple per one block in join and count kernel
@@ -35,6 +33,16 @@
 #define GRID_SIZE_Y 1
 #define PART_C_NUM 256   //cuda block size of hash partition count
 #define PER_TH 8192       //the number of tuple per one thread of hash partition 
+#define B_ROW_NUM 128      //the number of sub left tuple per one block in join and count kernel
+*/
+
+/*33554432 * 33554432
+#define BLOCK_SIZE_X 1024 //cuda block size of join and count kernel 
+#define BLOCK_SIZE_Y 1
+#define GRID_SIZE_Y 1
+#define PART_C_NUM 256   //cuda block size of hash partition count
+#define LEFT_PER_TH 32768
+#define RIGHT_PER_TH 32768       //the number of tuple per one thread of hash partition 
 #define B_ROW_NUM 128      //the number of sub left tuple per one block in join and count kernel
 */
 
@@ -79,8 +87,8 @@
 
 
 #define JT_SIZE 120000000 //max result tuple size
-#define SELECTIVITY 100000000  //the range of random value for tuple
-#define MATCH_RATE 10/100          //match rate (selectivity)
+#define SELECTIVITY 1000000000  //the range of random value for tuple
+#define MATCH_RATE 0.1          //match rate (selectivity,%)
 
 #define LEFT 0
 #define RIGHT 1

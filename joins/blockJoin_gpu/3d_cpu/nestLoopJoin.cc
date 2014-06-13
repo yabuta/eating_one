@@ -8,7 +8,7 @@
 #include "debug.h"
 
 #define JT_SIZE 120000000
-#define SELECTIVITY 10000000
+#define SELECTIVITY 1000000000
 #define MATCH_RATE 0.1  //match rate setting
 
 #define VAL_NUM 3
@@ -21,12 +21,12 @@ typedef enum {LEFT, RIGHT} LR;
 
 typedef struct _TUPLE {
   int id;
-  int val[VAL_NUM];
+  double val[VAL_NUM];
 } TUPLE;
 
 typedef struct _JOIN_TUPLE {
-  int lval[VAL_NUM]; // left value
-  int rval[VAL_NUM]; // right value
+  double lval[VAL_NUM]; // left value
+  double rval[VAL_NUM]; // right value
   int lid;
   int rid;
 } JOIN_TUPLE;

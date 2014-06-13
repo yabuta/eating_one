@@ -35,7 +35,7 @@ static uint iDivUp(uint dividend, uint divisor)
     return ((dividend % divisor) == 0) ? (dividend / divisor) : (dividend / divisor + 1);
 }
 
-CUdeviceptr presum(CUdeviceptr *d_Input, uint arrayLength)
+uint presum(CUdeviceptr *d_Input, uint arrayLength)
 {
   //printf("Starting...\n\n");
 
@@ -62,28 +62,11 @@ CUdeviceptr presum(CUdeviceptr *d_Input, uint arrayLength)
         checkCudaErrors(cudaDeviceSynchronize());
 
         scanExclusiveShort((uint *)d_Output, (uint *)(*d_Input), N);
-        //szWorkgroup = scanExclusiveShort((uint *)d_Output, (uint *)d_Input, 1, N);
 
         checkCudaErrors(cudaDeviceSynchronize());
 
-        // Data log
-        /*
-        printf("\n");
-        printf("scan-Short, Throughput = %.4f MElements/s, Time = %.5f s, Size = %u Elements, NumDevsUsed = %u, Workgroup = %u\n",
-               (1.0e-6 * (double)arrayLength/timerValue), timerValue, (unsigned int)arrayLength, 1, (unsigned int)szWorkgroup);
-        printf("\n");
-        */
     }else if(arrayLength <= MAX_LARGE_ARRAY_SIZE)
     {
-
-      /*
-      for(uint i = MIN_LARGE_ARRAY_SIZE; i<=MAX_LARGE_ARRAY_SIZE ; i<<=1){
-        if(arrayLength <= i){
-          N = i;
-          break;
-        }
-      }
-      */
 
       N = MAX_SHORT_ARRAY_SIZE * iDivUp(arrayLength,MAX_SHORT_ARRAY_SIZE);
 
@@ -92,19 +75,12 @@ CUdeviceptr presum(CUdeviceptr *d_Input, uint arrayLength)
       checkCudaErrors(cudaDeviceSynchronize());
 
       scanExclusiveLarge((uint *)d_Output, (uint *)(*d_Input), N);
-      //szWorkgroup = scanExclusiveLarge((uint *)d_Output, (uint *)d_Input, 1, N);
       
       checkCudaErrors(cudaDeviceSynchronize());
 
-      /*
-      printf("\n");
-      printf("scan-Large, Throughput = %.4f MElements/s, Time = %.5f s, Size = %u Elements, NumDevsUsed = %u, Workgroup = %u\n",
-             (1.0e-6 * (double)arrayLength/timerValue), timerValue, (unsigned int)arrayLength, 1, (unsigned int)szWorkgroup);
-      printf("\n");
-      */
+
     }else if(arrayLength <= MAX_LL_SIZE)
       {
-
 
         N = MAX_LARGE_ARRAY_SIZE * iDivUp(arrayLength,MAX_LARGE_ARRAY_SIZE);
 
@@ -113,22 +89,14 @@ CUdeviceptr presum(CUdeviceptr *d_Input, uint arrayLength)
         checkCudaErrors(cudaDeviceSynchronize());
 
         scanExclusiveLL((uint *)d_Output, (uint *)(*d_Input), N);
-        //szWorkgroup = scanExclusiveLL((uint *)d_Output, (uint *)d_Input, 1, N);
         
         checkCudaErrors(cudaDeviceSynchronize());
 
-        // Data log
-        /*
-        printf("\n");
-        printf("scan-Large, Throughput = %.4f MElements/s, Time = %.5f s, Size = %u Elements, NumDevsUsed = %u, Workgroup = %u\n",
-               (1.0e-6 * (double)arrayLength/timerValue), timerValue, (unsigned int)arrayLength, 1, (unsigned int)szWorkgroup);
-        printf("\n");
-        */
       }else{
-      cuMemFree(d_Output);
+      //cuMemFree(d_Output);
       closeScan();
 
-      return NULL;      
+      return FALSE;      
     }
 
     closeScan();
@@ -136,7 +104,7 @@ CUdeviceptr presum(CUdeviceptr *d_Input, uint arrayLength)
     cuMemFree(*d_Input);
     *d_Input = d_Output;
 
-    return d_Output;
+    return SUCCESS;
 }
 
 

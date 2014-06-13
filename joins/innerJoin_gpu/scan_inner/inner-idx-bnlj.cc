@@ -51,7 +51,7 @@ void createTuple()
   //タプルに初期値を代入
 
   //RIGHT_TUPLEへのGPUでも参照できるメモリの割り当て****************************
-  res = cuMemHostAlloc((void**)&rt,right * sizeof(TUPLE),CU_MEMHOSTALLOC_DEVICEMAP);
+  res = cuMemHostAlloc((void**)&rt,right * sizeof(TUPLE),CU_MEMHOSTALLOC_PORTABLE);
   if (res != CUDA_SUCCESS) {
     printf("cuMemHostAlloc to RIGHT_TUPLE failed: res = %lu\n", (unsigned long)res);
     exit(1);
@@ -83,7 +83,7 @@ void createTuple()
 
 
   //LEFT_TUPLEへのGPUでも参照できるメモリの割り当て*******************************
-  res = cuMemHostAlloc((void**)&lt,left * sizeof(TUPLE),CU_MEMHOSTALLOC_DEVICEMAP);
+  res = cuMemHostAlloc((void**)&lt,left * sizeof(TUPLE),CU_MEMHOSTALLOC_PORTABLE);
   if (res != CUDA_SUCCESS) {
     printf("cuMemHostAlloc to LEFT_TUPLE failed: res = %lu\n", (unsigned long)res);
     exit(1);
@@ -125,7 +125,7 @@ void createTuple()
   free(used_r);
 
 
-  res = cuMemHostAlloc((void**)&jt,JT_SIZE * sizeof(RESULT),CU_MEMHOSTALLOC_DEVICEMAP);
+  res = cuMemHostAlloc((void**)&jt,JT_SIZE * sizeof(RESULT),CU_MEMHOSTALLOC_PORTABLE);
   if (res != CUDA_SUCCESS) {
     printf("cuMemHostAlloc to LEFT_TUPLE failed: res = %lu\n", (unsigned long)res);
     exit(1);
@@ -151,7 +151,6 @@ createIndex(void)
 
   int count=0;
   for (int i = 0; i < NB_BKT_ENT; i++) idxcount[i] = 0;
-  //for (pidx = Hidx.nxt; pidx; pidx = pidx->nxt) {
   for(uint i=0 ; i<right ; i++){
     int idx = rt[i].val % NB_BKT_ENT;
     idxcount[idx]++;
@@ -477,8 +476,6 @@ void join(){
       exit(1);
     }
 
-    //jt = (RESULT *)malloc(jt_size*sizeof(RESULT));
-
     gettimeofday(&time_jkernel_s, NULL);
 
     void *kernel_args[]={
@@ -532,9 +529,9 @@ void join(){
       printf("cuMemcpyDtoH (p) failed: res = %lu\n", (unsigned long)res);
       exit(1);
     }
+    gettimeofday(&time_jdown_f, NULL);
     printf("jt_size = %d\n",jt_size*sizeof(RESULT)/1000);
 
-    gettimeofday(&time_jdown_f, NULL);
 
   }
   gettimeofday(&end, NULL);

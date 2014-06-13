@@ -47,7 +47,7 @@ void createTuple()
 
 
   //RIGHT_TUPLEへのGPUでも参照できるメモリの割り当て****************************
-  res = cuMemHostAlloc((void**)&rt,right * sizeof(TUPLE),CU_MEMHOSTALLOC_DEVICEMAP);
+  res = cuMemHostAlloc((void**)&rt,right * sizeof(TUPLE),CU_MEMHOSTALLOC_PORTABLE);
   if (res != CUDA_SUCCESS) {
     printf("cuMemHostAlloc to RIGHT_TUPLE failed: res = %lu\n", (unsigned long)res);
     exit(1);
@@ -79,7 +79,7 @@ void createTuple()
 
 
   //LEFT_TUPLEへのGPUでも参照できるメモリの割り当て*******************************
-  res = cuMemHostAlloc((void**)&lt,left * sizeof(TUPLE),CU_MEMHOSTALLOC_DEVICEMAP);
+  res = cuMemHostAlloc((void**)&lt,left * sizeof(TUPLE),CU_MEMHOSTALLOC_PORTABLE);
   if (res != CUDA_SUCCESS) {
     printf("cuMemHostAlloc to LEFT_TUPLE failed: res = %lu\n", (unsigned long)res);
     exit(1);
@@ -123,6 +123,12 @@ void createTuple()
   free(used);
   free(used_r);
 
+  //JOIN_TUPLEへのGPUでも参照できるメモリの割り当て********************************
+  res = cuMemHostAlloc((void**)&jt, JT_SIZE * sizeof(RESULT),CU_MEMHOSTALLOC_DEVICEMAP);
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemHostAlloc to JOIN_TUPLE failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
 
 
 }
@@ -186,6 +192,7 @@ void createIndex(void)
     Bucket[i].val = rt[i].val;
     Bucket[i].adr = i;
   }
+
   qsort(0,right-1);
 
   for(uint i=1; i<right ; i++){
@@ -260,14 +267,6 @@ void join(){
     printf("cuModuleGetFunction() failed\n");
     exit(1);
   }
-  /*
-  sprintf(fname, "%s/count.cubin", path);
-  res = cuModuleLoad(&c_module, fname);
-  if (res != CUDA_SUCCESS) {
-    printf("cuModuleLoad() failed\n");
-    exit(1);
-  } 
-  */ 
   res = cuModuleGetFunction(&c_function, module, "count");
   if (res != CUDA_SUCCESS) {
     printf("cuModuleGetFunction() failed\n");
@@ -277,6 +276,7 @@ void join(){
   /*tuple and index init******************************************/  
 
   createTuple();
+
   gettimeofday(&time_index_s, NULL);
   createIndex();
   gettimeofday(&time_index_f, NULL);
@@ -468,7 +468,7 @@ void join(){
       printf("cuMemAlloc (join) failed\n");
       exit(1);
     }
-    jt = (RESULT *)malloc(jt_size*sizeof(RESULT));
+    //jt = (RESULT *)malloc(jt_size*sizeof(RESULT));
     gettimeofday(&time_jkernel_s, NULL);
 
     void *kernel_args[]={

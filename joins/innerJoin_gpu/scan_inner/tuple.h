@@ -2,7 +2,7 @@
 //#define NB_BUFR (SZ_PAGE * 2 / sizeof(TUPLE))
 //#define NB_BUFS (SZ_PAGE * 16 / sizeof(TUPLE))
 #define BLOCK_SIZE_X 1024
-#define NB_BKT_ENT 67108864
+#define NB_BKT_ENT 16777216
 
 
 /*
@@ -27,7 +27,7 @@
 #define NB_BKT_ENT 67108864
 
 */
-#define MATCH_RATE 0.01
+#define MATCH_RATE 0.1
 
 #define JT_SIZE 120000000
 #define SELECTIVITY 1000000000

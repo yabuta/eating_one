@@ -103,6 +103,7 @@ __global__ void scanExclusiveShared(
 
     //Write back
     d_Dst[pos] = odata4;
+      
 }
 
 //Exclusive scan of top elements of bottom-level scans (4 * THREADBLOCK_SIZE)

@@ -49,6 +49,9 @@ CUdeviceptr presum(CUdeviceptr *d_Input, uint arrayLength)
             break;
           }
         }
+
+        printf("N = %d\n",N);
+
         checkCudaErrors(cudaMalloc((void **)&d_Output, N * sizeof(uint)));
 
         checkCudaErrors(cudaDeviceSynchronize());

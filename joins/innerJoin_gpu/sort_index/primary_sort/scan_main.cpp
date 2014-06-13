@@ -77,8 +77,6 @@ CUdeviceptr presum(CUdeviceptr *d_Input, uint arrayLength)
 
         N = MAX_LARGE_ARRAY_SIZE * iDivUp(arrayLength,MAX_LARGE_ARRAY_SIZE);
 
-        printf("N = %d\n",N);
-
         checkCudaErrors(cudaMalloc((void **)&d_Output, N * sizeof(uint)));      
 
         checkCudaErrors(cudaDeviceSynchronize());

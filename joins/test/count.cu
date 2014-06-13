@@ -14,8 +14,8 @@ extern "C" {
 
 __global__
 void count(
-           TUPLE *lt,
-           RESULT *jt,
+           int *lt,
+           int *jt,
            int left
 
           /*
@@ -31,10 +31,7 @@ void count(
 
   uint i = blockIdx.x*blockDim.x + threadIdx.x;
   if(i < left){
-    jt[i].lkey = 1;
-    jt[i].lval = 1;
-    jt[i].rkey = 0;
-    jt[i].rval = 0;
+    jt[i] = lt[i];
   }
 
   /*

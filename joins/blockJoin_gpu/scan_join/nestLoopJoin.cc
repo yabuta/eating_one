@@ -81,7 +81,9 @@ init(void)
     selec = selec-1;
     used[temp] = used[selec];
 
-    Tright[i].val = temp2; 
+    for(uint j=0; j<VAL_NUM ;j++){
+      Tright[i].val[j] = temp2; 
+    }
   }
 
 
@@ -113,19 +115,29 @@ init(void)
       rg = rg-1;
       used[temp] = used[rg];
 
-      Tleft[i].val = Tright[temp2].val;      
+      for(uint j=0; j<VAL_NUM ;j++){
+        Tleft[i].val[j] = Tright[temp2].val[j];      
+      }
       counter++;
     }else{
       uint temp = rand()%selec;
       uint temp2 = used[temp];
       selec = selec-1;
       used[temp] = used[selec];
-      Tleft[i].val = temp2; 
+      for(uint j=0; j<VAL_NUM ;j++){
+        Tleft[i].val[j] = temp2; 
+      }
     }
   }
 
   free(used);
   free(used_r);
+
+  res = cuMemHostAlloc((void**)&Tjoin,JT_SIZE * sizeof(JOIN_TUPLE),CU_MEMHOSTALLOC_DEVICEMAP);
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemHostAlloc to LEFT_TUPLE failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
 
 }
 
@@ -204,17 +216,6 @@ join()
     printf("cuModuleGetFunction() failed\n");
     exit(1);
   }
-
-  /*
-  sprintf(fname, "%s/count.cubin", path);
-  res = cuModuleLoad(&c_module, fname);
-  if (res != CUDA_SUCCESS) {
-    printf("cuModuleLoad(count) failed\n");
-    exit(1);
-  }
-  */
-  
-  
   res = cuModuleGetFunction(&c_function, module, "count");
   if (res != CUDA_SUCCESS) {
     printf("cuModuleGetFunction() failed\n");
@@ -252,9 +253,6 @@ join()
   uint gpu_size = grid_x * grid_y * block_x * block_y;
   printf("gpu_size = %d\n",gpu_size);
   
-  //malloc memory and 0 for count
-  //count = (int *)calloc(gpu_size,sizeof(int));
-
   /********************************************************************************/
 
   /********************************************************************
@@ -274,7 +272,6 @@ join()
     printf("cuMemAlloc (righttuple) failed\n");
     exit(1);
   }
-
   res = cuMemAlloc(&count_dev, gpu_size * sizeof(int));
   if (res != CUDA_SUCCESS) {
     printf("cuMemAlloc (count) failed\n");
@@ -333,7 +330,6 @@ join()
 
   //グリッド・ブロックの指定、変数の指定、カーネルの実行を行う
 
-  //printf("ok\n");
   res = cuLaunchKernel(
                        c_function,    // CUfunction f
                        grid_x,        // gridDimX
@@ -402,7 +398,7 @@ join()
       printf("cuMemAlloc (join) failed\n");
       exit(1);
     }
-    Tjoin = (JOIN_TUPLE *)malloc(jt_size*sizeof(JOIN_TUPLE));
+    //Tjoin = (JOIN_TUPLE *)malloc(jt_size*sizeof(JOIN_TUPLE));
     
     //実際のjoinの計算時間
     gettimeofday(&time_join_s, NULL);
@@ -410,7 +406,7 @@ join()
     void *kernel_args[]={
       (void *)&lt_dev,
       (void *)&rt_dev,
-      (void *)&jt_dev,
+      (void *)&Tjoin,
       (void *)&count_dev,
       (void *)&arg_left,
       (void *)&arg_right,    
@@ -440,21 +436,15 @@ join()
       printf("cuCtxSynchronize() failed: res = %lu\n", (unsigned long int)res);
       exit(1);
     }  
-  
-
     /*実際のjoinの計算時間*/
     gettimeofday(&time_join_f, NULL);
     //downloadの時間計測
     gettimeofday(&time_download_s, NULL);
-
-
     res = cuMemcpyDtoH(Tjoin, jt_dev, jt_size * sizeof(JOIN_TUPLE));
     if (res != CUDA_SUCCESS) {
       printf("cuMemcpyDtoH (jt) failed: res = %lu\n", (unsigned long)res);
       exit(1);
     }
-
-
     //downloadの時間計測
     gettimeofday(&time_download_f, NULL);
  
@@ -463,7 +453,6 @@ join()
 
 
   //free GPU memory***********************************************
-
 
   res = cuMemFree(lt_dev);
   if (res != CUDA_SUCCESS) {
@@ -474,14 +463,12 @@ join()
   if (res != CUDA_SUCCESS) {
     printf("cuMemFree (rt) failed: res = %lu\n", (unsigned long)res);
     exit(1);
-  }
-  
+  } 
   res = cuMemFree(jt_dev);
   if (res != CUDA_SUCCESS) {
     printf("cuMemFree (jointuple) failed: res = %lu\n", (unsigned long)res);
     exit(1);
-    }
-
+  }
   res = cuMemFree(count_dev);
   if (res != CUDA_SUCCESS) {
     printf("cuMemFree (count) failed: res = %lu\n", (unsigned long)res);
@@ -519,13 +506,10 @@ join()
 
   /****************************************************************************************/
 
-
-
-
   //結果を表示したい場合はここ
   //***************************************************************************************
 
-  printf("%d\n",jt_size);
+  printf("jt_size = %d\n",jt_size);
 
 
   /*
@@ -560,14 +544,6 @@ join()
     printf("cuModuleUnload module failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }  
-
-  /*  
-  res = cuModuleUnload(c_module);
-  if (res != CUDA_SUCCESS) {
-    printf("cuModuleUnload c_module failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }  
-  */
   res = cuCtxDestroy(ctx);
   if (res != CUDA_SUCCESS) {
     printf("cuCtxDestroy failed: res = %lu\n", (unsigned long)res);

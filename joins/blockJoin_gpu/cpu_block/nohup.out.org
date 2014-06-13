@@ -1,0 +1,9 @@
+left=1048576:right=1048576
+104858
+Caluculation with Devise    : 2514661.961000(miri sec)
+8 16
+left=1048576:right=1048576
+104858
+Caluculation with Devise    : 2478183.838000(miri sec)
+8 16
+./exp.sh: line 3:  7587 Terminated              ./ExeNestLoop $1 $2

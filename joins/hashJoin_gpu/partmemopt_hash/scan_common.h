@@ -89,7 +89,7 @@ extern "C" void getValue_gpu(
 
 
 
-extern "C" CUdeviceptr presum(
+extern "C" uint presum(
     CUdeviceptr *d_Input,
     uint arrayLength
 );

@@ -188,7 +188,7 @@ join()
   const char *path=".";
   struct timeval begin, end;
   struct timeval time_join_s,time_join_f,time_jkernel_s,time_jkernel_f;
-  struct timeval time_jdown_s,time_jdown_f,time_upload_s,time_upload_f;
+  struct timeval time_jdown_s,time_jdown_f,time_lupload_s,time_lupload_f,time_rupload_s,time_rupload_f;
   struct timeval time_hash_s,time_hash_f,time_hkernel_s,time_hkernel_f,time_lhash_s,time_lhash_f,time_rhash_s,time_rhash_f,time_lscan_s,time_lscan_f,time_rscan_s,time_rscan_f,time_cscan_s,time_cscan_f;
   struct timeval time_lhck_s,time_lhck_f,time_rhck_s,time_rhck_f,time_rhk_s,time_rhk_f;
   struct timeval time_count_s,time_count_f,time_ckernel_s,time_ckernel_f,time_alloc_s,time_alloc_f;
@@ -292,12 +292,6 @@ join()
     printf("cuMemAlloc (lefttuple) failed\n");
     exit(1);
   }
-  /* rt */
-  res = cuMemAlloc(&rt_dev, right * sizeof(TUPLE));
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemAlloc (righttuple) failed\n");
-    exit(1);
-  }
 
 
   /**********************************************************************************/
@@ -335,31 +329,21 @@ join()
     printf("cuMemAlloc (plt) failed\n");
     exit(1);
   }
-  res = cuMemAlloc(&prt_dev, right * sizeof(TUPLE));
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemAlloc (prt) failed\n");
-    exit(1);
-  }
+
   printf("t_num=%d\tp_num=%d\n",t_num,p_num);
-  
 
   /********************** upload lt , rt , count ,plt, prt, rL, lL***********************/
 
 
-  gettimeofday(&time_upload_s, NULL);  
+  gettimeofday(&time_lupload_s, NULL);  
 
   res = cuMemcpyHtoD(lt_dev, lt, left * sizeof(TUPLE));
   if (res != CUDA_SUCCESS) {
     printf("cuMemcpyHtoD (lt) failed: res = %lu\n", res);//conv(res));
     exit(1);
   }
-  res = cuMemcpyHtoD(rt_dev, rt, right * sizeof(TUPLE));
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD (rt) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
 
-  gettimeofday(&time_upload_f, NULL);  
+  gettimeofday(&time_lupload_f, NULL);  
 
   /***************************************************************************/
   gettimeofday(&time_hash_s, NULL);
@@ -538,6 +522,18 @@ join()
 
   /**************************************************************/
 
+
+  res = cuMemFree(lt_dev);
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemFree (lt) failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+  res = cuMemFree(lL_dev);
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemFree (lL) failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+
   gettimeofday(&time_lhash_f, NULL);
 
 
@@ -547,9 +543,31 @@ join()
 
   ***************************************************************/
 
-  table_type = RIGHT;
+
+  /* rt */
+  res = cuMemAlloc(&rt_dev, right * sizeof(TUPLE));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemAlloc (righttuple) failed\n");
+    exit(1);
+  }
+  res = cuMemAlloc(&prt_dev, right * sizeof(TUPLE));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemAlloc (prt) failed\n");
+    exit(1);
+  }
+
+  gettimeofday(&time_rupload_s, NULL);  
+  res = cuMemcpyHtoD(rt_dev, rt, right * sizeof(TUPLE));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemcpyHtoD (rt) failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+  gettimeofday(&time_rupload_f, NULL);   
+
 
   gettimeofday(&time_rhash_s, NULL);
+
+  table_type = RIGHT;
 
   t_num = right/RIGHT_PER_TH;
   if(right%RIGHT_PER_TH != 0){
@@ -685,6 +703,18 @@ join()
   }  
 
   gettimeofday(&time_rhk_f, NULL);
+
+  res = cuMemFree(rt_dev);
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemFree (rt) failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+
+  res = cuMemFree(rL_dev);
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemFree (rL) failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
 
   gettimeofday(&time_rhash_f, NULL);
 
@@ -906,18 +936,6 @@ join()
     gettimeofday(&time_join_f, NULL);
   }
 
-  gettimeofday(&end, NULL);
-
-  res = cuMemFree(lt_dev);
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemFree (lt) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-  res = cuMemFree(rt_dev);
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemFree (rt) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
   res = cuMemFree(count_dev);
   if (res != CUDA_SUCCESS) {
     printf("cuMemFree (count) failed: res = %lu\n", (unsigned long)res);
@@ -936,16 +954,6 @@ join()
   res = cuMemFree(prt_dev);
   if (res != CUDA_SUCCESS) {
     printf("cuMemFree (prt) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-  res = cuMemFree(lL_dev);
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemFree (lL) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-  res = cuMemFree(rL_dev);
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemFree (rL) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
   res = cuMemFree(p_sum_dev);
@@ -969,6 +977,8 @@ join()
     exit(1);
   }
 
+  gettimeofday(&end, NULL);
+
 
   /*size of HtoD data*/
 
@@ -990,8 +1000,10 @@ join()
   printf("all time:\n");
   printDiff(begin, end);
   printf("\n");
-  printf("left and right table upload time:\n");
-  printDiff(time_upload_s,time_upload_f);
+  printf("left table upload time:\n");
+  printDiff(time_lupload_s,time_lupload_f);
+  printf("right table upload time:\n");
+  printDiff(time_rupload_s,time_rupload_f);
   printf("\n");
   printf("hash time:\n");
   printDiff(time_hash_s,time_hash_f);

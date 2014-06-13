@@ -136,14 +136,13 @@ init(void)
   free(used_r);
 
 
-  /*
   res = cuMemHostAlloc((void**)&Tjoin,JT_SIZE * sizeof(JOIN_TUPLE),CU_MEMHOSTALLOC_DEVICEMAP);
   if (res != CUDA_SUCCESS) {
     printf("cuMemHostAlloc to LEFT_TUPLE failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
-  */
-  Tjoin = (JOIN_TUPLE *)malloc(JT_SIZE*sizeof(JOIN_TUPLE));
+
+  //Tjoin = (JOIN_TUPLE *)malloc(JT_SIZE*sizeof(JOIN_TUPLE));
       
 
 
@@ -186,6 +185,7 @@ join()
   unsigned int block_x, block_y, grid_x, grid_y;
   char fname[256];
   const char *path=".";
+  long join_time=0,count_time=0,scan_time=0,send_time=0,down_time=0;
   struct timeval time_join_s,time_join_f,time_download_s,time_download_f;
   struct timeval time_count_s,time_count_f;
   struct timeval time_scan_s,time_scan_f;
@@ -325,11 +325,12 @@ join()
         grid_y++;      
       block_y = 1;
 
+      /*
       printf("\nStarting...\nll = %d\trr = %d\tlls = %d\trrs = %d\n",ll,rr,lls,rrs);
       printf("grid_x = %d\tgrid_y = %d\tblock_x = %d\tblock_y = %d\n",grid_x,grid_y,block_x,block_y);
-
+      */
       gpu_size = grid_x * grid_y * block_x * block_y;
-      printf("gpu_size = %d\n",gpu_size);
+      //printf("gpu_size = %d\n",gpu_size);
 
       gettimeofday(&time_send_s, NULL);
       res = cuMemcpyHtoD(lt_dev, &(Tleft[ll]), lls * sizeof(TUPLE));
@@ -344,6 +345,7 @@ join()
       }
       gettimeofday(&time_send_f, NULL);
 
+      send_time += (time_send_f.tv_sec - time_send_s.tv_sec) * 1000 * 1000 + (time_send_f.tv_usec - time_send_s.tv_usec);
 
       /******************************************************************
     count the number of match tuple
@@ -399,7 +401,8 @@ join()
         exit(1);
       }
       gettimeofday(&time_scan_f, NULL);
-      
+      scan_time += (time_scan_f.tv_sec - time_scan_s.tv_sec) * 1000 * 1000 + (time_scan_f.tv_usec - time_scan_s.tv_usec);      
+
       /********************************************************************/      
       if(!transport(count_dev,(uint)gpu_size,&jt_size)){
         printf("transport error.\n");
@@ -407,6 +410,8 @@ join()
       }
 
       gettimeofday(&time_count_f, NULL);
+
+      count_time += (time_count_f.tv_sec - time_count_s.tv_sec) * 1000 * 1000 + (time_count_f.tv_usec - time_count_s.tv_usec);
 
       /**********************************************************************/
 
@@ -418,9 +423,9 @@ join()
       ************************************************************************/
 
       if(jt_size<=0){
-        printf("no tuple is matched.\n");
+        //printf("no tuple is matched.\n");
         total += jt_size;
-        printf("End...\n jt_size = %d\ttotal = %d\n",jt_size,total);
+        //printf("End...\n jt_size = %d\ttotal = %d\n",jt_size,total);
         jt_size = 0;
       }else{
         res = cuMemAlloc(&jt_dev, jt_size * sizeof(JOIN_TUPLE));
@@ -468,6 +473,8 @@ join()
       
         /*実際のjoinの計算時間*/
         gettimeofday(&time_join_f, NULL);
+        join_time += (time_join_f.tv_sec - time_join_s.tv_sec) * 1000 * 1000 + (time_join_f.tv_usec - time_join_s.tv_usec);
+
         //downloadの時間計測
         gettimeofday(&time_download_s, NULL);      
         
@@ -479,10 +486,12 @@ join()
         
         //downloadの時間計測
         gettimeofday(&time_download_f, NULL);
-        
+
+        down_time += (time_download_f.tv_sec - time_download_s.tv_sec) * 1000 * 1000 + (time_download_f.tv_usec - time_download_s.tv_usec);        
+
         cuMemFree(jt_dev);
         total += jt_size;
-        printf("End...\n jt_size = %d\ttotal = %d\n",jt_size,total);
+        //printf("End...\n jt_size = %d\ttotal = %d\n",jt_size,total);
         jt_size = 0;
         
       }
@@ -519,12 +528,30 @@ join()
 
   /***********   タプルを送ってダウンロードするまでの時間を計測する*************************/
 
+
+
   printf("\n\n");
   printf("******************execution time********************************************\n\n");
 
   printf("Calculation all with Devise\n");
   printDiff(begin,end);
 
+  printf("Calculation send with Devise\n");
+  printf("Diff: %ld us (%ld ms)\n", send_time, send_time/1000);
+
+  printf("Calculation count with Devise\n");
+  printf("Diff: %ld us (%ld ms)\n", count_time, count_time/1000);
+
+  printf("scan time\n");
+  printf("Diff: %ld us (%ld ms)\n", scan_time, scan_time/1000);
+
+  printf("Calculation join with Devise\n");
+  printf("Diff: %ld us (%ld ms)\n", join_time, join_time/1000);
+
+  printf("Calculation download with Devise\n");
+  printf("Diff: %ld us (%ld ms)\n", down_time, down_time/1000);
+
+  /*
   printf("Calculation send with Devise\n");
   printDiff(time_send_s,time_send_f);
 
@@ -539,6 +566,7 @@ join()
 
   printf("Calculation download with Devise\n");
   printDiff(time_download_s,time_download_f);
+  */
 
   /****************************************************************************************/
 

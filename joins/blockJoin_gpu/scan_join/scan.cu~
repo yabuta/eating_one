@@ -17,7 +17,7 @@
 
 //All three kernels run 512 threads per workgroup
 //Must be a power of two
-#define THREADBLOCK_SIZE 1024
+#define THREADBLOCK_SIZE 512
 #define LOOP_PERTHREAD 16
 #define LOOP_PERTHREAD2 16
 
@@ -252,11 +252,22 @@ __global__ void transport_kernel(
 
 )
 {
-
   d_Data[0] = d_Src[loc-1];
-
-
 }
+
+
+__global__ void add_kernel(
+    uint *d_Data,
+    uint *d_Src,
+    uint loc,
+    uint loc2
+
+)
+{
+  d_Data[0] = d_Src[loc-1]+d_Src[loc2-1];
+}
+
+
 
 
 
@@ -265,7 +276,7 @@ __global__ void transport_kernel(
 ////////////////////////////////////////////////////////////////////////////////
 //Derived as 32768 (max power-of-two gridDim.x) * 4 * THREADBLOCK_SIZE
 //Due to scanExclusiveShared<<<>>>() 1D block addressing
-extern "C" const uint MAX_BATCH_ELEMENTS =  THREADBLOCK_SIZE * THREADBLOCK_SIZE * THREADBLOCK_SIZE;
+extern "C" const uint MAX_BATCH_ELEMENTS = 4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE * THREADBLOCK_SIZE;
 extern "C" const uint MIN_SHORT_ARRAY_SIZE = 4;
 extern "C" const uint MAX_SHORT_ARRAY_SIZE = 4 * THREADBLOCK_SIZE;
 extern "C" const uint MIN_LARGE_ARRAY_SIZE = 8 * THREADBLOCK_SIZE;
@@ -516,7 +527,7 @@ extern "C" size_t diff_Part(
 }
 
 
-//transport input data to output per diff
+//transport input data to output on loc
 extern "C" void transport_gpu(
     uint *d_Dst,
     uint *d_Src,
@@ -534,6 +545,31 @@ extern "C" void transport_gpu(
                                                      loc
                                                      );
   getLastCudaError("transport_gpu() execution FAILED\n");
+  checkCudaErrors(cudaDeviceSynchronize());
+
+}
+
+
+//add input data on loc and loc2
+extern "C" void add_gpu(
+    uint *d_Dst,
+    uint *d_Src,
+    uint loc,
+    uint loc2
+)
+{
+
+    //Check total batch size limit
+    //assert((arrayLength) <= MAX_BATCH_ELEMENTS);
+
+  const uint blockCount = 1;//iDivUp(arrayLength , LOOP_PERTHREAD2*THREADBLOCK_SIZE);
+  add_kernel<<<blockCount, 1>>>(
+                                      d_Dst,
+                                      d_Src,
+                                      loc,
+                                      loc2
+                                      );
+  getLastCudaError("add_gpu() execution FAILED\n");
   checkCudaErrors(cudaDeviceSynchronize());
 
 }

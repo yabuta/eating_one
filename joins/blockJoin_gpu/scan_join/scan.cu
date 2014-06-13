@@ -17,7 +17,7 @@
 
 //All three kernels run 512 threads per workgroup
 //Must be a power of two
-#define THREADBLOCK_SIZE 1024
+#define THREADBLOCK_SIZE 512
 #define LOOP_PERTHREAD 16
 #define LOOP_PERTHREAD2 16
 
@@ -276,7 +276,7 @@ __global__ void add_kernel(
 ////////////////////////////////////////////////////////////////////////////////
 //Derived as 32768 (max power-of-two gridDim.x) * 4 * THREADBLOCK_SIZE
 //Due to scanExclusiveShared<<<>>>() 1D block addressing
-extern "C" const uint MAX_BATCH_ELEMENTS =  THREADBLOCK_SIZE * THREADBLOCK_SIZE * THREADBLOCK_SIZE;
+extern "C" const uint MAX_BATCH_ELEMENTS = 4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE * THREADBLOCK_SIZE;
 extern "C" const uint MIN_SHORT_ARRAY_SIZE = 4;
 extern "C" const uint MAX_SHORT_ARRAY_SIZE = 4 * THREADBLOCK_SIZE;
 extern "C" const uint MIN_LARGE_ARRAY_SIZE = 8 * THREADBLOCK_SIZE;
@@ -343,7 +343,9 @@ extern "C" size_t scanExclusiveShort(
     assert(arrayLength <= MAX_BATCH_ELEMENTS);
 
     //Check all threadblocks to be fully packed with data
-    assert(arrayLength % (4 * THREADBLOCK_SIZE) == 0);
+    //assert(arrayLength % (4 * THREADBLOCK_SIZE) == 0);
+
+    
 
     scanExclusiveShared<<<arrayLength / (4 * THREADBLOCK_SIZE), THREADBLOCK_SIZE>>>(
         (uint4 *)d_Dst,
