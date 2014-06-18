@@ -84,11 +84,11 @@ uint presum(CUdeviceptr *d_Input, uint arrayLength)
 
         N = MAX_LARGE_ARRAY_SIZE * iDivUp(arrayLength,MAX_LARGE_ARRAY_SIZE);
 
-        checkCudaErrors(cudaMalloc((void **)&d_Output, arrayLength * sizeof(uint)));      
+        checkCudaErrors(cudaMalloc((void **)&d_Output, N * sizeof(uint)));      
         
         checkCudaErrors(cudaDeviceSynchronize());
 
-        scanExclusiveLL((uint *)d_Input, (uint *)(*d_Input), arrayLength);
+        scanExclusiveLL((uint *)d_Output, (uint *)(*d_Input), N);
         
         checkCudaErrors(cudaDeviceSynchronize());
 

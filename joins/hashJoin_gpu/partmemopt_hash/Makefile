@@ -93,8 +93,8 @@ LDFLAGS       += $(LIBPATH_OPENGL)
 
 all: hj.cc join_gpu.cu partitioning.cu scan.o scan_main.o
 	$(NVCC) -o join_gpu.cubin join_gpu.cu
-	$(NVCC) -o partitioning.cubin partitioning.cu
-	gcc $(CFLAGS) -o $(TARGET) hj.cc scan.o scan_main.o $(LIBS) $(LDFLAGS) $(EXTRA_LDLAGS) $(INCLUDES)
+	$(NVCC) -o partitioning.cubin partitioning.cu -lm
+	gcc $(CFLAGS) -o $(TARGET) hj.cc scan.o scan_main.o $(LIBS) $(LDFLAGS) $(EXTRA_LDLAGS) $(INCLUDES) -lm
 
 scan.o:	scan.cu scan_common.h
 	$(MNVCC) $(NVCCFLAGS) $(EXTRA_NVCCFLAGS) $(GENCODE_FLAGS) $(INCLUDES) -o $@ -c $<

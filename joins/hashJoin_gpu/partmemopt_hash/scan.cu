@@ -352,7 +352,7 @@ extern "C" size_t scanExclusiveShort(
     assert(arrayLength <= MAX_BATCH_ELEMENTS);
 
     //Check all threadblocks to be fully packed with data
-    assert(arrayLength % (4 * THREADBLOCK_SIZE) == 0);
+    //assert(arrayLength % (4 * THREADBLOCK_SIZE) == 0);
 
     scanExclusiveShared<<<arrayLength / (4 * THREADBLOCK_SIZE), THREADBLOCK_SIZE>>>(
         (uint4 *)d_Dst,

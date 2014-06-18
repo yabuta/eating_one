@@ -51,18 +51,19 @@ uint presum(CUdeviceptr *d_Input, uint arrayLength)
 
     if(arrayLength <= MAX_SHORT_ARRAY_SIZE && arrayLength > MIN_SHORT_ARRAY_SIZE)
       {    
-        for(uint i = 4; i<=MAX_SHORT_ARRAY_SIZE ; i<<=1){
+        /*
+        for(uint i = 512; i<=MAX_SHORT_ARRAY_SIZE ; i<<=1){
           if(arrayLength <= i){
             N = i;
             break;
           }
         }
+        */
+
+        N = MAX_SHORT_ARRAY_SIZE;
         checkCudaErrors(cudaMalloc((void **)&d_Output, N * sizeof(uint)));
-
         checkCudaErrors(cudaDeviceSynchronize());
-
         scanExclusiveShort((uint *)d_Output, (uint *)(*d_Input), N);
-
         checkCudaErrors(cudaDeviceSynchronize());
 
     }else if(arrayLength <= MAX_LARGE_ARRAY_SIZE)

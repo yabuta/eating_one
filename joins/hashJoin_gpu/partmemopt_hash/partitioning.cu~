@@ -5,6 +5,7 @@ count the number of match tuple in each partition and each thread
 
 #include <stdio.h>
 #include <stdint.h>
+#include <math.h>
 #include <cuda.h>
 #include <sys/time.h>
 #include "tuple.h"
@@ -12,93 +13,214 @@ count the number of match tuple in each partition and each thread
 
 extern "C" {
 
+inline __device__ uint scan1Inclusive(uint idata, volatile uint *s_Data, uint size)
+{
+    uint pos = 2 * threadIdx.x - (threadIdx.x & (size - 1));
+    s_Data[pos] = 0;
+    pos += size;
+    s_Data[pos] = idata;
+
+    for (uint offset = 1; offset < size; offset <<= 1)
+    {
+        __syncthreads();
+        uint t = s_Data[pos] + s_Data[pos - 32 * offset];
+        __syncthreads();
+        s_Data[pos] = t;
+    }
+
+    return s_Data[pos];
+}
+
+inline __device__ uint scan1Exclusive(uint idata, volatile uint *s_Data, uint size)
+{
+    return scan1Inclusive(idata, s_Data, size) - idata;
+}
+
+
 __global__
 void count_partitioning(
           TUPLE *t,
-          int *L,
-          int p_num,
-          int t_num,
-          int rows_num,
-          int table_type
+          uint *blockCount,
+          uint *localScan,
+          uint loop,
+          uint rows
           ) 
 
 {
 
-  int rows_n = rows_num;
-  int p_n = p_num;
-  int t_n = t_num;
-
-  int PER_TH = LEFT_PER_TH;
-  if(table_type != LEFT) PER_TH = RIGHT_PER_TH;
-
-  int DEF = blockIdx.x * blockDim.x * PER_TH;
-  int x = blockIdx.x * blockDim.x + threadIdx.x;
-  int Dim = 0;
-  if(gridDim.x-1 == blockIdx.x){
-    Dim = t_n - blockIdx.x*blockDim.x;
-  }else{
-    Dim = blockDim.x;
+  __shared__ uint local[2*PARTITION];
+  for(uint i = threadIdx.x; i<2*PARTITION ; i+=blockDim.x){
+    local[i] = 0;
   }
 
+  __syncthreads();
 
-  // Matching phase
-  int hash = 0;
+  uint firstpos = ONE_BL_NUM*blockIdx.x + threadIdx.x*ONE_BL_NUM/blockDim.x;
+  
+  for(uint i = firstpos; i<firstpos + ONE_BL_NUM/blockDim.x && i<rows; i++){    
+    int temp = t[i].val;
+    temp >>= RADIX*loop;
+    uint idx = temp%PARTITION;
+    atomicAdd(&(local[idx+PARTITION]),1);
 
-  if(x < t_n){
-    for(int i = 0; i<PER_TH&&(DEF+threadIdx.x+i*Dim)<rows_n;i++){
-      hash = t[DEF + threadIdx.x + i*Dim].val % p_n;
-      L[hash*t_n + x]++;
+  }
+
+  __syncthreads();
+
+  for(uint i=threadIdx.x ; i<PARTITION ; i+=blockDim.x){
+    blockCount[gridDim.x*i + blockIdx.x] = local[i+PARTITION];
+  }
+
+  __syncthreads();
+  
+  //scan1Exclusive(local[threadIdx.x+PARTITION],local,PARTITION);
+  /*
+  for(uint i=threadIdx.x*ONE_BL_NUM/blockDim.x+1; i<(threadIdx.x+1)*ONE_BL_NUM/blockDim.x; i++){
+    local[i]=local[i-1]+local[PARTITION+i-1];
+  }
+  scan1Exclusive(local[threadIdx.x+PARTITION],local,blockDim.x);
+  */
+  if(threadIdx.x==0){
+    local[0]=0;
+    for(uint i=1 ; i<PARTITION ; i++){
+      local[i]=local[i-1]+local[PARTITION+i-1];
     }
   }
+
+  __syncthreads();
+
+  for(uint i=threadIdx.x ; i<PARTITION ; i+=blockDim.x){
+    localScan[gridDim.x*i + blockIdx.x] = local[i];
+  }
+
 
 }
 
 __global__
-void partitioning(
+void partitioning1(
           TUPLE *t,
           TUPLE *pt,
-          int *L,
-          int p_num,
-          int t_num,
-          int rows_num,
-          int table_type
+          uint *localScan,
+          uint loop,
+          uint rows
           ) 
 
 {
 
-  int p_n = p_num;
-  int t_n = t_num;
-  int rows_n = rows_num;
-
-  int PER_TH = LEFT_PER_TH;
-  if(table_type != LEFT) PER_TH = RIGHT_PER_TH;
-
-  int DEF = blockIdx.x * blockDim.x * PER_TH;
-  int x = blockIdx.x * blockDim.x + threadIdx.x;
-  int Dim = 0;
-
-  if(gridDim.x-1 == blockIdx.x){
-    Dim = t_n - blockIdx.x*blockDim.x;
-  }else{
-    Dim = blockDim.x;
+  __shared__ uint local[PARTITION];
+  for(uint i = threadIdx.x; i<PARTITION ; i+=blockDim.x){
+    local[i] = localScan[gridDim.x*i + blockIdx.x];
   }
 
-  // Matching phase
-  int hash = 0;
-  int temp = 0;
-  if(x < t_n){
-    for(int i = 0; i<PER_TH&&(DEF+threadIdx.x+i*Dim)<rows_n;i++){
-      hash = t[DEF + threadIdx.x + i*Dim].val%p_n;
-      temp = L[hash*t_n + x];
+  __syncthreads();
 
-      pt[temp].key = t[DEF + threadIdx.x + i*Dim].key;  
-      pt[temp].val = t[DEF + threadIdx.x + i*Dim].val;  
-      L[hash*t_n + x] = temp + 1;
-    }    
-  
+  if(blockIdx.x==0&&threadIdx.x==0){
+    for(uint i=0; i<PARTITION; i++){
+      printf("%d\t%d\t%d\n",i,localScan[gridDim.x*i+blockIdx.x],local[i]);
+    }
   }
+  __syncthreads();
 
+  uint firstpos = ONE_BL_NUM*blockIdx.x + threadIdx.x*ONE_BL_NUM/blockDim.x;
+
+  for(uint i = firstpos; i < firstpos+ONE_BL_NUM/blockDim.x && i<rows; i++){
+    TUPLE temp = t[i];
+    int tval = temp.val;
+    tval >>= RADIX*loop;
+    uint idx = tval%PARTITION;
+    for(uint j = 0 ; j<32 ; j++){
+      if(threadIdx.x==j){
+        pt[ONE_BL_NUM*blockIdx.x + local[idx]] = temp;
+        local[idx]++;
+      }
+    }
+
+  }  
 
 }
+
+
+__global__
+void partitioning2(
+          TUPLE *t,
+          TUPLE *pt,
+          uint *blockCount,
+          uint loop,
+          uint rows
+          ) 
+
+{
+
+  __shared__ uint local[PARTITION];
+  for(uint i = threadIdx.x; i<PARTITION ; i+=blockDim.x){
+    local[i] = blockCount[gridDim.x*i + blockIdx.x];
+  }
+  __syncthreads();
+  /*
+  if(blockIdx.x==0&&threadIdx.x==0){
+    for(uint i=0; i<PARTITION; i++){
+      printf("%d\t%d\t%d\n",i,blockCount[i+blockIdx.x*PARTITION],local[i]);
+    }
+  }
+  __syncthreads();
+  */
+  uint firstpos = ONE_BL_NUM*blockIdx.x + threadIdx.x*ONE_BL_NUM/blockDim.x;
+
+  for(uint i = firstpos; i<ONE_BL_NUM/blockDim.x+firstpos && i<rows; i++){
+    TUPLE temp = pt[i];
+    int tval = temp.val;
+    //tval >>= RADIX*loop;
+    for(uint j=0 ; j<loop ; j++){
+      tval = tval/PARTITION;
+    }
+    uint idx = tval%PARTITION;
+    for(uint j = 0 ; j<32 ; j++){
+      if(threadIdx.x==j){
+        t[local[idx]] = temp;
+        local[idx]++;
+      }
+    }
+  }  
+
+}
+
+
+__global__
+void partitioningF(
+          TUPLE *t,
+          TUPLE *pt,
+          uint *blockCount,
+          uint *startPos,
+          uint loop,
+          uint rows
+          ) 
+
+{
+
+  __shared__ uint local[PARTITION];
+  for(uint i = threadIdx.x; i<PARTITION ; i+=blockDim.x){
+    local[i] = blockCount[gridDim.x*i + blockIdx.x];
+  }
+  __syncthreads();
+
+  uint firstpos = ONE_BL_NUM*blockIdx.x + threadIdx.x*ONE_BL_NUM/blockDim.x;
+
+  for(uint i = firstpos; i<ONE_BL_NUM/blockDim.x+firstpos && i<rows; i++){
+    TUPLE temp = pt[i];
+    int tval = temp.val;
+    int part = 1;
+    for(uint j=0 ; j<loop ;j++){
+      part *= PARTITION;
+    }
+    int pidx = temp.val%part;
+    startPos[pidx]++;
+    tval >>= RADIX*loop;
+    uint idx = tval%PARTITION;
+    t[local[idx]] = temp;
+    atomicAdd(&(local[idx]),1);
+  }  
+
+}
+
 
 }

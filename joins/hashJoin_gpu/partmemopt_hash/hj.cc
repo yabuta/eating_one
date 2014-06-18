@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/time.h>
+#include <math.h> 
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <helper_cuda.h>
@@ -169,20 +170,22 @@ join()
   //TUPLE *plt,*prt;
   RESULT result;
   int resultVal = 0;
+  //int loop = LOOP;
+  uint fpart=pow(PARTITION,LOOP);
   uint jt_size;
   uint p_num,t_num;
   uint r_p_max;
   uint count_size;
-  uint *l_p,*radix_num,*p_loc;
-  uint *count,*p_sum;
+  uint *l_p,*radix_num,*p_loc,*fp_num;
+  uint *count;
   uint table_type;
   CUresult res;
   CUdevice dev;
   CUcontext ctx;
-  CUfunction function,c_function,cp_function,p_function;
+  CUfunction function,c_function,cp_function,p1_function,p2_function,pf_function;
   CUmodule module,c_module,p_module,cp_module;
-  CUdeviceptr lt_dev, rt_dev, jt_dev,count_dev,lL_dev,rL_dev;
-  CUdeviceptr plt_dev,prt_dev,l_p_dev,r_p_dev,radix_dev,p_sum_dev;
+  CUdeviceptr lt_dev, rt_dev, jt_dev,count_dev,blockCount_dev,localScan_dev,startPos_dev;
+  CUdeviceptr plt_dev,prt_dev,l_p_dev,r_p_dev,radix_dev;
   unsigned int block_x, block_y, grid_x, grid_y,p_grid_x,p_block_x;
   char fname[256];
   const char *path=".";
@@ -250,16 +253,24 @@ join()
     printf("cuModuleLoad(partitioning) failed\n");
     exit(1);
   }
-
   res = cuModuleGetFunction(&cp_function, p_module, "count_partitioning");
   if (res != CUDA_SUCCESS) {
     printf("cuModuleGetFunction(count_partitioning) failed\n");
     exit(1);
-  }
-  
-  res = cuModuleGetFunction(&p_function, p_module, "partitioning");
+  }  
+  res = cuModuleGetFunction(&p1_function, p_module, "partitioning1");
   if (res != CUDA_SUCCESS) {
-    printf("cuModuleGetFunction(partitioning) failed\n");
+    printf("cuModuleGetFunction(partitioning1) failed\n");
+    exit(1);
+  }
+  res = cuModuleGetFunction(&p2_function, p_module, "partitioning2");
+  if (res != CUDA_SUCCESS) {
+    printf("cuModuleGetFunction(partitioning2) failed\n");
+    exit(1);
+  }
+  res = cuModuleGetFunction(&pf_function, p_module, "partitioningF");
+  if (res != CUDA_SUCCESS) {
+    printf("cuModuleGetFunction(partitioningF) failed\n");
     exit(1);
   }
 
@@ -299,37 +310,7 @@ join()
     exit(1);
   }
 
-
-  /**********************************************************************************/
-
-  gettimeofday(&time_alloc_f, NULL);
-
-
-  /*preparation of partitioning*/
-
-  p_num = 0;
-  double temp = left/B_ROW_NUM;
-  if(temp < 2){
-    p_num = 1;
-  }else if(floor(log2(temp))==ceil(log2(temp))){
-    p_num = (int)temp;
-  }else{
-    p_num = pow(2,(int)log2(temp) + 1);
-  }
-  t_num = left/LEFT_PER_TH;
-  if(left%LEFT_PER_TH != 0){
-    t_num++;
-  }
-
-  printf("%d\n",p_num * t_num);
-
-
   /*lL,plt and prt alloc in GPU */
-  res = cuMemAlloc(&lL_dev, t_num * p_num * sizeof(uint));
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemAlloc (lL) failed\n");
-    exit(1);
-  }
   res = cuMemAlloc(&plt_dev, left * sizeof(TUPLE));
   if (res != CUDA_SUCCESS) {
     printf("cuMemAlloc (plt) failed\n");
@@ -340,11 +321,15 @@ join()
     printf("cuMemAlloc (prt) failed\n");
     exit(1);
   }
-  printf("t_num=%d\tp_num=%d\n",t_num,p_num);
-  
+
+  /**********************************************************************************/
+
+
+
+  gettimeofday(&time_alloc_f, NULL);
+
 
   /********************** upload lt , rt , count ,plt, prt, rL, lL***********************/
-
 
   gettimeofday(&time_upload_s, NULL);  
 
@@ -372,113 +357,224 @@ join()
 
   gettimeofday(&time_lhash_s, NULL);
 
-  p_block_x = t_num < PART_C_NUM ? t_num : PART_C_NUM;
-  p_grid_x = t_num / p_block_x;
-  if (t_num % p_block_x != 0)
+  p_block_x = PART_X;
+  p_grid_x = left / ONE_BL_NUM;
+  if (left % ONE_BL_NUM != 0)
     p_grid_x++;
 
+  printf("p_block_x = %d\tp_grid_x = %d\n",p_block_x,p_grid_x);
 
-  checkCudaErrors(cudaMemset((void *)lL_dev, 0 , t_num * p_num *sizeof(uint)));
+  res = cuMemAlloc(&blockCount_dev, PARTITION * p_grid_x * sizeof(uint));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemAlloc (blockCount) failed\n");
+    exit(1);
+  }
+  res = cuMemAlloc(&localScan_dev, PARTITION * p_grid_x * sizeof(uint));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemAlloc (localScan) failed\n");
+    exit(1);
+  }
+  res = cuMemAlloc(&startPos_dev, fpart * sizeof(uint));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemAlloc (localScan) failed\n");
+    exit(1);
+  }
 
-  gettimeofday(&time_lhck_s, NULL);
+  checkCudaErrors(cudaMemset((void *)startPos_dev, 0 , fpart *sizeof(uint)));
+  
+  for(uint loop=0 ; loop<LOOP ; loop++){
+    //checkCudaErrors(cudaMemset((void *)blockCount_dev, 0 , PARTITION * p_grid_x *sizeof(uint)));
+    //checkCudaErrors(cudaMemset((void *)localScan_dev, 0 , PARTITION * p_grid_x *sizeof(uint)));
 
-  void *count_lpartition_args[]={
+
+    void *count_lpartition_args[]={
     
-    (void *)&lt_dev,
-    (void *)&lL_dev,
-    (void *)&p_num,
-    (void *)&t_num,
-    (void *)&left,
-    (void *)&table_type
+      (void *)&lt_dev,
+      (void *)&blockCount_dev,
+      (void *)&localScan_dev,
+      (void *)&loop,
+      (void *)&left
       
-  };
-  //グリッド・ブロックの指定、変数の指定、カーネルの実行を行う
-  res = cuLaunchKernel(
-                       cp_function,    // CUfunction f
-                       p_grid_x,        // gridDimX
-                       1,        // gridDimY
-                       1,             // gridDimZ
-                       p_block_x,       // blockDimX
-                       1,       // blockDimY
-                       1,             // blockDimZ
-                       0,             // sharedMemBytes
-                       NULL,          // hStream
-                       count_lpartition_args,   // keunelParams
-                       NULL           // extra
-                       );
-  if(res != CUDA_SUCCESS) {
-    printf("count cuLaunchKernel() failed: res = %lu\n", (unsigned long int)res);
-    exit(1);
-  }      
-  res = cuCtxSynchronize();
-  if(res != CUDA_SUCCESS) {
-    printf("cuCtxSynchronize() failed: res = %lu\n", (unsigned long int)res);
-    exit(1);
-  }  
+    };
+    //グリッド・ブロックの指定、変数の指定、カーネルの実行を行う
+    res = cuLaunchKernel(
+                         cp_function,    // CUfunction f
+                         p_grid_x,        // gridDimX
+                         1,        // gridDimY
+                         1,             // gridDimZ
+                         p_block_x,       // blockDimX
+                         1,       // blockDimY
+                         1,             // blockDimZ
+                         0,             // sharedMemBytes
+                         NULL,          // hStream
+                         count_lpartition_args,   // keunelParams
+                         NULL           // extra
+                         );
+    if(res != CUDA_SUCCESS) {
+      printf("count cuLaunchKernel(lhash count) failed: res = %lu\n", (unsigned long int)res);
+      exit(1);
+    }      
+    res = cuCtxSynchronize();
+    if(res != CUDA_SUCCESS) {
+      printf("cuCtxSynchronize(lhash count) failed: res = %lu\n", (unsigned long int)res);
+      exit(1);
+    } 
+    /**************************** prefix sum *************************************/
+    if(!(presum(&blockCount_dev,PARTITION*p_grid_x))){
+      printf("left blockCount presum error\n");
+      exit(1);
+    }
+    /********************************************************************/
+    /*
+    uint *bc = (uint *)calloc(PARTITION*p_grid_x,sizeof(uint));
+    res = cuMemcpyDtoH(bc,blockCount_dev,PARTITION * p_grid_x * sizeof(uint)); 
+    if(res != CUDA_SUCCESS){
+      printf("cuMemcpyDtoH (bc) failed: res = %lu\n", (unsigned long)res);
+      exit(1);    
+    }
+    
+    for(uint j=0; j<PARTITION*p_grid_x; j++){
+      printf("%d = %d\n",j,bc[j]);
+    }
+    */
+    //exit(1);
+    void *lpartition1_args[]={    
+      (void *)&lt_dev,
+      (void *)&plt_dev,
+      (void *)&localScan_dev,
+      (void *)&loop,
+      (void *)&left
+    };
+    res = cuLaunchKernel(
+                         p1_function,    // CUfunction f
+                         p_grid_x,        // gridDimX
+                         1,        // gridDimY
+                         1,             // gridDimZ
+                         p_block_x,       // blockDimX
+                         1,       // blockDimY
+                         1,             // blockDimZ
+                         0,             // sharedMemBytes
+                         NULL,          // hStream
+                         lpartition1_args,   // keunelParams
+                         NULL           // extra
+                         );
+    if(res != CUDA_SUCCESS) {
+      printf("cuLaunchKernel(lhash partition1) failed: res = %lu\n", (unsigned long int)res);
+      exit(1);
+    }
+    res = cuCtxSynchronize();
+    if(res != CUDA_SUCCESS) {
+      printf("cuCtxSynchronize(lhash partition1) failed: res = %lu\n", (unsigned long int)res);
+      exit(1);
+    } 
 
-  gettimeofday(&time_lhck_f, NULL);
+    void *lpartition2_args[]={
+    
+      (void *)&lt_dev,
+      (void *)&plt_dev,
+      (void *)&blockCount_dev,
+      (void *)&loop,
+      (void *)&left
+    };
+    //グリッド・ブロックの指定、変数の指定、カーネルの実行を行う
+    res = cuLaunchKernel(
+                         p2_function,    // CUfunction f
+                         p_grid_x,        // gridDimX
+                         1,        // gridDimY
+                         1,             // gridDimZ
+                         p_block_x,       // blockDimX
+                         1,       // blockDimY
+                         1,             // blockDimZ
+                         0,             // sharedMemBytes
+                         NULL,          // hStream
+                         lpartition2_args,   // keunelParams
+                         NULL           // extra
+                         );
+    if(res != CUDA_SUCCESS) {
+      printf("cuLaunchKernel(lhash partition2) failed: res = %lu\n", (unsigned long int)res);
+      exit(1);
+    }      
+    res = cuCtxSynchronize();
+    if(res != CUDA_SUCCESS) {
+      printf("cuCtxSynchronize(lhash partition2) failed: res = %lu\n", (unsigned long int)res);
+      exit(1);
+    }  
 
-  /**************************** prefix sum *************************************/
-
-  gettimeofday(&time_lscan_s, NULL);
-
-  if(!(presum(&lL_dev,t_num*p_num))){
-    printf("lL presum error\n");
-    exit(1);
   }
 
-  gettimeofday(&time_lscan_f, NULL);
 
-  /********************************************************************/
-
-  p_sum = (uint *)calloc(p_num,sizeof(uint));
-
-  if(!(p_sum_dev = diff_part(lL_dev,t_num,p_num,left))){
-    printf("p_sum prefix sum error.\n");
-    exit(1);
+  res = cuMemcpyDtoH(lt,lt_dev,left * sizeof(TUPLE)); 
+  if(res != CUDA_SUCCESS){
+    printf("cuMemcpyDtoH (lt) failed: res = %lu\n", (unsigned long)res);
+    exit(1);    
   }
-  res = cuMemcpyDtoH(p_sum,p_sum_dev,p_num * sizeof(uint)); 
+
+  int pa=0;
+  for(uint i=0 ; i<left ; i++){
+    int x = lt[i].val%fpart;
+    if(x<pa){
+      printf("partition error. x = %d pa = %d i = %d\n",x,pa,i);
+      break;
+      //exit(1);
+    }else{
+      pa = x;
+    }
+  }
+  for(uint i=0 ; i<100 ; i++){
+    printf("lt[%d] = %d\t%d\t%d\t%d\n",i,lt[i].val,lt[i].val%fpart,lt[i].val%PARTITION,(lt[i].val>>RADIX)*PARTITION);
+  }
+  printf("partition success.\npa = %d\nfpart = %d\n",pa,fpart);
+
+  exit(1);
+
+  fp_num = (uint *)calloc(fpart,sizeof(uint));
+
+  res = cuMemcpyDtoH(fp_num,startPos_dev,fpart * sizeof(uint)); 
   if(res != CUDA_SUCCESS){
     printf("cuMemcpyDtoH (p_sum) failed: res = %lu\n", (unsigned long)res);
     exit(1);    
   }
-
 
   /***********************************************
     resizing partition 
 
   ************************************************/
   uint l_p_num = 0;
-  for(uint i=0 ; i<p_num ;i++ ){
-
-    if(p_sum[i]%B_ROW_NUM == 0 && p_sum[i]!=0){
-      l_p_num += p_sum[i]/B_ROW_NUM;
+  for(uint i=0 ; i<fpart ;i++ ){
+    if(fp_num[i]%B_ROW_NUM == 0 && fp_num[i]!=0){
+      l_p_num += fp_num[i]/B_ROW_NUM;
     }else{
-      l_p_num += p_sum[i]/B_ROW_NUM + 1;
+      l_p_num += fp_num[i]/B_ROW_NUM + 1;
     }            
   }
   l_p = (uint *)calloc(l_p_num+1,sizeof(uint));
   radix_num = (uint *)calloc(l_p_num+1,sizeof(uint));
-  p_loc = (uint *)calloc(p_num,sizeof(uint));
+  p_loc = (uint *)calloc(fpart,sizeof(uint));
   l_p_num = 0;
   uint temp2 = 0;
 
   /****************presum*****************/
-  p_loc[0] = 0;
-  for(int i=1 ; i<p_num ; i++){
-    p_loc[i] = p_loc[i-1] + p_sum[i-1];
-  }  
+  if(!(presum(&startPos_dev,fpart))){
+    printf("left blockCount presum error\n");
+    exit(1);
+  }
+  res = cuMemcpyDtoH(p_loc,startPos_dev,fpart * sizeof(uint)); 
+  if(res != CUDA_SUCCESS){
+    printf("cuMemcpyDtoH (p_sum) failed: res = %lu\n", (unsigned long)res);
+    exit(1);    
+  }
   /***************************************/
-  for(int i=0; i<p_num; i++){
-    if(p_sum[i]/B_ROW_NUM < 1 || p_sum[i]==B_ROW_NUM){
+
+  for(int i=0; i<fpart; i++){
+    if(fp_num[i]/B_ROW_NUM < 1 || fp_num[i]==B_ROW_NUM){
       l_p[l_p_num] = p_loc[i];
       radix_num[l_p_num] = i;
       l_p_num++;
     }else{
-      if(p_sum[i]%B_ROW_NUM == 0){
-        temp2 = p_sum[i]/B_ROW_NUM;
+      if(fp_num[i]%B_ROW_NUM == 0){
+        temp2 = fp_num[i]/B_ROW_NUM;
       }else{
-        temp2 = p_sum[i]/B_ROW_NUM + 1;
+        temp2 = fp_num[i]/B_ROW_NUM + 1;
       }
       l_p[l_p_num] = p_loc[i];
       radix_num[l_p_num] = i;
@@ -491,50 +587,24 @@ join()
     }
   }
   l_p[l_p_num] = left;
-  radix_num[l_p_num] = p_num;
+  radix_num[l_p_num] = fpart;
   /***************************
    end of resizing partition
 
   ***********************************/
 
-  gettimeofday(&time_hkernel_s, NULL);
-
-  void *lpartition_args[]={
-    
-    (void *)&lt_dev,
-    (void *)&plt_dev,
-    (void *)&lL_dev,
-    (void *)&p_num,
-    (void *)&t_num,
-    (void *)&left,
-    (void *)&table_type      
-  };
-  //グリッド・ブロックの指定、変数の指定、カーネルの実行を行う
-  res = cuLaunchKernel(
-                       p_function,    // CUfunction f
-                       p_grid_x,        // gridDimX
-                       1,        // gridDimY
-                       1,             // gridDimZ
-                       p_block_x,       // blockDimX
-                       1,       // blockDimY
-                       1,             // blockDimZ
-                       0,             // sharedMemBytes
-                       NULL,          // hStream
-                       lpartition_args,   // keunelParams
-                       NULL           // extra
-                       );
-  if(res != CUDA_SUCCESS) {
-    printf("cuLaunchKernel(lhash partition) failed: res = %lu\n", (unsigned long int)res);
+  res = cuMemFree(plt_dev);
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemFree (plt) failed: res = %lu\n", (unsigned long)res);
     exit(1);
-  }      
-  res = cuCtxSynchronize();
-  if(res != CUDA_SUCCESS) {
-    printf("cuCtxSynchronize(lhash partition) failed: res = %lu\n", (unsigned long int)res);
+  }
+  /*
+  res = cuMemFree(p_sum_dev);
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemFree (p_sum_dev) failed: res = %lu\n", (unsigned long)res);
     exit(1);
-  }  
-
-  gettimeofday(&time_hkernel_f, NULL);  
-
+  }
+  */
 
   /**************************************************************/
 
@@ -547,93 +617,255 @@ join()
 
   ***************************************************************/
 
-  table_type = RIGHT;
+  //  table_type = RIGHT;
 
   gettimeofday(&time_rhash_s, NULL);
 
-  t_num = right/RIGHT_PER_TH;
-  if(right%RIGHT_PER_TH != 0){
-    t_num++;
-  }
-
-  printf("t_num=%d\tp_num=%d\n",t_num,p_num);
-
-  res = cuMemAlloc(&rL_dev, t_num * p_num * sizeof(uint));
-  if (res != CUDA_SUCCESS){
-    printf("cuMemAlloc (rL) failed\n");
-    exit(1);
-  }
-  checkCudaErrors(cudaMemset((void *)rL_dev, 0 , t_num*p_num*sizeof(uint)));
-
-  p_block_x = t_num < PART_C_NUM ? t_num : PART_C_NUM;
-  p_grid_x = t_num / p_block_x;
-  if (t_num % p_block_x != 0)
+  p_block_x = PART_X;
+  p_grid_x = right / ONE_BL_NUM;
+  if (right % ONE_BL_NUM != 0)
     p_grid_x++;
 
-  gettimeofday(&time_rhck_s, NULL);
+  printf("p_block_x = %d\tp_grid_x = %d\n",p_block_x,p_grid_x);
 
-  void *count_rpartition_args[]={
+  checkCudaErrors(cudaMemset((void *)startPos_dev, 0 , fpart*sizeof(uint)));
+
+  for(uint r_loop=0 ; r_loop<LOOP ; r_loop++){
+    checkCudaErrors(cudaMemset((void *)blockCount_dev, 0 , PARTITION*p_grid_x*sizeof(uint)));
+    checkCudaErrors(cudaMemset((void *)localScan_dev, 0 , PARTITION*p_grid_x*sizeof(uint)));
+
+    gettimeofday(&time_rhck_s, NULL);
+
+    void *count_rpartition_args[]={
     
-    (void *)&rt_dev,
-    (void *)&rL_dev,
-    (void *)&p_num,
-    (void *)&t_num,
-    (void *)&right,
-    (void *)&table_type
-  };
+      (void *)&rt_dev,
+      (void *)&blockCount_dev,
+      (void *)&localScan_dev,
+      (void *)&r_loop,
+      (void *)&right
+    };
 
-  //グリッド・ブロックの指定、変数の指定、カーネルの実行を行う
+    //グリッド・ブロックの指定、変数の指定、カーネルの実行を行う
 
-  res = cuLaunchKernel(
-                       cp_function,    // CUfunction f
-                       p_grid_x,        // gridDimX
-                       1,        // gridDimY
-                       1,             // gridDimZ
-                       p_block_x,       // blockDimX
-                       1,       // blockDimY
-                       1,             // blockDimZ
-                       0,             // sharedMemBytes
-                       NULL,          // hStream
-                       count_rpartition_args,   // keunelParams
-                       NULL           // extra
-                       );
-  if(res != CUDA_SUCCESS) {
-    printf("cuLaunchKernel(rhash count) failed: res = %lu\n", (unsigned long int)res);
-    exit(1);
+    res = cuLaunchKernel(
+                         cp_function,    // CUfunction f
+                         p_grid_x,        // gridDimX
+                         1,        // gridDimY
+                         1,             // gridDimZ
+                         p_block_x,       // blockDimX
+                         1,       // blockDimY
+                         1,             // blockDimZ
+                         0,             // sharedMemBytes
+                         NULL,          // hStream
+                         count_rpartition_args,   // keunelParams
+                         NULL           // extra
+                         );
+    if(res != CUDA_SUCCESS) {
+      printf("cuLaunchKernel(rhash count) failed: res = %lu\n", (unsigned long int)res);
+      exit(1);
+    }
+    res = cuCtxSynchronize();
+    if(res != CUDA_SUCCESS) {
+      printf("cuCtxSynchronize(rhash count) failed: res = %lu\n", (unsigned long int)res);
+      exit(1);
+    }  
+
+
+    gettimeofday(&time_rhck_f, NULL);
+
+
+    /**************************** prefix sum *************************************/
+
+    gettimeofday(&time_rscan_s, NULL);
+    if(!(presum(&blockCount_dev,PARTITION*p_grid_x))){
+      printf("presum error\n");
+      exit(1);
+    }
+    gettimeofday(&time_rscan_f, NULL);
+
+    /********************************************************************/
+
+    /*
+    void *rpartition1_args[]={
+    
+      (void *)&rt_dev,
+      (void *)&prt_dev,
+      (void *)&localScan_dev,
+      (void *)&r_loop,
+      (void *)&right
+    };
+
+    //グリッド・ブロックの指定、変数の指定、カーネルの実行を行う
+
+    res = cuLaunchKernel(
+                         p1_function,    // CUfunction f
+                         p_grid_x,        // gridDimX
+                         1,        // gridDimY
+                         1,             // gridDimZ
+                         p_block_x,       // blockDimX
+                         1,       // blockDimY
+                         1,             // blockDimZ
+                         0,             // sharedMemBytes
+                         NULL,          // hStream
+                         rpartition1_args,   // keunelParams
+                         NULL           // extra
+                         );
+    if(res != CUDA_SUCCESS) {
+      printf("cuLaunchKernel(rhash partition1) failed: res = %lu\n", (unsigned long int)res);
+      exit(1);
+    }      
+
+    res = cuCtxSynchronize();
+    if(res != CUDA_SUCCESS) {
+      printf("cuCtxSynchronize(rhash partition1) failed: res = %lu\n", (unsigned long int)res);
+      exit(1);
+    }  
+    */
+
+    void *rpartition2_args[]={
+    
+      (void *)&rt_dev,
+      (void *)&prt_dev,
+      (void *)&blockCount_dev,
+      (void *)&r_loop,
+      (void *)&right
+    };
+
+    //グリッド・ブロックの指定、変数の指定、カーネルの実行を行う
+
+    res = cuLaunchKernel(
+                         p2_function,    // CUfunction f
+                         p_grid_x,        // gridDimX
+                         1,        // gridDimY
+                         1,             // gridDimZ
+                         p_block_x,       // blockDimX
+                         1,       // blockDimY
+                         1,             // blockDimZ
+                         0,             // sharedMemBytes
+                         NULL,          // hStream
+                         rpartition2_args,   // keunelParams
+                         NULL           // extra
+                         );
+    if(res != CUDA_SUCCESS) {
+      printf("cuLaunchKernel(rhash partition2) failed: res = %lu\n", (unsigned long int)res);
+      exit(1);
+    }      
+
+    res = cuCtxSynchronize();
+    if(res != CUDA_SUCCESS) {
+      printf("cuCtxSynchronize(rhash partition2) failed: res = %lu\n", (unsigned long int)res);
+      exit(1);
+    }  
+
+    /*
+    if(loop!=LOOP){
+      void *rpartition2_args[]={
+    
+        (void *)&rt_dev,
+        (void *)&prt_dev,
+        (void *)&blockCount_dev,
+        (void *)&r_loop,
+        (void *)&right
+      };
+
+      //グリッド・ブロックの指定、変数の指定、カーネルの実行を行う
+
+      res = cuLaunchKernel(
+                           p2_function,    // CUfunction f
+                           p_grid_x,        // gridDimX
+                           1,        // gridDimY
+                           1,             // gridDimZ
+                           p_block_x,       // blockDimX
+                           1,       // blockDimY
+                           1,             // blockDimZ
+                           0,             // sharedMemBytes
+                           NULL,          // hStream
+                           rpartition2_args,   // keunelParams
+                           NULL           // extra
+                           );
+      if(res != CUDA_SUCCESS) {
+        printf("cuLaunchKernel(rhash partition2) failed: res = %lu\n", (unsigned long int)res);
+        exit(1);
+      }      
+
+      res = cuCtxSynchronize();
+      if(res != CUDA_SUCCESS) {
+        printf("cuCtxSynchronize(rhash partition2) failed: res = %lu\n", (unsigned long int)res);
+        exit(1);
+      }  
+      
+    }else{
+      void *rpartitionF_args[]={
+        
+        (void *)&lt_dev,
+        (void *)&plt_dev,
+        (void *)&blockCount_dev,
+        (void *)&startPos_dev,        
+        (void *)&r_loop,
+        (void *)&right
+      };
+      //グリッド・ブロックの指定、変数の指定、カーネルの実行を行う
+      res = cuLaunchKernel(
+                           pf_function,    // CUfunction f
+                           p_grid_x,        // gridDimX
+                           1,        // gridDimY
+                           1,             // gridDimZ
+                           p_block_x,       // blockDimX
+                           1,       // blockDimY
+                           1,             // blockDimZ
+                           0,             // sharedMemBytes
+                           NULL,          // hStream
+                           rpartitionF_args,   // keunelParams
+                           NULL           // extra
+                           );
+      if(res != CUDA_SUCCESS) {
+        printf("cuLaunchKernel(lhash partitionF) failed: res = %lu\n", (unsigned long int)res);
+        exit(1);
+      }      
+      res = cuCtxSynchronize();
+      if(res != CUDA_SUCCESS) {
+        printf("cuCtxSynchronize(lhash partitionF) failed: res = %lu\n", (unsigned long int)res);
+        exit(1);
+      }  
+    }
+    */
   }
-  res = cuCtxSynchronize();
-  if(res != CUDA_SUCCESS) {
-    printf("cuCtxSynchronize(rhash count) failed: res = %lu\n", (unsigned long int)res);
-    exit(1);
-  }  
 
-
-  gettimeofday(&time_rhck_f, NULL);
-
-
-  /**************************** prefix sum *************************************/
-
-  gettimeofday(&time_rscan_s, NULL);
-  if(!(presum(&rL_dev,t_num*p_num))){
-    printf("presum error\n");
-    exit(1);
-  }
-  gettimeofday(&time_rscan_f, NULL);
-
-  /********************************************************************/
-
-  uint *r_p =  (uint *)calloc(p_num+1,sizeof(uint));
-  uint rdiff;
-  if(!(r_p_dev = transport(rL_dev,t_num,p_num,right))){
-    printf("transport error.\n");
-    exit(1);
-  }
-  res = cuMemcpyDtoH(r_p,r_p_dev,(p_num+1) * sizeof(uint)); 
+  /*
+  res = cuMemcpyDtoH(rt,prt_dev,right * sizeof(TUPLE)); 
   if(res != CUDA_SUCCESS){
-    printf("cuMemcpyDtoH (r_p) failed: res = %lu\n", (unsigned long)res);
+    printf("cuMemcpyDtoH (p_sum) failed: res = %lu\n", (unsigned long)res);
     exit(1);    
   }
-  for(uint i = 0; i<p_num+1 ;i++){
+
+  int pa=0;
+  for(uint i=0 ; i<right ; i++){
+    int x = rt[i].val%fpart;
+    if(x<pa){
+      printf("partition error. x = %d pa = %d i = %d\n",x,pa,i);
+      exit(1);
+    }else{
+      pa = x;
+    }
+  }
+
+  printf("partition success.\nfpart = %d\n",fpart);
+  exit(1);
+  */
+
+  uint *r_p =  (uint *)calloc(fpart+1,sizeof(uint));
+  uint rdiff;
+  if(!(presum(&startPos_dev,fpart))){
+    printf("left blockCount presum error\n");
+    exit(1);
+  }
+  res = cuMemcpyDtoH(r_p,startPos_dev,fpart * sizeof(uint)); 
+  if(res != CUDA_SUCCESS){
+    printf("cuMemcpyDtoH (r_p) failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+  r_p[fpart] = right;
+  for(uint i = 0; i<fpart+1 ;i++){
     if(i==0){
       r_p_max = r_p[i];
     }else{
@@ -644,50 +876,30 @@ join()
     }
   }
 
-  gettimeofday(&time_rhk_s, NULL);
-
-  void *rpartition_args[]={
-    
-    (void *)&rt_dev,
-    (void *)&prt_dev,
-    (void *)&rL_dev,
-    (void *)&p_num,
-    (void *)&t_num,
-    (void *)&right,
-    (void *)&table_type
-
-  };
-
-  //グリッド・ブロックの指定、変数の指定、カーネルの実行を行う
-
-  res = cuLaunchKernel(
-                       p_function,    // CUfunction f
-                       p_grid_x,        // gridDimX
-                       1,        // gridDimY
-                       1,             // gridDimZ
-                       p_block_x,       // blockDimX
-                       1,       // blockDimY
-                       1,             // blockDimZ
-                       0,             // sharedMemBytes
-                       NULL,          // hStream
-                       rpartition_args,   // keunelParams
-                       NULL           // extra
-                       );
-  if(res != CUDA_SUCCESS) {
-    printf("cuLaunchKernel(rhash partition) failed: res = %lu\n", (unsigned long int)res);
+  res = cuMemFree(prt_dev);
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemFree (prt) failed: res = %lu\n", (unsigned long)res);
     exit(1);
-  }      
-
-  res = cuCtxSynchronize();
-  if(res != CUDA_SUCCESS) {
-    printf("cuCtxSynchronize(rhash partition) failed: res = %lu\n", (unsigned long int)res);
+  }
+  res = cuMemFree(blockCount_dev);
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemFree (blockCount) failed: res = %lu\n", (unsigned long)res);
     exit(1);
-  }  
+  }
+  res = cuMemFree(localScan_dev);
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemFree (localScan) failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+  res = cuMemFree(startPos_dev);
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemFree (startPos) failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
 
-  gettimeofday(&time_rhk_f, NULL);
 
   gettimeofday(&time_rhash_f, NULL);
-
+    
   gettimeofday(&time_hash_f, NULL);
 
   /**************************************************************/
@@ -708,6 +920,8 @@ join()
     
   *******************************************************************/
 
+  p_num = fpart;
+
   gettimeofday(&time_count_s, NULL);
 
 
@@ -717,6 +931,9 @@ join()
   grid_y = GRID_SIZE_Y;
 
   count_size = grid_x * grid_y * block_x + 1;
+
+  printf("r_p_max = %d\n",r_p_max);
+  printf("block_x = %d\tgrid_x = %d\tcount_size = %d\n",block_x,grid_x,count_size);
 
 
   /*GPU memory alloc and send data of count ,l_p ,radix and r_p*/
@@ -731,6 +948,11 @@ join()
     printf("cuMemAlloc (l_p) failed\n");
     exit(1);
   }
+  res = cuMemAlloc(&r_p_dev, (l_p_num+1) * sizeof(uint));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemAlloc (r_p) failed\n");
+    exit(1);
+  }
   res = cuMemAlloc(&radix_dev, (l_p_num+1) * sizeof(uint));
   if (res != CUDA_SUCCESS) {
     printf("cuMemAlloc (radix) failed\n");
@@ -741,12 +963,17 @@ join()
 
   res = cuMemcpyHtoD(l_p_dev, l_p, (l_p_num+1) * sizeof(uint));
   if (res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD (count) failed: res = %lu\n", (unsigned long)res);
+    printf("cuMemcpyHtoD (l_p_dev) failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+  res = cuMemcpyHtoD(r_p_dev, r_p, (l_p_num+1) * sizeof(uint));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemcpyHtoD (r_p_dev) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
   res = cuMemcpyHtoD(radix_dev, radix_num, (l_p_num+1) * sizeof(uint));
   if (res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD (count) failed: res = %lu\n", (unsigned long)res);
+    printf("cuMemcpyHtoD (radix) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
 
@@ -764,8 +991,8 @@ join()
 
   void *count_args[]={
     
-    (void *)&plt_dev,
-    (void *)&prt_dev,
+    (void *)&lt_dev,
+    (void *)&rt_dev,
     (void *)&count_dev,
     (void *)&r_p_dev,
     (void *)&radix_dev,
@@ -791,7 +1018,7 @@ join()
                        NULL           // extra
                        );
   if(res != CUDA_SUCCESS) {
-    printf("count cuLaunchKernel() failed: res = %lu\n", (unsigned long int)res);
+    printf("cuLaunchKernel(count) failed: res = %lu\n", (unsigned long int)res);
     exit(1);
   }      
   res = cuCtxSynchronize();
@@ -849,8 +1076,8 @@ join()
     gettimeofday(&time_jkernel_s, NULL);
 
     void *kernel_args[]={
-      (void *)&plt_dev,
-      (void *)&prt_dev,
+      (void *)&lt_dev,
+      (void *)&rt_dev,
       (void *)&jt_dev,
       (void *)&count_dev,
       (void *)&r_p_dev,
@@ -875,7 +1102,7 @@ join()
                          NULL           // extra
                          );
     if(res != CUDA_SUCCESS) {
-      printf("join cuLaunchKernel() failed: res = %lu\n", (unsigned long int)res);
+      printf("cuLaunchKernel(join) failed: res = %lu\n", (unsigned long int)res);
       exit(1);
     }  
 
@@ -883,7 +1110,7 @@ join()
 
     res = cuCtxSynchronize();
     if(res != CUDA_SUCCESS) {
-      printf("cuCtxSynchronize(count) failed: res = %lu\n", (unsigned long int)res);
+      printf("cuCtxSynchronize(join) failed: res = %lu\n", (unsigned long int)res);
       exit(1);
     }  
 
@@ -893,7 +1120,7 @@ join()
 
     res = cuMemcpyDtoH(jt, jt_dev, jt_size * sizeof(RESULT));
     if (res != CUDA_SUCCESS) {
-      printf("cuMemcpyDtoH (p) failed: res = %lu\n", (unsigned long)res);
+      printf("cuMemcpyDtoH (jt) failed: res = %lu\n", (unsigned long)res);
       exit(1);
     }
     printf("jt_size = %d\n",jt_size);
@@ -926,31 +1153,6 @@ join()
   res = cuMemFree(jt_dev);
   if (res != CUDA_SUCCESS) {
     printf("cuMemFree (jointuple) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-  res = cuMemFree(plt_dev);
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemFree (plt) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-  res = cuMemFree(prt_dev);
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemFree (prt) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-  res = cuMemFree(lL_dev);
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemFree (lL) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-  res = cuMemFree(rL_dev);
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemFree (rL) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-  res = cuMemFree(p_sum_dev);
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemFree (p_sum_dev) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
   res = cuMemFree(r_p_dev);
@@ -998,21 +1200,25 @@ join()
   printf("\n");
   printf("lhash time:\n");
   printDiff(time_lhash_s,time_lhash_f);
+  /*
   printf("lhash count kernel time:\n");
   printDiff(time_lhck_s,time_lhck_f);
   printf("lhash scan time:\n");
   printDiff(time_lscan_s,time_lscan_f);
   printf("lhash kernel time:\n");
   printDiff(time_hkernel_s,time_hkernel_f);
+  */
   printf("\n");
   printf("rhash time:\n");
   printDiff(time_rhash_s,time_rhash_f);
+  /*
   printf("rhash count kernel time:\n");
   printDiff(time_rhck_s,time_rhck_f);
   printf("rhash scan time:\n");
   printDiff(time_rscan_s,time_rscan_f);
   printf("rhash kernel time:\n");
   printDiff(time_rhk_s,time_rhk_f);
+  */
   printf("\n");
   printf("count time:\n");
   printDiff(time_count_s,time_count_f);
@@ -1028,12 +1234,11 @@ join()
   printf("join download time:\n");
   printDiff(time_jdown_s,time_jdown_f);
 
-  free(p_sum);
+  free(fp_num);
   free(l_p);
   free(radix_num);
   free(p_loc);
   free(r_p);
-
 
   //finish GPU   ****************************************************
   res = cuModuleUnload(module);
@@ -1052,13 +1257,12 @@ join()
 
   freeTuple();
 
+
 }
 
 int
 main(int argc,char *argv[])
 {
-
-
   
   if(argc>3){
     printf("引数が多い\n");
