@@ -86,7 +86,6 @@ void count_partitioning(
       local[i]=local[i-1]+local[PARTITION+i-1];
     }
   }
-
   __syncthreads();
 
   for(uint i=threadIdx.x ; i<PARTITION ; i+=blockDim.x){
@@ -114,15 +113,6 @@ void partitioning1(
 
   __syncthreads();
 
-  /*
-  if(blockIdx.x==0&&threadIdx.x==0){
-    for(uint i=0; i<PARTITION; i++){
-      printf("%d\t%d\t%d\n",i,localScan[gridDim.x*i+blockIdx.x],local[i]);
-    }
-  }
-  __syncthreads();
-  */
-
   uint firstpos = ONE_BL_NUM*blockIdx.x + threadIdx.x;
 
   for(uint i = firstpos; i < firstpos+ONE_BL_NUM && i<rows; i+=blockDim.x){
@@ -130,13 +120,14 @@ void partitioning1(
     int tval = temp.val;
     tval >>= RADIX*loop;
     uint idx = tval%PARTITION;
-    for(uint j = 0 ; j<32 ; j++){
+    uint outlocal=0;// = atomicAdd(&(local[idx]),1);
+    for(uint j = 0 ; j<blockDim.x ; j++){
       if(threadIdx.x==j){
-        pt[ONE_BL_NUM*blockIdx.x + local[idx]] = temp;
-        local[idx]++;
+        outlocal = local[idx]++;    
+        //break;
       }
     }
-      
+    pt[ONE_BL_NUM*blockIdx.x + outlocal] = temp;
   }
 
 }
@@ -158,35 +149,28 @@ void partitioning2(
     local[i] = blockCount[gridDim.x*i + blockIdx.x];
   }
   __syncthreads();
-  /*
-  if(blockIdx.x==0&&threadIdx.x==0){
-    for(uint i=0; i<PARTITION; i++){
-      printf("%d\t%d\t%d\n",i,blockCount[i+blockIdx.x*PARTITION],local[i]);
-    }
-  }
-  __syncthreads();
-  */
+
   uint firstpos = ONE_BL_NUM*blockIdx.x + threadIdx.x;
 
   for(uint i = firstpos; i<ONE_BL_NUM+firstpos && i<rows; i+=blockDim.x){
     TUPLE temp = pt[i];
     int tval = temp.val;
-    //tval >>= RADIX*loop;
-    for(uint j=0 ; j<loop ; j++){
-      tval = tval/PARTITION;
-    }
+    tval >>= RADIX*loop;
     uint idx = tval%PARTITION;
+    uint outlocal;
     for(uint j = 0 ; j<32 ; j++){
       if(threadIdx.x==j){
-        t[local[idx]] = temp;
-        local[idx]++;
+        outlocal = local[idx]++;
+        //break;
       }
     }
+    t[outlocal] = temp;
+
   }  
 
 }
 
-
+  /*
 __global__
 void partitioningF(
           TUPLE *t,
@@ -223,6 +207,6 @@ void partitioningF(
   }  
 
 }
-
+  */
 
 }

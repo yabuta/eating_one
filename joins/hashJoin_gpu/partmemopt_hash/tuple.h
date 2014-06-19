@@ -8,7 +8,7 @@
 
 #define ONE_BL_NUM 8192
 
-#define LOOP 2
+#define LOOP 1
 #define RADIX 8
 #define PARTITION 256
 #define PART_X 32
@@ -94,7 +94,7 @@
 
 
 #define JT_SIZE 120000000 //max result tuple size
-#define SELECTIVITY 100000  //the range of random value for tuple
+#define SELECTIVITY 1000000000  //the range of random value for tuple
 #define MATCH_RATE 0.1          //match rate (selectivity,%)
 
 #define LEFT 0

@@ -192,8 +192,8 @@ join()
   struct timeval begin, end;
   struct timeval time_join_s,time_join_f,time_jkernel_s,time_jkernel_f;
   struct timeval time_jdown_s,time_jdown_f,time_upload_s,time_upload_f;
-  struct timeval time_hash_s,time_hash_f,time_hkernel_s,time_hkernel_f,time_lhash_s,time_lhash_f,time_rhash_s,time_rhash_f,time_lscan_s,time_lscan_f,time_rscan_s,time_rscan_f,time_cscan_s,time_cscan_f;
-  struct timeval time_lhck_s,time_lhck_f,time_rhck_s,time_rhck_f,time_rhk_s,time_rhk_f;
+  struct timeval time_hash_s,time_hash_f,time_hkernel_s,time_hkernel_f,time_lhash_s,time_lhash_f,time_rhash_s,time_rhash_f,time_rscan_s,time_rscan_f,time_cscan_s,time_cscan_f;
+  struct timeval time_rhck_s,time_rhck_f,time_rhk_s,time_rhk_f;
   struct timeval time_count_s,time_count_f,time_ckernel_s,time_ckernel_f,time_alloc_s,time_alloc_f;
   struct timeval temp_s,temp_f,time_start,time_stop;
   double time_cal;
@@ -202,9 +202,13 @@ join()
 
 
 
-
+  /***********************************************************************************/
+  /***********************************************************************************/
   /******************** GPU init here ************************************************/
-  //GPU仕様のために
+  /***********************************************************************************/
+  /***********************************************************************************/
+
+
 
   res = cuInit(0);
   if (res != CUDA_SUCCESS) {
@@ -268,22 +272,49 @@ join()
     printf("cuModuleGetFunction(partitioning2) failed\n");
     exit(1);
   }
+  /*
   res = cuModuleGetFunction(&pf_function, p_module, "partitioningF");
   if (res != CUDA_SUCCESS) {
     printf("cuModuleGetFunction(partitioningF) failed\n");
     exit(1);
   }
+  */
+  /***********************************************************************************/
+  /***********************************************************************************/
+  /******************** GPU init finish **********************************************/
+  /***********************************************************************************/
+  /***********************************************************************************/
 
+
+  /***********************************************************************************/
+  /***********************************************************************************/
+  /******************** table create *************************************************/
+  /***********************************************************************************/
+  /***********************************************************************************/
 
   createTuple();
+
+  /***********************************************************************************/
+  /***********************************************************************************/
+  /******************** table create finish ******************************************/
+  /***********************************************************************************/
+  /***********************************************************************************/
+
+
+  /***********************************************************************************/
+  /***********************************************************************************/
+  /******************** hash join part ***********************************************/
+  /***********************************************************************************/
+  /***********************************************************************************/
 
 
   /*******************
    send data:
-   int *lL,*rL
-   TUPLE *rt
-   TUPLE *lt
+   TUPLE *rt,*prt
+   TUPLE *lt,*plt
    RESULT *jt
+   int blockCount
+   int localScan
 
   ******************/
 
@@ -347,7 +378,7 @@ join()
   gettimeofday(&time_upload_f, NULL);  
 
   /***************************************************************************/
-  gettimeofday(&time_hash_s, NULL);
+
 
   /****************************************************************
     left table partitioning for hash
@@ -381,11 +412,16 @@ join()
   }
 
   checkCudaErrors(cudaMemset((void *)startPos_dev, 0 , fpart *sizeof(uint)));
+
+  struct timeval cnt_s,cnt_f,p1_s,p1_f,p2_s,p2_f;
+  long cnt=0,p1=0,p2=0;
+
+  gettimeofday(&time_hash_s, NULL);
   
   for(uint loop=0 ; loop<LOOP ; loop++){
-    //checkCudaErrors(cudaMemset((void *)blockCount_dev, 0 , PARTITION * p_grid_x *sizeof(uint)));
-    //checkCudaErrors(cudaMemset((void *)localScan_dev, 0 , PARTITION * p_grid_x *sizeof(uint)));
 
+
+    gettimeofday(&cnt_s, NULL);
 
     void *count_lpartition_args[]={
     
@@ -419,6 +455,10 @@ join()
       printf("cuCtxSynchronize(lhash count) failed: res = %lu\n", (unsigned long int)res);
       exit(1);
     } 
+
+    gettimeofday(&cnt_f, NULL);
+    cnt += (cnt_f.tv_sec - cnt_s.tv_sec) * 1000 * 1000 + (cnt_f.tv_usec - cnt_s.tv_usec);
+
     /**************************** prefix sum *************************************/
     if(!(presum(&blockCount_dev,PARTITION*p_grid_x))){
       printf("left blockCount presum error\n");
@@ -438,6 +478,8 @@ join()
     }
     */
     //exit(1);
+
+    gettimeofday(&p1_s, NULL);
     void *lpartition1_args[]={    
       (void *)&lt_dev,
       (void *)&plt_dev,
@@ -467,7 +509,10 @@ join()
       printf("cuCtxSynchronize(lhash partition1) failed: res = %lu\n", (unsigned long int)res);
       exit(1);
     } 
+    gettimeofday(&p1_f, NULL);
+    p1 += (p1_f.tv_sec - p1_s.tv_sec) * 1000 * 1000 + (p1_f.tv_usec - p1_s.tv_usec);
 
+    gettimeofday(&p2_s, NULL);
     void *lpartition2_args[]={
     
       (void *)&lt_dev,
@@ -499,9 +544,19 @@ join()
       printf("cuCtxSynchronize(lhash partition2) failed: res = %lu\n", (unsigned long int)res);
       exit(1);
     }  
+    gettimeofday(&p2_f, NULL);
+    p2 += (p2_f.tv_sec - p2_s.tv_sec) * 1000 * 1000 + (p2_f.tv_usec - p2_s.tv_usec);
 
   }
 
+  gettimeofday(&time_lhash_f, NULL);
+
+  printf("lhash time:\n");
+  printDiff(time_lhash_s,time_lhash_f);
+
+  printf("count: %ld us (%ld ms)\n", cnt, cnt/1000);
+  printf("p1: %ld us (%ld ms)\n", p1, p1/1000);
+  printf("p2: %ld us (%ld ms)\n", p2, p2/1000);
 
   res = cuMemcpyDtoH(lt,lt_dev,left * sizeof(TUPLE)); 
   if(res != CUDA_SUCCESS){
@@ -520,6 +575,8 @@ join()
       pa = x;
     }
   }
+  exit(1);
+
   for(uint i=0 ; i<100 ; i++){
     printf("lt[%d] = %d\t%d\t%d\t%d\n",i,lt[i].val,lt[i].val%fpart,lt[i].val%PARTITION,(lt[i].val>>RADIX)*PARTITION);
   }
@@ -1171,20 +1228,24 @@ join()
     exit(1);
   }
 
+  /***********************************************************************************/
+  /***********************************************************************************/
+  /******************** hash join part finish*****************************************/
+  /***********************************************************************************/
+  /***********************************************************************************/
+
 
   /*size of HtoD data*/
 
   int DEF = 1000;
   printf("lt = %d\n",left*sizeof(TUPLE)/DEF);
   printf("rt = %d\n" ,right * sizeof(TUPLE)/DEF);
-  printf("lL = %d\n", 1*sizeof(uint)/DEF);
-  printf("rL = %d\n", t_num*p_num*sizeof(uint)/DEF);
   printf("plt = %d\n", left*sizeof(TUPLE)/DEF);
   printf("prt = %d\n", right*sizeof(TUPLE)/DEF);
-  printf("count = %d\n", grid_x*block_x*block_y*sizeof(uint)/DEF);
   printf("l_p = %d\n", (l_p_num+1)*sizeof(uint)/DEF);
   printf("radix = %d\n", (l_p_num+1)*sizeof(uint)/DEF);
   printf("r_p = %d\n", (p_num+1)*sizeof(uint)/DEF);
+  printf("count = %d\n", grid_x*block_x*block_y*sizeof(uint)/DEF);
   printf("jt = %d\n",  jt_size*sizeof(RESULT)/DEF);
 
   printf("\n");
@@ -1200,25 +1261,9 @@ join()
   printf("\n");
   printf("lhash time:\n");
   printDiff(time_lhash_s,time_lhash_f);
-  /*
-  printf("lhash count kernel time:\n");
-  printDiff(time_lhck_s,time_lhck_f);
-  printf("lhash scan time:\n");
-  printDiff(time_lscan_s,time_lscan_f);
-  printf("lhash kernel time:\n");
-  printDiff(time_hkernel_s,time_hkernel_f);
-  */
   printf("\n");
   printf("rhash time:\n");
   printDiff(time_rhash_s,time_rhash_f);
-  /*
-  printf("rhash count kernel time:\n");
-  printDiff(time_rhck_s,time_rhck_f);
-  printf("rhash scan time:\n");
-  printDiff(time_rscan_s,time_rscan_f);
-  printf("rhash kernel time:\n");
-  printDiff(time_rhk_s,time_rhk_f);
-  */
   printf("\n");
   printf("count time:\n");
   printDiff(time_count_s,time_count_f);
