@@ -51,9 +51,9 @@ void createTuple()
   }
 
   //lt = (int *)malloc(left*sizeof(int));
-
+  srand((unsigned)time(NULL));
   for (uint i = 0; i < left; i++) {
-    lt[i] = 1; // selectivity = 1.0
+    lt[i] = i; // selectivity = 1.0
   }
 
   gettimeofday(&start, NULL);
@@ -259,7 +259,6 @@ void join(){
     printf("cuMemcpyDtoH (jt) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
-
   gettimeofday(&time_jdown_f, NULL);
   gettimeofday(&end, NULL);
 
@@ -320,7 +319,7 @@ int
 main(int argc,char *argv[])
 {
 
-  left = 1024*1024*64;
+  left = 1024*1024*256;
   printf("number = %d\n",left);
 
   join();

@@ -272,12 +272,13 @@ join()
     printf("cuModuleGetFunction(partitioning2) failed\n");
     exit(1);
   }
+  /*
   res = cuModuleGetFunction(&pf_function, p_module, "partitioningF");
   if (res != CUDA_SUCCESS) {
     printf("cuModuleGetFunction(partitioningF) failed\n");
     exit(1);
   }
-
+  */
   /***********************************************************************************/
   /***********************************************************************************/
   /******************** GPU init finish **********************************************/

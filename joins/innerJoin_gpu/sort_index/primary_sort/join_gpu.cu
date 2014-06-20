@@ -81,10 +81,7 @@ __global__ void join(
   int x = blockIdx.x * blockDim.x + threadIdx.x;
 
 
-  uint writeloc = 0;
-  if(x > 0){
-    writeloc = count[x-1];
-  }
+  uint writeloc = count[x];
 
   if(x < left){
     int idx = lt[x].val;

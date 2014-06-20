@@ -14,7 +14,7 @@ GPUで動かすため配列のほうが向いていると思ったので
 
 
 #define JT_SIZE 120000000
-#define SELECTIVITY 100000000
+#define SELECTIVITY 1000000000
 #define MATCH_RATE 0.1
 
 #define VAL_NUM 1

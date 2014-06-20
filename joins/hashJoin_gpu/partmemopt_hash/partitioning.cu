@@ -120,13 +120,16 @@ void partitioning1(
     int tval = temp.val;
     tval >>= RADIX*loop;
     uint idx = tval%PARTITION;
+
     uint outlocal=0;// = atomicAdd(&(local[idx]),1);
-    for(uint j = 0 ; j<blockDim.x ; j++){
+    /*
+    for(uint j = 0 ; j<32 ; j++){
       if(threadIdx.x==j){
         outlocal = local[idx]++;    
-        //break;
+        //outlocal = atomicAdd(&(local[idx]),1);
       }
     }
+    */
     pt[ONE_BL_NUM*blockIdx.x + outlocal] = temp;
   }
 
@@ -157,11 +160,11 @@ void partitioning2(
     int tval = temp.val;
     tval >>= RADIX*loop;
     uint idx = tval%PARTITION;
-    uint outlocal;
+    uint outlocal;// = atomicAdd(&(local[idx]),1);
     for(uint j = 0 ; j<32 ; j++){
       if(threadIdx.x==j){
         outlocal = local[idx]++;
-        //break;
+        //outlocal = atomicAdd(&(local[idx]),1);
       }
     }
     t[outlocal] = temp;

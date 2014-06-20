@@ -287,7 +287,7 @@ void join(){
 
   block_x = left < BLOCK_SIZE_X ? left : BLOCK_SIZE_X;  
   grid_x = left / block_x;
-  if (right % block_x != 0)
+  if (left % block_x != 0)
     grid_x++;
   
 

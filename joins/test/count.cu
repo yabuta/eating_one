@@ -31,7 +31,8 @@ void count(
 
   uint i = blockIdx.x*blockDim.x + threadIdx.x;
   if(i < left){
-    jt[i] = lt[i];
+    int temp = lt[i];
+    jt[temp] = 1;
   }
 
   /*

@@ -19,14 +19,14 @@ GPUで動かすため配列のほうが向いていると思ったので
 
 typedef struct _TUPLE {
     int id;
-    int val[VAL_NUM];
+    double val[VAL_NUM];
 } TUPLE;
 
 typedef struct _JOIN_TUPLE {
     int lid;
-    int lval[VAL_NUM]; // left value
+    double lval[VAL_NUM]; // left value
     int rid;
-    int rval[VAL_NUM]; // right value
+    double rval[VAL_NUM]; // right value
 } JOIN_TUPLE;
 
 

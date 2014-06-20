@@ -507,6 +507,15 @@ join()
 
   printf("jt_size = %d\n",jt_size);
 
+  for(i=0;i<3&&i<JT_SIZE;i++){
+    printf("[%d]:left %8d \t:right: %8d\n",i,Tjoin[i].lid,Tjoin[i].rid);
+    for(j = 0;j<VAL_NUM;j++){
+      printf("join[%d]:left = %f\tright = %f\n",j,Tjoin[i].lval[j],Tjoin[i].rval[j]);
+    }
+    printf("\n");
+
+  }
+
 
   /*
   for(i=0;i<arg_right;i++){

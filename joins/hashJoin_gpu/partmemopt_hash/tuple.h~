@@ -6,12 +6,13 @@
 //#define RIGHT_PER_TH 8192       //the number of tuple per one thread of hash partition 
 #define B_ROW_NUM 128      //the number of sub left tuple per one block in join and count kernel
 
-#define ONE_BL_NUM 4096
 
 #define LOOP 1
 #define RADIX 8
 #define PARTITION 256
 #define PART_X 32
+
+#define ONE_BL_NUM (PART_X * 256)
 
 
 /*1048576 * 1048576

@@ -51,9 +51,9 @@ void createTuple()
   }
 
   //lt = (int *)malloc(left*sizeof(int));
-
+  srand((unsigned)time(NULL));
   for (uint i = 0; i < left; i++) {
-    lt[i] = 1; // selectivity = 1.0
+    lt[i] = rand()%left; // selectivity = 1.0
   }
 
   gettimeofday(&start, NULL);
@@ -201,13 +201,11 @@ void join(){
   /********************** upload lt , rt , bucket ,buck_array ,idxcount***********************/
 
   gettimeofday(&time_send_s, NULL);
-  /*
   res = cuMemcpyHtoD(lt_dev, lt, left * sizeof(int));
   if (res != CUDA_SUCCESS) {
     printf("cuMemcpyHtoD (lt) failed: res = %lu\n", res);//conv(res));
     exit(1);
   }
-  */
   gettimeofday(&time_send_f, NULL);
 
 
@@ -222,8 +220,8 @@ void join(){
 
   void *count_args[]={
     
-    (void *)&lt,
-    (void *)&jt,
+    (void *)&lt_dev,
+    (void *)&jt_dev,
     (void *)&left
   };
 
@@ -256,13 +254,11 @@ void join(){
   gettimeofday(&time_count_f, NULL);
 
   gettimeofday(&time_jdown_s, NULL);
-  /*
   res = cuMemcpyDtoH(jt,jt_dev,left * sizeof(int));
   if(res != CUDA_SUCCESS){
     printf("cuMemcpyDtoH (jt) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
-  */
   gettimeofday(&time_jdown_f, NULL);
   gettimeofday(&end, NULL);
 
@@ -323,7 +319,7 @@ int
 main(int argc,char *argv[])
 {
 
-  left = 1024*1024*64;
+  left = 1024*1024*256;
   printf("number = %d\n",left);
 
   join();

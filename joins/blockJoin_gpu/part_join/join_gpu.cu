@@ -44,30 +44,30 @@ void count(
     transport tuple data to shared memory from global memory
    */
 
-  __shared__ TUPLE Tright[BLOCK_SIZE_Y];
-  for(uint j=0;threadIdx.x+j*BLOCK_SIZE_X<BLOCK_SIZE_Y&&(threadIdx.x+j*BLOCK_SIZE_X+BLOCK_SIZE_Y*blockIdx.y)<rtn;j++){
-    Tright[threadIdx.x + j*BLOCK_SIZE_X] = rt[threadIdx.x + j*BLOCK_SIZE_X + BLOCK_SIZE_Y * blockIdx.y];
-  }
 
-  __syncthreads();  
+  if(i<ltn){
 
-  TUPLE Tleft = lt[i];
+    __shared__ TUPLE Tright[BLOCK_SIZE_Y];
+    for(uint j=0;threadIdx.x+j*BLOCK_SIZE_X<BLOCK_SIZE_Y&&(threadIdx.x+j*BLOCK_SIZE_X+BLOCK_SIZE_Y*blockIdx.y)<rtn;j++){
+      Tright[threadIdx.x + j*BLOCK_SIZE_X] = rt[threadIdx.x + j*BLOCK_SIZE_X + BLOCK_SIZE_Y * blockIdx.y];
+    }
+    
+    __syncthreads();  
 
-  /*
-    count loop
-   */
-  int ltn_g = ltn;
-  int rtn_g = rtn;
-  uint mcount = 0;
-
-  if(i<ltn_g){
+    
+    /*
+      count loop
+    */
+    TUPLE Tleft = lt[i];  
+    int rtn_g = rtn;
+    uint mcount = 0;
     for(uint j = 0; j<BLOCK_SIZE_Y &&((j+BLOCK_SIZE_Y*blockIdx.y)<rtn_g);j++){
       if(eval(Tright[j],Tleft)) {
         mcount++;
       }
     }
+    count[i + k] = mcount;  
   }    
-  count[i + k] = mcount;
 
 }
 
@@ -85,25 +85,25 @@ __global__ void join(
 
   int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-  __shared__ TUPLE Tright[BLOCK_SIZE_Y];
-  for(uint j=0;threadIdx.x+j*BLOCK_SIZE_X<BLOCK_SIZE_Y&&(threadIdx.x+j*BLOCK_SIZE_X+BLOCK_SIZE_Y*blockIdx.y)<rtn;j++){
-    Tright[threadIdx.x + j*BLOCK_SIZE_X] = rt[threadIdx.x + j*BLOCK_SIZE_X + BLOCK_SIZE_Y * blockIdx.y];
-  }
-  __syncthreads();  
+  if(i<ltn){
+
+    __shared__ TUPLE Tright[BLOCK_SIZE_Y];
+    for(uint j=0;threadIdx.x+j*BLOCK_SIZE_X<BLOCK_SIZE_Y&&(threadIdx.x+j*BLOCK_SIZE_X+BLOCK_SIZE_Y*blockIdx.y)<rtn;j++){
+      Tright[threadIdx.x + j*BLOCK_SIZE_X] = rt[threadIdx.x + j*BLOCK_SIZE_X + BLOCK_SIZE_Y * blockIdx.y];
+    }
+    __syncthreads();  
 
 
-  TUPLE Tleft = lt[i];
+    TUPLE Tleft = lt[i];
 
-  //the first write location
+    //the first write location
 
-  int writeloc = 0;
-  if(i != 0){
-    writeloc = count[i + blockIdx.y*blockDim.x*gridDim.x];
-  }
-  int ltn_g = ltn;
-  int rtn_g = rtn;
+    int writeloc = 0;
+    if(i != 0){
+      writeloc = count[i + blockIdx.y*blockDim.x*gridDim.x];
+    }
+    int rtn_g = rtn;
 
-  if(i<ltn_g){
     for(uint j = 0; j<BLOCK_SIZE_Y &&((j+BLOCK_SIZE_Y*blockIdx.y)<rtn_g);j++){
  
       if(eval(Tright[j],Tleft)) {

@@ -45,8 +45,8 @@ void count_partitioning(
   int hash = 0;
 
   if(x < t_n){
-    for(int i = 0; i<PER_TH&&(DEF+threadIdx.x+i*Dim)<rows_n;i++){
-      hash = t[DEF + threadIdx.x + i*Dim].val % p_n;
+    for(int i = threadIdx.x; i<PER_TH*Dim&&(DEF+i)<rows_n;i+=Dim){
+      hash = t[DEF + i].val % p_n;
       L[hash*t_n + x]++;
     }
   }
@@ -86,6 +86,21 @@ void partitioning(
   // Matching phase
   int hash = 0;
   int temp = 0;
+  TUPLE tt;
+  if(x < t_n){
+    for(int i = threadIdx.x; i<PER_TH*Dim&&(DEF+i)<rows_n;i+=Dim){
+      tt = t[DEF+i];
+      hash = tt.val%p_n;
+      temp = L[hash*t_n + x]++;
+
+      pt[temp].key = tt.key;  
+      pt[temp].val = tt.val;  
+    }    
+  
+  }
+
+  /*
+
   if(x < t_n){
     for(int i = 0; i<PER_TH&&(DEF+threadIdx.x+i*Dim)<rows_n;i++){
       hash = t[DEF + threadIdx.x + i*Dim].val%p_n;
@@ -97,6 +112,7 @@ void partitioning(
     }    
   
   }
+  */
 
 
 }

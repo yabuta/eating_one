@@ -325,12 +325,10 @@ join()
         grid_y++;      
       block_y = 1;
 
-      /*
       printf("\nStarting...\nll = %d\trr = %d\tlls = %d\trrs = %d\n",ll,rr,lls,rrs);
       printf("grid_x = %d\tgrid_y = %d\tblock_x = %d\tblock_y = %d\n",grid_x,grid_y,block_x,block_y);
-      */
       gpu_size = grid_x * grid_y * block_x * block_y;
-      //printf("gpu_size = %d\n",gpu_size);
+      printf("gpu_size = %d\n",gpu_size);
 
       gettimeofday(&time_send_s, NULL);
       res = cuMemcpyHtoD(lt_dev, &(Tleft[ll]), lls * sizeof(TUPLE));
@@ -491,7 +489,7 @@ join()
 
         cuMemFree(jt_dev);
         total += jt_size;
-        //printf("End...\n jt_size = %d\ttotal = %d\n",jt_size,total);
+        printf("End...\n jt_size = %d\ttotal = %d\n",jt_size,total);
         jt_size = 0;
         
       }
