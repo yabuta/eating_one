@@ -14,6 +14,10 @@
 //#include "debug.h"
 #include "tuple.h"
 
+/*
+int *lt;
+int *jt;
+*/
 int *lt;
 int *jt;
 
@@ -53,9 +57,11 @@ void createTuple()
   //lt = (int *)malloc(left*sizeof(int));
   srand((unsigned)time(NULL));
   for (uint i = 0; i < left; i++) {
+    //lt[i].key = getTupleId();
     lt[i] = i; // selectivity = 1.0
   }
 
+  /*allocated cuMemHostAlloc or malloc array access time difference
   gettimeofday(&start, NULL);
   for (uint i = 0; i < left; i++) {
     int temp = lt[i] + 1; // selectivity = 1.0
@@ -65,6 +71,7 @@ void createTuple()
   printf("CPU access time to pinned memory:\n");
   printDiff(start, finish);
   printf("\n");
+  */
 
   res = cuMemHostAlloc((void**)&jt,left * sizeof(int),CU_MEMHOSTALLOC_PORTABLE);
   if (res != CUDA_SUCCESS) {
@@ -319,7 +326,7 @@ int
 main(int argc,char *argv[])
 {
 
-  left = 1024*1024*256;
+  left = 1024*1024*16;
   printf("number = %d\n",left);
 
   join();

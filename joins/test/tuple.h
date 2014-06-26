@@ -1,6 +1,6 @@
+#define LOOP 128
 
-
-#define BLOCK_SIZE_X 1024
+#define BLOCK_SIZE_X 32
 #define BLOCK_SIZE_Y 512
 //#define NB_BKT_ENT 16777216
 

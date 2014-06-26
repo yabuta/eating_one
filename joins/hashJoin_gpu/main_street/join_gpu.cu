@@ -49,7 +49,7 @@ void count(
   }
   count[x] = count_x_temp;
 
-  if(x == left-1){
+  if(x == blockIdx.x*gridDim.x-1){
     count[x+1] = 0;
   }
 
@@ -81,18 +81,7 @@ __global__ void join(
     }
   }
 
-
   __syncthreads();
-
-  /*
-  int x_limit = 0;
-
-  if(r_p[radix[blockIdx.x]+1] - r_p[radix[blockIdx.x]]%GRID_SIZE_Y == 0){
-    x_limit = (r_p[radix[blockIdx.x]+1] - r_p[radix[blockIdx.x]])/GRID_SIZE_Y;
-  }else{
-    x_limit = (r_p[radix[blockIdx.x]+1] - r_p[radix[blockIdx.x]])/GRID_SIZE_Y + 1;
-  }
-  */
   
   TUPLE temp;
   int temp2 = r_p[radix[blockIdx.x]+1];
@@ -110,12 +99,6 @@ __global__ void join(
         jt[tcount].lkey = sub_lt[i].key;
         jt[tcount].lval = sub_lt[i].val;
 
-        /*
-        temp.key = sub_lt[i].key;
-        temp.val = sub_lt[i].val;
-        temp.key = sub_lt[i].key;
-        temp.val = sub_lt[i].val;
-        */
         tcount++;
 
       }

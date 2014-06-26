@@ -121,7 +121,7 @@ void partitioning1(
     tval >>= RADIX*loop;
     uint idx = tval%PARTITION;
 
-    uint outlocal;// = atomicAdd(&(local[idx]),1);
+    uint outlocal=0;// = atomicAdd(&(local[idx]),1);
     for(uint j = 0 ; j<32 ; j++){
       if(threadIdx.x==j){
         outlocal = local[idx]++;    
@@ -160,7 +160,7 @@ void partitioning2(
     uint idx = tval%PARTITION;
     uint outlocal;// = atomicAdd(&(local[idx]),1);
     for(uint j = 0 ; j<32 ; j++){
-      if(threadIdx.x%32==j){
+      if(threadIdx.x==j){
         outlocal = local[idx]++;
         //outlocal = atomicAdd(&(local[idx]),1);
       }

@@ -12,7 +12,7 @@
 #define PARTITION 256
 #define PART_X 32
 
-#define ONE_BL_NUM (PART_X * 256)
+#define ONE_BL_NUM (PART_X * 32)
 
 
 /*1048576 * 1048576

@@ -8,11 +8,11 @@
 
 
 #define LOOP 1
-#define RADIX 8
-#define PARTITION 256
+#define RADIX 6
+#define PARTITION 64
 #define PART_X 32
 
-#define ONE_BL_NUM (PART_X * 256)
+#define ONE_BL_NUM (PART_X * 64)
 
 
 /*1048576 * 1048576

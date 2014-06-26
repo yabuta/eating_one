@@ -16,6 +16,7 @@
 #include <helper_functions.h>
 
 #include <cuda_runtime.h>
+#include <cuda.h>
 #include <thrust/scan.h>
 #include "scan_common.h"
 
@@ -26,7 +27,7 @@ int main(int argc, char **argv)
     //Use command-line specified CUDA device, otherwise use device with highest Gflops/s
     findCudaDevice(argc, (const char **)argv);
 
-    uint *d_Input, *d_Output;
+    CUdeviceptr *d_Input, *d_Output;
     uint *h_Input, *h_OutputCPU, *h_OutputGPU;
     StopWatchInterface  *hTimer = NULL;
     const uint MIN = 4 * 1024 * 1024;
@@ -39,7 +40,7 @@ int main(int argc, char **argv)
 
     int globalFlag = 1;
     size_t szWorkgroup;
-    const int iCycles = 5;
+    const int iCycles = 1;
 
     /*
     printf("*** Running GPU scan for short arrays (%d identical iterations)...\n\n", iCycles);
@@ -156,26 +157,29 @@ int main(int argc, char **argv)
     }
     */
 
-    for(uint arrayLength = MIN ; arrayLength <= MAX ; arrayLength <<= 1){
+    for(uint arrayLength = 0 ; arrayLength <= 0; arrayLength <<= 1){
 
 
       printf("\n\n***********Starting scan for array size %u*************\n",arrayLength);
 
       printf("Allocating and initializing host arrays...\n");
 
-      h_Input     = (uint *)malloc(arrayLength * sizeof(uint));
+      int temp = MIN_LARGE_ARRAY_SIZE+1;
+      arrayLength = 2*MIN_LARGE_ARRAY_SIZE;
+      h_Input     = (uint *)malloc(temp * sizeof(uint));
       h_OutputCPU = (uint *)malloc(arrayLength * sizeof(uint));
       h_OutputGPU = (uint *)malloc(arrayLength * sizeof(uint));
 
-      for (uint i = 0; i < arrayLength; i++)
+      for (uint i = 0; i < temp-1; i++)
         {
           h_Input[i] = 1;//rand();
         }
+      h_Input[temp-1] = 0;
       
       printf("Allocating and initializing CUDA arrays...\n");
-      checkCudaErrors(cudaMalloc((void **)&d_Input, arrayLength * sizeof(uint)));
+      checkCudaErrors(cudaMalloc((void **)&d_Input, temp * sizeof(uint)));
       checkCudaErrors(cudaMalloc((void **)&d_Output, arrayLength * sizeof(uint)));
-      checkCudaErrors(cudaMemcpy(d_Input, h_Input, arrayLength * sizeof(uint), cudaMemcpyHostToDevice));
+      checkCudaErrors(cudaMemcpy(d_Input, h_Input, temp * sizeof(uint), cudaMemcpyHostToDevice));
       
       
       printf("Running scan for %u elements (1 arrays)...\n", arrayLength);
@@ -185,7 +189,7 @@ int main(int argc, char **argv)
       
       for (int i = 0; i < iCycles; i++)
         {
-          szWorkgroup = scanExclusiveLL(d_Output, d_Input, arrayLength);
+          szWorkgroup = scanExclusiveLarge((uint *)d_Output, (uint *)d_Input, arrayLength);
         }
       
       checkCudaErrors(cudaDeviceSynchronize());
@@ -210,7 +214,7 @@ int main(int argc, char **argv)
       //printf(" ...comparing the results\n");
       int localFlag = 1;
       
-      for (uint i = 0; i < arrayLength; i++)
+      for (uint i = 0; i < temp; i++)
         {
           if (h_OutputCPU[i] != h_OutputGPU[i])
             {

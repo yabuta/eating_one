@@ -219,6 +219,9 @@ join()
     exit(1);
   }
 
+  cuCtxSetCacheConfig(CU_FUNC_CACHE_PREFER_SHARED);
+
+
   /*********************************************************************************/
 
 
@@ -415,7 +418,6 @@ join()
     }  
 
 
-    exit(1);
     gettimeofday(&time_lhck_f, NULL);
 
     /**************************** prefix sum *************************************/
@@ -430,6 +432,18 @@ join()
     gettimeofday(&time_lscan_f, NULL);
 
     /********************************************************************/
+    /*
+    uint *ll = (uint *)calloc(t_num*p_n,sizeof(uint));
+    res = cuMemcpyDtoH(ll,lL_dev,t_num*p_n * sizeof(uint)); 
+    if(res != CUDA_SUCCESS){
+      printf("cuMemcpyDtoH (lt) failed: res = %lu\n", (unsigned long)res);
+      exit(1);    
+    }
+    for(uint j=0; j<t_num*p_n; j++){
+      printf("lL[%d] = %d\n",j,ll[j]);
+    }
+    */
+
 
     void *lpartition_args[]={
     
@@ -482,7 +496,7 @@ join()
   printf("p2: %ld us (%ld ms)\n", p2, p2/1000);
   */
 
-  res = cuMemcpyDtoH(lt,lt_dev,left * sizeof(TUPLE)); 
+  res = cuMemcpyDtoH(lt,plt_dev,left * sizeof(TUPLE)); 
   if(res != CUDA_SUCCESS){
     printf("cuMemcpyDtoH (lt) failed: res = %lu\n", (unsigned long)res);
     exit(1);    
@@ -490,7 +504,7 @@ join()
 
   int pa=0;
   for(uint i=0 ; i<left ; i++){
-    int x = lt[i].val%p_num;
+    int x = lt[i].val%PARTITION;
     if(x<pa){
       printf("partition error. x = %d pa = %d i = %d\n",x,pa,i);
       break;
@@ -499,12 +513,12 @@ join()
       pa = x;
     }
   }
-  exit(1);
+  //exit(1);
 
   for(uint i=0 ; i<100 ; i++){
-    printf("lt[%d] = %d\t%d\t%d\n",i,lt[i].val,lt[i].val%p_num,lt[i].val%PARTITION);
+    printf("lt[%d] = %d\t%d\t%d\n",i,lt[i].val,lt[i].val%p_n,lt[i].val%PARTITION);
   }
-  printf("partition success.\npa = %d\nfpart = %d\n",pa,p_num);
+  printf("partition success.\npa = %d\nfpart = %d\n",pa,p_n);
 
   exit(1);
 

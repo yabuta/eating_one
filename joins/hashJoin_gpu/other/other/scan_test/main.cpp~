@@ -16,6 +16,7 @@
 #include <helper_functions.h>
 
 #include <cuda_runtime.h>
+#include <cuda.h>
 #include <thrust/scan.h>
 #include "scan_common.h"
 
@@ -26,7 +27,7 @@ int main(int argc, char **argv)
     //Use command-line specified CUDA device, otherwise use device with highest Gflops/s
     findCudaDevice(argc, (const char **)argv);
 
-    uint *d_Input, *d_Output;
+    CUdeviceptr *d_Input, *d_Output;
     uint *h_Input, *h_OutputCPU, *h_OutputGPU;
     StopWatchInterface  *hTimer = NULL;
     const uint MIN = 4 * 1024 * 1024;
@@ -39,7 +40,7 @@ int main(int argc, char **argv)
 
     int globalFlag = 1;
     size_t szWorkgroup;
-    const int iCycles = 5;
+    const int iCycles = 1;
 
     /*
     printf("*** Running GPU scan for short arrays (%d identical iterations)...\n\n", iCycles);
@@ -156,26 +157,29 @@ int main(int argc, char **argv)
     }
     */
 
-    for(uint arrayLength = MIN ; arrayLength <= MAX ; arrayLength <<= 1){
+    for(uint arrayLength = MIN ; arrayLength <= MIN ; arrayLength <<= 1){
 
 
       printf("\n\n***********Starting scan for array size %u*************\n",arrayLength);
 
       printf("Allocating and initializing host arrays...\n");
 
-      h_Input     = (uint *)malloc(arrayLength * sizeof(uint));
+      int temp = 4*26*512*512+1;
+      arrayLength = 4*26*512*512+MAX_LARGE_ARRAY_SIZE;
+      h_Input     = (uint *)malloc(temp * sizeof(uint));
       h_OutputCPU = (uint *)malloc(arrayLength * sizeof(uint));
       h_OutputGPU = (uint *)malloc(arrayLength * sizeof(uint));
 
-      for (uint i = 0; i < arrayLength; i++)
+      for (uint i = 0; i < temp-1; i++)
         {
           h_Input[i] = 1;//rand();
         }
+      h_Input[temp-1] = 0;
       
       printf("Allocating and initializing CUDA arrays...\n");
-      checkCudaErrors(cudaMalloc((void **)&d_Input, arrayLength * sizeof(uint)));
+      checkCudaErrors(cudaMalloc((void **)&d_Input, temp * sizeof(uint)));
       checkCudaErrors(cudaMalloc((void **)&d_Output, arrayLength * sizeof(uint)));
-      checkCudaErrors(cudaMemcpy(d_Input, h_Input, arrayLength * sizeof(uint), cudaMemcpyHostToDevice));
+      checkCudaErrors(cudaMemcpy(d_Input, h_Input, temp * sizeof(uint), cudaMemcpyHostToDevice));
       
       
       printf("Running scan for %u elements (1 arrays)...\n", arrayLength);
@@ -185,32 +189,32 @@ int main(int argc, char **argv)
       
       for (int i = 0; i < iCycles; i++)
         {
-          szWorkgroup = scanExclusiveLL(d_Output, d_Input, arrayLength);
+          szWorkgroup = scanExclusiveLL((uint *)d_Output, (uint *)d_Input, arrayLength);
         }
       
       checkCudaErrors(cudaDeviceSynchronize());
       sdkStopTimer(&hTimer);
       double timerValue = sdkGetTimerValue(&hTimer) / iCycles;
       
-      printf("Validating the results...\n");
-      printf("...reading back GPU results\n");
+      //printf("Validating the results...\n");
+      //printf("...reading back GPU results\n");
       checkCudaErrors(cudaMemcpy(h_OutputGPU, d_Output, arrayLength * sizeof(uint), cudaMemcpyDeviceToHost));
       
-      printf("...scanExclusiveHost()\n");
+      //printf("...scanExclusiveHost()\n");
       sdkResetTimer(&hTimer);
       sdkStartTimer(&hTimer);
       
       scanExclusiveHost(h_OutputCPU, h_Input, arrayLength);
       
       sdkStopTimer(&hTimer);
-      double CPUtimerValue = 1.0e-3 * sdkGetTimerValue(&hTimer);
+      double CPUtimerValue = sdkGetTimerValue(&hTimer);
       
       
       // Compare GPU results with CPU results and accumulate error for this test
-      printf(" ...comparing the results\n");
+      //printf(" ...comparing the results\n");
       int localFlag = 1;
       
-      for (uint i = 0; i < arrayLength; i++)
+      for (uint i = 0; i < temp; i++)
         {
           if (h_OutputCPU[i] != h_OutputGPU[i])
             {
@@ -233,7 +237,7 @@ int main(int argc, char **argv)
       printf("GPU = %d\tCPU = %d\n",h_OutputGPU[arrayLength-1],h_OutputCPU[arrayLength-1]);
       */
 
-      printf("GPU = %.3f ms\tCPU = %.3f\n",timerValue,CPUtimerValue);
+      printf("GPU = %.3f ms\tCPU = %.3f ms\n",timerValue,CPUtimerValue);
 
 
       checkCudaErrors(cudaFree(d_Output));

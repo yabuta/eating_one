@@ -17,43 +17,42 @@ void count(
            int *lt,
            int *jt,
            int left
-
-          /*
-          uint *count,
-          BUCKET *bucket,
-          int *buck_array,
-          int *idxcount,
-          int left
-          */
           ) 
 
 {
 
-  uint i = blockIdx.x*blockDim.x + threadIdx.x;
-  if(i < left){
-    int temp = lt[i];
-    jt[temp] = 1;
+  uint x = blockIdx.x*blockDim.x + threadIdx.x;
+
+  __shared__ int temp[32];
+  /*
+  for(uint i=0 ;i<1024;i++){
+    temp[i] = 0;
+  }
+  */
+  /*
+  for(uint i=0 ;i<1024;i++){
+    temp[threadIdx.x]++;
+  }
+  */
+
+  for(uint i=0 ;i<1024;i++){
+    jt[x]++;
   }
 
   /*
-  int x = blockIdx.x * blockDim.x + threadIdx.x;
-  
-  if(x < left){
-    int val = lt[x].val;
-    int idx = val % NB_BKT_ENT;
-    int idx_c = idxcount[idx];
-    int buck_a = buck_array[idx];
-    uint temp = 0;
-
-    for(int k = 0; k < idx_c; k++){
-      if(bucket[buck_a + k].val == val){
-        temp++;
-      }    
+  if(threadIdx.x==0&&blockIdx.x==0){
+    for(uint i=0 ;i<1024;i++){
+      printf("%d\n",temp[i]);
     }
-    count[x] = temp;
-
   }
   */
+  /*
+  for(uint i=threadIdx.x ;i<32*1024;i+=blockDim.x){
+    temp[i] = 0;
+  }
+  */
+  __syncthreads();
+
 }
 
 }

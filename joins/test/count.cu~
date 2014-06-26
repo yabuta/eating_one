@@ -14,46 +14,26 @@ extern "C" {
 
 __global__
 void count(
-           int *lt,
-           int *jt,
+           TUPLE *lt,
+           TUPLE *jt,
            int left
-
-          /*
-          uint *count,
-          BUCKET *bucket,
-          int *buck_array,
-          int *idxcount,
-          int left
-          */
           ) 
 
 {
 
-  uint i = blockIdx.x*blockDim.x + threadIdx.x;
-  if(i < left){
-    int temp = lt[i];
-    jt[temp] = 1;
+  uint x = blockIdx.x*blockDim.x + threadIdx.x;
+
+  __shared__ int temp[1024];
+  for(uint i=0 ;i<32*1024;i++){
+    temp[i] = 0;
   }
-
   /*
-  int x = blockIdx.x * blockDim.x + threadIdx.x;
-  
-  if(x < left){
-    int val = lt[x].val;
-    int idx = val % NB_BKT_ENT;
-    int idx_c = idxcount[idx];
-    int buck_a = buck_array[idx];
-    uint temp = 0;
-
-    for(int k = 0; k < idx_c; k++){
-      if(bucket[buck_a + k].val == val){
-        temp++;
-      }    
-    }
-    count[x] = temp;
-
+  for(uint i=threadIdx.x ;i<32*1024;i+=blockDim.x){
+    temp[i] = 0;
   }
   */
+  __syncthreads();
+
 }
 
 }

@@ -373,8 +373,10 @@ join()
     p_grid_x++;
   
   int p_n=0;
+  p_num = 256*256;
 
-  for(uint tp=PARTITION ; tp<p_num ; tp=tp*PARTITION){
+
+  for(uint tp=PARTITION ; tp<=p_num ; tp=tp*PARTITION){
 
     p_n = PARTITION;
     //checkCudaErrors(cudaMemset((void *)lL_dev, 0 , t_num * PARTITION *sizeof(uint)));
@@ -504,7 +506,7 @@ join()
 
   int pa=0;
   for(uint i=0 ; i<left ; i++){
-    int x = lt[i].val%PARTITION;
+    int x = lt[i].val%p_num;
     if(x<pa){
       printf("partition error. x = %d pa = %d i = %d\n",x,pa,i);
       break;
@@ -516,7 +518,7 @@ join()
   //exit(1);
 
   for(uint i=0 ; i<100 ; i++){
-    printf("lt[%d] = %d\t%d\t%d\n",i,lt[i].val,lt[i].val%p_n,lt[i].val%PARTITION);
+    printf("lt[%d] = %d\t%d\t%d\n",i,lt[i].val,lt[i].val%p_num,lt[i].val%PARTITION);
   }
   printf("partition success.\npa = %d\nfpart = %d\n",pa,p_n);
 

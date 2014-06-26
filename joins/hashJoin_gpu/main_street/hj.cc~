@@ -310,6 +310,8 @@ join()
   }else{
     p_num = pow(2,(int)log2(temp) + 1);
   }
+  //p_num = 256;
+
   t_num = left/LEFT_PER_TH;
   if(left%LEFT_PER_TH != 0){
     t_num++;
@@ -361,6 +363,8 @@ join()
   if (t_num % p_block_x != 0)
     p_grid_x++;
 
+
+  printf("p_grid=%d\tp_block=%d\n",p_grid_x,p_block_x);
 
   checkCudaErrors(cudaMemset((void *)lL_dev, 0 , t_num * p_num *sizeof(uint)));
 
@@ -415,6 +419,7 @@ join()
 
   /********************************************************************/
 
+
   p_sum = (uint *)calloc(p_num,sizeof(uint));
 
   if(!(p_sum_dev = diff_part(lL_dev,t_num,p_num,left))){
@@ -426,6 +431,45 @@ join()
     printf("cuMemcpyDtoH (p_sum) failed: res = %lu\n", (unsigned long)res);
     exit(1);    
   }
+
+
+  gettimeofday(&time_hkernel_s, NULL);
+
+  void *lpartition_args[]={
+    
+    (void *)&lt_dev,
+    (void *)&plt_dev,
+    (void *)&lL_dev,
+    (void *)&p_num,
+    (void *)&t_num,
+    (void *)&left,
+    (void *)&table_type      
+  };
+  //グリッド・ブロックの指定、変数の指定、カーネルの実行を行う
+  res = cuLaunchKernel(
+                       p_function,    // CUfunction f
+                       p_grid_x,        // gridDimX
+                       1,        // gridDimY
+                       1,             // gridDimZ
+                       p_block_x,       // blockDimX
+                       1,       // blockDimY
+                       1,             // blockDimZ
+                       0,             // sharedMemBytes
+                       NULL,          // hStream
+                       lpartition_args,   // keunelParams
+                       NULL           // extra
+                       );
+  if(res != CUDA_SUCCESS) {
+    printf("cuLaunchKernel(lhash partition) failed: res = %lu\n", (unsigned long int)res);
+    exit(1);
+  }      
+  res = cuCtxSynchronize();
+  if(res != CUDA_SUCCESS) {
+    printf("cuCtxSynchronize(lhash partition) failed: res = %lu\n", (unsigned long int)res);
+    exit(1);
+  }  
+
+  gettimeofday(&time_hkernel_f, NULL);  
 
 
   /***********************************************
@@ -481,43 +525,6 @@ join()
 
   ***********************************/
 
-  gettimeofday(&time_hkernel_s, NULL);
-
-  void *lpartition_args[]={
-    
-    (void *)&lt_dev,
-    (void *)&plt_dev,
-    (void *)&lL_dev,
-    (void *)&p_num,
-    (void *)&t_num,
-    (void *)&left,
-    (void *)&table_type      
-  };
-  //グリッド・ブロックの指定、変数の指定、カーネルの実行を行う
-  res = cuLaunchKernel(
-                       p_function,    // CUfunction f
-                       p_grid_x,        // gridDimX
-                       1,        // gridDimY
-                       1,             // gridDimZ
-                       p_block_x,       // blockDimX
-                       1,       // blockDimY
-                       1,             // blockDimZ
-                       0,             // sharedMemBytes
-                       NULL,          // hStream
-                       lpartition_args,   // keunelParams
-                       NULL           // extra
-                       );
-  if(res != CUDA_SUCCESS) {
-    printf("cuLaunchKernel(lhash partition) failed: res = %lu\n", (unsigned long int)res);
-    exit(1);
-  }      
-  res = cuCtxSynchronize();
-  if(res != CUDA_SUCCESS) {
-    printf("cuCtxSynchronize(lhash partition) failed: res = %lu\n", (unsigned long int)res);
-    exit(1);
-  }  
-
-  gettimeofday(&time_hkernel_f, NULL);  
 
 
   /**************************************************************/
@@ -748,6 +755,7 @@ join()
 
   count_size = grid_x * grid_y * block_x + 1;
 
+  printf("%d\t%d\n",grid_x,block_x);
 
   /*GPU memory alloc and send data of count ,l_p ,radix and r_p*/
 

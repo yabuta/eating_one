@@ -27,6 +27,7 @@
 //and saving instructions
 inline __device__ uint scan1Inclusive(uint idata, volatile uint *s_Data, uint size)
 {
+
     uint pos = 2 * threadIdx.x - (threadIdx.x & (size - 1));
     s_Data[pos] = 0;
     pos += size;
@@ -39,8 +40,9 @@ inline __device__ uint scan1Inclusive(uint idata, volatile uint *s_Data, uint si
         __syncthreads();
         s_Data[pos] = t;
     }
-
     return s_Data[pos];
+    
+
 }
 
 inline __device__ uint scan1Exclusive(uint idata, volatile uint *s_Data, uint size)
