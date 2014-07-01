@@ -93,13 +93,10 @@ __global__ void scanExclusiveShared(
     __shared__ uint s_Data[2 * THREADBLOCK_SIZE];
 
     uint pos = blockIdx.x * blockDim.x + threadIdx.x;
-
     //Load data
     uint4 idata4 = d_Src[pos];
-
     //Calculate exclusive scan
     uint4 odata4 = scan4Exclusive(idata4, s_Data, size);
-
     //Write back
     d_Dst[pos] = odata4;
 }

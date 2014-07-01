@@ -232,6 +232,21 @@ main(int argc,char *argv[])
 
   createTuple();
 
+  /*
+  TUPLE *temp;
+  int lr;
+  temp=rt;
+  rt=lt;
+  lt=temp;
+  temp = hrt;
+  hrt = hlt;
+  hlt = temp;
+
+
+  lr = left;
+  left = right;
+  right = lr;
+  */
 
   gettimeofday(&begin, NULL);
   // Hash construction phase

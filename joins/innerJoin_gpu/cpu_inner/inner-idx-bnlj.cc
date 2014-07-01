@@ -153,6 +153,18 @@ main(int argc,char *argv[])
 
   createTuple();
 
+  TUPLE *tlr;
+  int lr;
+
+  tlr = lt;
+  lt = rt;
+  rt = tlr;
+
+  lr = left;
+  left = right;
+  right = lr;
+
+
   //make index
   /**
      Bucket:indexの入っている配列
@@ -200,17 +212,15 @@ main(int argc,char *argv[])
     int hash = lt[j].val % NB_BUCKET;
     for (int i = 0; i < idxcount[hash] ;i++ ) {
       if (Bucket[Buck_array[hash] + i].val == lt[j].val) {
-        jt[resultVal].skey = rt[Bucket[Buck_array[hash] + i].adr].key;
-        jt[resultVal].sval = rt[Bucket[Buck_array[hash] + i].adr].val;
-        jt[resultVal].rkey = lt[j].key;
-        jt[resultVal].rval = lt[j].val;
+        jt[resultVal].rkey = rt[Bucket[Buck_array[hash] + i].adr].key;
+        jt[resultVal].rval = rt[Bucket[Buck_array[hash] + i].adr].val;
+        jt[resultVal].lkey = lt[j].key;
+        jt[resultVal].lval = lt[j].val;
         resultVal++;
       }
     }
   }
   gettimeofday(&end, NULL);
-
-  freeTuple();
 
   printf("*********create index time*************************\n");
   printDiff(index_s,index_f);
@@ -220,6 +230,14 @@ main(int argc,char *argv[])
   printf("\n");
   printf("resultVal: %d\n", resultVal);
   printf("\n");
+
+  for(uint i=0;i<3;i++){
+    printf("join[%d]:left %8d \t:right: %8d\n",i,jt[i].lkey,jt[i].rkey);
+    printf("left = %8d\tright = %8d\n",jt[i].lval,jt[i].rval);
+    printf("\n");
+  }
+
+  freeTuple();
 
   return 0;
 }

@@ -157,15 +157,15 @@ int main(int argc, char **argv)
     }
     */
 
-    for(uint arrayLength = MIN ; arrayLength <= MIN ; arrayLength <<= 1){
+    for(uint arrayLength = 0 ; arrayLength <= 0; arrayLength <<= 1){
 
 
       printf("\n\n***********Starting scan for array size %u*************\n",arrayLength);
 
       printf("Allocating and initializing host arrays...\n");
 
-      int temp = 4*26*512*512+1;
-      arrayLength = 4*26*512*512+MAX_LARGE_ARRAY_SIZE;
+      int temp = MIN_LARGE_ARRAY_SIZE+1;
+      arrayLength = 2*MIN_LARGE_ARRAY_SIZE;
       h_Input     = (uint *)malloc(temp * sizeof(uint));
       h_OutputCPU = (uint *)malloc(arrayLength * sizeof(uint));
       h_OutputGPU = (uint *)malloc(arrayLength * sizeof(uint));
@@ -189,7 +189,7 @@ int main(int argc, char **argv)
       
       for (int i = 0; i < iCycles; i++)
         {
-          szWorkgroup = scanExclusiveLL((uint *)d_Output, (uint *)d_Input, arrayLength);
+          szWorkgroup = scanExclusiveLarge((uint *)d_Output, (uint *)d_Input, arrayLength);
         }
       
       checkCudaErrors(cudaDeviceSynchronize());

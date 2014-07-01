@@ -1,4 +1,4 @@
-#define NB_BKTENT 524288 // the number of partitions
+#define NB_BKTENT 2097152 // the number of partitions
 
 
 //最適hash値
@@ -7,12 +7,12 @@
 // 16M * 16M 524288
 // 32M * 32M 1048576
 // 64M * 64M 1048576
-
+// 128M * 128M 2097152
 
 #define JT_SIZE 1200000000
 #define SELECTIVITY 1000000000 //
 
-#define MATCH_RATE 1 //match rate setting
+#define MATCH_RATE 0.01 //match rate setting
 
 typedef struct _TUPLE {
   int key;

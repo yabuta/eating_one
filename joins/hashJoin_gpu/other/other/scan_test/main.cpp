@@ -30,8 +30,8 @@ int main(int argc, char **argv)
     CUdeviceptr *d_Input, *d_Output;
     uint *h_Input, *h_OutputCPU, *h_OutputGPU;
     StopWatchInterface  *hTimer = NULL;
-    const uint MIN = 4 * 1024 * 1024;
-    const uint MAX = 512 * 1024 * 1024 ; //max size
+    const uint MIN = 16 * 1024 * 1024;
+    const uint MAX = 16 * 1024 * 1024; //max size
 
     sdkCreateTimer(&hTimer);
 
@@ -40,7 +40,7 @@ int main(int argc, char **argv)
 
     int globalFlag = 1;
     size_t szWorkgroup;
-    const int iCycles = 1;
+    const int iCycles = 5;
 
     /*
     printf("*** Running GPU scan for short arrays (%d identical iterations)...\n\n", iCycles);
@@ -157,15 +157,14 @@ int main(int argc, char **argv)
     }
     */
 
-    for(uint arrayLength = 0 ; arrayLength <= 0; arrayLength <<= 1){
+    for(uint arrayLength = MIN ; arrayLength <= MAX; arrayLength <<= 1){
 
 
       printf("\n\n***********Starting scan for array size %u*************\n",arrayLength);
 
       printf("Allocating and initializing host arrays...\n");
 
-      int temp = MIN_LARGE_ARRAY_SIZE+1;
-      arrayLength = 2*MIN_LARGE_ARRAY_SIZE;
+      int temp = MIN;
       h_Input     = (uint *)malloc(temp * sizeof(uint));
       h_OutputCPU = (uint *)malloc(arrayLength * sizeof(uint));
       h_OutputGPU = (uint *)malloc(arrayLength * sizeof(uint));
@@ -189,7 +188,7 @@ int main(int argc, char **argv)
       
       for (int i = 0; i < iCycles; i++)
         {
-          szWorkgroup = scanExclusiveLarge((uint *)d_Output, (uint *)d_Input, arrayLength);
+          szWorkgroup = scanExclusiveLL((uint *)d_Output, (uint *)d_Input, arrayLength);
         }
       
       checkCudaErrors(cudaDeviceSynchronize());
@@ -203,11 +202,12 @@ int main(int argc, char **argv)
       //printf("...scanExclusiveHost()\n");
       sdkResetTimer(&hTimer);
       sdkStartTimer(&hTimer);
-      
-      scanExclusiveHost(h_OutputCPU, h_Input, arrayLength);
-      
+
+      for(uint i=0 ;i<iCycles;i++){
+        scanExclusiveHost(h_OutputCPU, h_Input, arrayLength);
+      }
       sdkStopTimer(&hTimer);
-      double CPUtimerValue = sdkGetTimerValue(&hTimer);
+      double CPUtimerValue = sdkGetTimerValue(&hTimer)/iCycles;
       
       
       // Compare GPU results with CPU results and accumulate error for this test

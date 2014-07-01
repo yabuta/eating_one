@@ -9,7 +9,7 @@
 
 #define JT_SIZE 120000000
 #define SELECTIVITY 1000000000
-#define MATCH_RATE 0.1  //match rate setting
+#define MATCH_RATE 0.01  //match rate setting
 
 int left;
 int right;

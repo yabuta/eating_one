@@ -4,7 +4,7 @@
 //#define BLOCK_SIZE_X 128
 #define BLOCK_SIZE_X 256
 
-#define MATCH_RATE 0.1
+#define MATCH_RATE 0.01
 
 #define JT_SIZE 120000000
 #define SELECTIVITY 1000000000

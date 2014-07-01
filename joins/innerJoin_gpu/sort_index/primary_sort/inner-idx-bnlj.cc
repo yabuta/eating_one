@@ -277,6 +277,15 @@ void join(){
 
   createTuple();
 
+  TUPLE *tlr;
+  int lr;
+  tlr = lt;
+  lt = rt;
+  rt = tlr;
+  lr = left;
+  left = right;
+  right = lr;
+
   gettimeofday(&time_index_s, NULL);
   createIndex();
   gettimeofday(&time_index_f, NULL);
@@ -518,7 +527,6 @@ void join(){
     gettimeofday(&time_jdown_f, NULL);
 
   }
-  gettimeofday(&end, NULL);
 
 
 
@@ -553,6 +561,8 @@ void join(){
     exit(1);
   }
 
+  gettimeofday(&end, NULL);
+
 
   printf("********index create time**************\n");
   printDiff(time_index_s,time_index_f);
@@ -586,8 +596,12 @@ void join(){
 
   printf("%d\n",jt_size);
   printf("\n");
-  
 
+  for(uint i=0;i<3&&i<jt_size;i++){
+    printf("join[%d]:left %8d \t:right: %8d\n",i,jt[i].lkey,jt[i].rkey);
+    printf("left = %8d\tright = %8d\n",jt[i].lval,jt[i].rval);
+    printf("\n");
+  }  
 
   /*
   for(int i = 0; i < count[right - 1] ;i++){

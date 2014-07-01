@@ -26,7 +26,7 @@ typedef struct _TUPLE {
 } TUPLE;
 
 typedef struct _JOIN_TUPLE {
-    int id;
+    //int id;
     int lid;
     int lval[VAL_NUM]; // left value
     int rid;

@@ -227,6 +227,15 @@ main(int argc,char *argv[])
 
   createTuple();
 
+  TUPLE *tlr;
+  int lr;
+  tlr = lt;
+  lt = rt;
+  rt = tlr;
+  lr = left;
+  left = right;
+  right = lr;
+
   //make index
   gettimeofday(&index_s, NULL);
   createIndex();
@@ -264,8 +273,6 @@ main(int argc,char *argv[])
   }
   gettimeofday(&end, NULL);
 
-  freeTuple();
-
   //printf("search time = %ldms\nwrite time = %ldms\n",sea/1000,wri/1000);
 
   printf("*******execution time****************\n");
@@ -274,6 +281,15 @@ main(int argc,char *argv[])
   printDiff(index_s,index_f);
   printf("resultVal: %d\n", resultVal);
   printf("\n");
+
+
+  for(uint i=0;i<3&&i<(uint)resultVal;i++){
+    printf("join[%d]:left %8d \t:right: %8d\n",i,jt[i].lkey,jt[i].rkey);
+    printf("left = %8d\tright = %8d\n",jt[i].lval,jt[i].rval);
+    printf("\n");
+  }
+
+  freeTuple();
 
   return 0;
 }
