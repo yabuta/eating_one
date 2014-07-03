@@ -27,13 +27,11 @@ void count(
 
   for(int i=l_p[blockIdx.x] + threadIdx.x,j=threadIdx.x; i<l_p[blockIdx.x+1]; i += blockDim.x, j += blockDim.x){
     if(j<JOIN_SHARED){
-      sub_lt[j].key = lt[i].key;
-      sub_lt[j].val = lt[i].val;
+      sub_lt[j] = lt[i];
     }
 
   }
   __syncthreads();
-
 
   int temp=0;
   int temp2 = r_p[radix[blockIdx.x]+1];

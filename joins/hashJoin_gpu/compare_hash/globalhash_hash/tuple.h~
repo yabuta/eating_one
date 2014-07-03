@@ -2,10 +2,10 @@
 #define BLOCK_SIZE_Y 1
 #define GRID_SIZE_Y 1
 #define PART_C_NUM 256   //cuda block size of hash partition count
-#define LEFT_PER_TH 2048
+#define LEFT_PER_TH 8192
 #define RIGHT_PER_TH LEFT_PER_TH       //the number of tuple per one thread of hash partition 
 #define B_ROW_NUM 128      //the number of sub left tuple per one block in join and count kernel
-#define SHARED_SIZE 256
+#define SHARED_SIZE 512
 
 /*1048576 * 1048576
 #define BLOCK_SIZE_X 1024 //cuda block size of join and count kernel 

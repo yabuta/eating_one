@@ -292,11 +292,16 @@ join()
     printf("cuMemAlloc (lefttuple) failed\n");
     exit(1);
   }
-
-
-  /**********************************************************************************/
+  res = cuMemAlloc(&rt_dev, right * sizeof(TUPLE));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemAlloc (righttuple) failed\n");
+    exit(1);
+  }
 
   gettimeofday(&time_alloc_f, NULL);
+
+  /********************************************************************/
+
 
 
   /*preparation of partitioning*/
@@ -342,6 +347,11 @@ join()
   res = cuMemcpyHtoD(lt_dev, lt, left * sizeof(TUPLE));
   if (res != CUDA_SUCCESS) {
     printf("cuMemcpyHtoD (lt) failed: res = %lu\n", res);//conv(res));
+    exit(1);
+  }
+  res = cuMemcpyHtoD(rt_dev, rt, right * sizeof(TUPLE));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemcpyHtoD (rt) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
 
@@ -520,6 +530,7 @@ join()
   }
   l_p[l_p_num] = left;
   radix_num[l_p_num] = p_num;
+  l_p_num++;
   /***************************
    end of resizing partition
 
@@ -552,25 +563,11 @@ join()
 
 
   /* rt */
-  res = cuMemAlloc(&rt_dev, right * sizeof(TUPLE));
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemAlloc (righttuple) failed\n");
-    exit(1);
-  }
   res = cuMemAlloc(&prt_dev, right * sizeof(TUPLE));
   if (res != CUDA_SUCCESS) {
     printf("cuMemAlloc (prt) failed\n");
     exit(1);
   }
-
-  gettimeofday(&time_rupload_s, NULL);  
-  res = cuMemcpyHtoD(rt_dev, rt, right * sizeof(TUPLE));
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD (rt) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-  gettimeofday(&time_rupload_f, NULL);   
-
 
   gettimeofday(&time_rhash_s, NULL);
 
@@ -750,7 +747,7 @@ join()
 
   block_x = r_p_max < BLOCK_SIZE_X ? r_p_max : BLOCK_SIZE_X;
   block_y = BLOCK_SIZE_Y;
-  grid_x = l_p_num;
+  grid_x = l_p_num-1;
   grid_y = GRID_SIZE_Y;
 
   count_size = grid_x * grid_y * block_x + 1;
@@ -772,23 +769,23 @@ join()
     printf("cuMemAlloc (count) failed\n");
     exit(1);
   }
-  res = cuMemAlloc(&l_p_dev, (l_p_num+1) * sizeof(uint));
+  res = cuMemAlloc(&l_p_dev, l_p_num * sizeof(uint));
   if (res != CUDA_SUCCESS) {
     printf("cuMemAlloc (l_p) failed\n");
     exit(1);
   }
-  res = cuMemAlloc(&radix_dev, (l_p_num+1) * sizeof(uint));
+  res = cuMemAlloc(&radix_dev, l_p_num * sizeof(uint));
   if (res != CUDA_SUCCESS) {
     printf("cuMemAlloc (radix) failed\n");
     exit(1);
   }
 
-  res = cuMemcpyHtoD(l_p_dev, l_p, (l_p_num+1) * sizeof(uint));
+  res = cuMemcpyHtoD(l_p_dev, l_p, l_p_num * sizeof(uint));
   if (res != CUDA_SUCCESS) {
     printf("cuMemcpyHtoD (count) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
-  res = cuMemcpyHtoD(radix_dev, radix_num, (l_p_num+1) * sizeof(uint));
+  res = cuMemcpyHtoD(radix_dev, radix_num, l_p_num * sizeof(uint));
   if (res != CUDA_SUCCESS) {
     printf("cuMemcpyHtoD (count) failed: res = %lu\n", (unsigned long)res);
     exit(1);
@@ -878,7 +875,8 @@ join()
   gettimeofday(&time_join_s, NULL);
 
 
-  if(jt_size <= 0){
+  if(1){
+    //if(jt_size <= 0){
     printf("no tuple is matched.\n");
   }else{
     res = cuMemAlloc(&jt_dev, jt_size * sizeof(RESULT));
@@ -947,16 +945,18 @@ join()
     /********************************************************************/
 
     gettimeofday(&time_join_f, NULL);
+
+    res = cuMemFree(jt_dev);
+    if (res != CUDA_SUCCESS) {
+      printf("cuMemFree (jointuple) failed: res = %lu\n", (unsigned long)res);
+      exit(1);
+    }
+
   }
 
   res = cuMemFree(count_dev);
   if (res != CUDA_SUCCESS) {
     printf("cuMemFree (count) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-  res = cuMemFree(jt_dev);
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemFree (jointuple) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
   res = cuMemFree(plt_dev);
@@ -1013,10 +1013,8 @@ join()
   printf("all time:\n");
   printDiff(begin, end);
   printf("\n");
-  printf("left table upload time:\n");
+  printf("table upload time:\n");
   printDiff(time_lupload_s,time_lupload_f);
-  printf("right table upload time:\n");
-  printDiff(time_rupload_s,time_rupload_f);
   printf("\n");
   printf("hash time:\n");
   printDiff(time_hash_s,time_hash_f);

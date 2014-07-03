@@ -25,20 +25,21 @@ void count(
 {
 
   int x = blockIdx.x * blockDim.x + threadIdx.x;
+
   
   if(x < left){
-    int val = lt[x].val;
-    int idx = val % NB_BKT_ENT;
+    int idx = lt[x].val % NB_BKT_ENT;
+    /*
     int idx_c = idxcount[idx];
     int buck_a = buck_array[idx];
     uint temp = 0;
-
-    for(int k = 0; k < idx_c; k++){
-      if(bucket[buck_a + k].val == val){
-        temp++;
+    */
+    count[x]=0;
+    for(int k = 0; k < idxcount[idx]; k++){
+      if(bucket[buck_array[idx] + k].val == lt[x].val){
+        count[x]++;
       }    
     }
-    count[x] = temp;
 
   }
   if(x == left-1){

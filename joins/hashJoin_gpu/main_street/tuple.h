@@ -12,7 +12,7 @@
 #define RIGHT_PER_TH LEFT_PER_TH       //the number of tuple per one thread of hash partition 
 
 #define PART_STANDARD 64
-#define JOIN_SHARED 512      //the number of sub left tuple per one block in join and count kernel
+#define JOIN_SHARED 256      //the number of sub left tuple per one block in join and count kernel
 
 
 /*1048576 * 1048576

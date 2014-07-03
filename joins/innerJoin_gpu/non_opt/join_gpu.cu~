@@ -21,26 +21,26 @@ __global__ void join(
 
   int x = blockIdx.x * blockDim.x + threadIdx.x;
 
-
+  /*
   uint writeloc = 0;
   if(x > 0){
     writeloc = count[x-1];
   }
+  */
 
   if(x < left){
-    int val = lt[x].val;
-    int idx = val % NB_BKT_ENT;
-    int idx_c = idxcount[idx];
-    int buck_a = buck_array[idx];
+    int idx = lt[x].val % NB_BKT_ENT;
+    //int idx_c = idxcount[idx];
+    //int buck_a = buck_array[idx];
 
-    if(buck_a != -1){
+    if(buck_array[idx] != -1){
       int i = 0;
-      for(int k = 0; k < idx_c; k++){
-        if(bucket[buck_a + k].val == val){
-          jt[writeloc + i].lkey = lt[x].key;
-          jt[writeloc + i].lval = val;
-          jt[writeloc + i].rkey = rt[bucket[buck_a + k].adr].key;
-          jt[writeloc + i].rval = rt[bucket[buck_a + k].adr].val;
+      for(int k = 0; k < idxcount[idx]; k++){
+        if(bucket[buck_array[idx] + k].val == lt[x].val){
+          jt[count[x] + i].lkey = lt[x].key;
+          jt[count[x] + i].lval = lt[x].val;
+          jt[count[x] + i].rkey = rt[bucket[buck_array[idx] + k].adr].key;
+          jt[count[x] + i].rval = rt[bucket[buck_array[idx] + k].adr].val;
           
           i++;
           //printf("%d %d\n",jt[count[i] + k].rkey,jt[count[i] + k].lkey);

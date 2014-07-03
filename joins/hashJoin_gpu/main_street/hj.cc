@@ -128,7 +128,7 @@ void createTuple()
     }
   }
 
-  //printf("%d\n",counter);
+  printf("%d\n",counter);
 
   
   free(used);
@@ -281,19 +281,6 @@ join()
 
 
   createTuple();
-
-  /*
-  TUPLE *lrt;
-  int lr;
-
-  lrt = lt;
-  lt = rt;
-  rt = lrt;
-
-  lr = left;
-  left = right;
-  right = lr;
-  */
 
   /*******************
    send data:
@@ -532,6 +519,14 @@ join()
 
   gettimeofday(&time_lhother_s, NULL);  
 
+
+
+  /**
+     caluculate start posision of each partition of left table.
+
+   **/
+
+
   p_block_x = 256;
   p_grid_x = left/p_block_x;
   if(left%p_block_x!=0){
@@ -641,7 +636,7 @@ join()
   }
   l_p[l_p_num] = left;
   radix_num[l_p_num] = p_num;
-
+  l_p_num++;
   gettimeofday(&time_lhother_f, NULL);  
 
   /***************************
@@ -926,7 +921,7 @@ join()
 
   block_x = r_p_max < BLOCK_SIZE_X ? r_p_max : BLOCK_SIZE_X;
   block_y = BLOCK_SIZE_Y;
-  grid_x = l_p_num;
+  grid_x = l_p_num-1;
   grid_y = GRID_SIZE_Y;
 
   count_size = grid_x * grid_y * block_x+1;
@@ -948,22 +943,22 @@ join()
     printf("cuMemAlloc (count) failed\n");
     exit(1);
   }
-  res = cuMemAlloc(&l_p_dev, (l_p_num+1) * sizeof(uint));
+  res = cuMemAlloc(&l_p_dev, l_p_num * sizeof(uint));
   if (res != CUDA_SUCCESS) {
     printf("cuMemAlloc (l_p) failed\n");
     exit(1);
   }
-  res = cuMemAlloc(&radix_dev, (l_p_num+1) * sizeof(uint));
+  res = cuMemAlloc(&radix_dev, l_p_num * sizeof(uint));
   if (res != CUDA_SUCCESS) {
     printf("cuMemAlloc (radix) failed\n");
     exit(1);
   }
-  res = cuMemcpyHtoD(l_p_dev, l_p, (l_p_num+1) * sizeof(uint));
+  res = cuMemcpyHtoD(l_p_dev, l_p, l_p_num * sizeof(uint));
   if (res != CUDA_SUCCESS) {
     printf("cuMemcpyHtoD (count) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
-  res = cuMemcpyHtoD(radix_dev, radix_num, (l_p_num+1) * sizeof(uint));
+  res = cuMemcpyHtoD(radix_dev, radix_num, l_p_num * sizeof(uint));
   if (res != CUDA_SUCCESS) {
     printf("cuMemcpyHtoD (count) failed: res = %lu\n", (unsigned long)res);
     exit(1);
@@ -1051,7 +1046,6 @@ join()
 
   gettimeofday(&time_join_s, NULL);
 
-
   if(jt_size <= 0){
     printf("no tuple is matched.\n");
   }else{
@@ -1119,7 +1113,11 @@ join()
 
     gettimeofday(&time_jdown_f, NULL);
 
-
+    res = cuMemFree(jt_dev);
+    if (res != CUDA_SUCCESS) {
+      printf("cuMemFree (jointuple) failed: res = %lu\n", (unsigned long)res);
+      exit(1);
+    }
     /********************************************************************/
 
   }
@@ -1127,11 +1125,6 @@ join()
   res = cuMemFree(count_dev);
   if (res != CUDA_SUCCESS) {
     printf("cuMemFree (count) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-  res = cuMemFree(jt_dev);
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemFree (jointuple) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
   res = cuMemFree(lt_dev);

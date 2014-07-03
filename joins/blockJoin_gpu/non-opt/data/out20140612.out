@@ -1,0 +1,315 @@
+right num :4194304
+left num :4194304
+419431
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 354691400 us (354691 ms)
+Calculation send with Devise
+Diff: 1362 us (1 ms)
+Calculation count with Devise
+Diff: 2451246 us (2451 ms)
+scan time
+Diff: 108114 us (108 ms)
+Calculation join with Devise
+Diff: 3091148 us (3091 ms)
+Calculation download with Devise
+Diff: 39 us (0 ms)
+the number of total match tuple = 419431
+[0]:left  4198755 	:right:       16
+join[0]:left = 76519651	right = 76519651
+
+[1]:left  4238875 	:right:      281
+join[0]:left = 86940008	right = 86940008
+
+[2]:left  4272355 	:right:      109
+join[0]:left = 44146491	right = 44146491
+
+right num :4194304
+left num :4194304
+419431
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 421703436 us (421703 ms)
+Calculation send with Devise
+Diff: 1365 us (1 ms)
+Calculation count with Devise
+Diff: 3358735 us (3358 ms)
+scan time
+Diff: 133290 us (133 ms)
+Calculation join with Devise
+Diff: 3714455 us (3714 ms)
+Calculation download with Devise
+Diff: 35 us (0 ms)
+the number of total match tuple = 419431
+[0]:left  4248725 	:right:      102
+join[0]:left = 35150850	right = 35150850
+
+[1]:left  4320565 	:right:      427
+join[0]:left = 92688714	right = 92688714
+
+[2]:left  4492905 	:right:       79
+join[0]:left = 19468770	right = 19468770
+
+right num :4194304
+left num :4194304
+419431
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 458222899 us (458222 ms)
+Calculation send with Devise
+Diff: 1363 us (1 ms)
+Calculation count with Devise
+Diff: 3471890 us (3471 ms)
+scan time
+Diff: 133938 us (133 ms)
+Calculation join with Devise
+Diff: 3845933 us (3845 ms)
+Calculation download with Devise
+Diff: 27 us (0 ms)
+the number of total match tuple = 419431
+[0]:left  4306385 	:right:       59
+join[0]:left = 94761011	right = 94761011
+
+[1]:left  4452125 	:right:       59
+join[0]:left = 94761011	right = 94761011
+
+[2]:left  4480155 	:right:      314
+join[0]:left = 33247044	right = 33247044
+
+right num :4194304
+left num :4194304
+419431
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 459776629 us (459776 ms)
+Calculation send with Devise
+Diff: 1362 us (1 ms)
+Calculation count with Devise
+Diff: 3510250 us (3510 ms)
+scan time
+Diff: 123893 us (123 ms)
+Calculation join with Devise
+Diff: 3782808 us (3782 ms)
+Calculation download with Devise
+Diff: 28 us (0 ms)
+the number of total match tuple = 419431
+[0]:left  4227015 	:right:      261
+join[0]:left = 64137383	right = 64137383
+
+[1]:left  4227395 	:right:      466
+join[0]:left = 62871821	right = 62871821
+
+[2]:left  4244415 	:right:      494
+join[0]:left = 12775794	right = 12775794
+
+right num :4194304
+left num :4194304
+419431
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 459444755 us (459444 ms)
+Calculation send with Devise
+Diff: 1362 us (1 ms)
+Calculation count with Devise
+Diff: 3425377 us (3425 ms)
+scan time
+Diff: 134128 us (134 ms)
+Calculation join with Devise
+Diff: 3816004 us (3816 ms)
+Calculation download with Devise
+Diff: 28 us (0 ms)
+the number of total match tuple = 419431
+[0]:left  4208595 	:right:      258
+join[0]:left = 33786511	right = 33786511
+
+[1]:left  4376945 	:right:      138
+join[0]:left = 47574184	right = 47574184
+
+[2]:left  4386995 	:right:      202
+join[0]:left = 87910049	right = 87910049
+
+right num :16777216
+left num :16777216
+1677722
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 7264270817 us (7264270 ms)
+Calculation send with Devise
+Diff: 1358 us (1 ms)
+Calculation count with Devise
+Diff: 3562404 us (3562 ms)
+scan time
+Diff: 134275 us (134 ms)
+Calculation join with Devise
+Diff: 3767670 us (3767 ms)
+Calculation download with Devise
+Diff: 27 us (0 ms)
+the number of total match tuple = 1677722
+[0]:left 17084687 	:right:       83
+join[0]:left = 48853869	right = 48853869
+
+[1]:left 16811287 	:right:      763
+join[0]:left = 99228429	right = 99228429
+
+[2]:left 16931267 	:right:      662
+join[0]:left = 27182119	right = 27182119
+
+right num :16777216
+left num :16777216
+1677722
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 7276222378 us (7276222 ms)
+Calculation send with Devise
+Diff: 1365 us (1 ms)
+Calculation count with Devise
+Diff: 3505652 us (3505 ms)
+scan time
+Diff: 137508 us (137 ms)
+Calculation join with Devise
+Diff: 3875909 us (3875 ms)
+Calculation download with Devise
+Diff: 35 us (0 ms)
+the number of total match tuple = 1677722
+[0]:left 17035617 	:right:      123
+join[0]:left = 83895653	right = 83895653
+
+[1]:left 17082597 	:right:      140
+join[0]:left =  3720778	right =  3720778
+
+[2]:left 17127727 	:right:      400
+join[0]:left = 44311005	right = 44311005
+
+right num :16777216
+left num :16777216
+1677722
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 7297069667 us (7297069 ms)
+Calculation send with Devise
+Diff: 1374 us (1 ms)
+Calculation count with Devise
+Diff: 3601556 us (3601 ms)
+scan time
+Diff: 113616 us (113 ms)
+Calculation join with Devise
+Diff: 3879565 us (3879 ms)
+Calculation download with Devise
+Diff: 27 us (0 ms)
+the number of total match tuple = 1677722
+[0]:left 16796867 	:right:      224
+join[0]:left = 98445866	right = 98445866
+
+[1]:left 16969447 	:right:      176
+join[0]:left = 69062498	right = 69062498
+
+[2]:left 16869647 	:right:      850
+join[0]:left = 51954802	right = 51954802
+
+right num :16777216
+left num :16777216
+1677722
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 7290669611 us (7290669 ms)
+Calculation send with Devise
+Diff: 1358 us (1 ms)
+Calculation count with Devise
+Diff: 3477407 us (3477 ms)
+scan time
+Diff: 109263 us (109 ms)
+Calculation join with Devise
+Diff: 3840295 us (3840 ms)
+Calculation download with Devise
+Diff: 26 us (0 ms)
+the number of total match tuple = 1677722
+[0]:left 16858877 	:right:      629
+join[0]:left = 20322764	right = 20322764
+
+[1]:left 17019027 	:right:     1090
+join[0]:left = 12916787	right = 12916787
+
+[2]:left 17183947 	:right:     1329
+join[0]:left = 55619292	right = 55619292
+
+right num :16777216
+left num :16777216
+1677722
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 7303846703 us (7303846 ms)
+Calculation send with Devise
+Diff: 1357 us (1 ms)
+Calculation count with Devise
+Diff: 3451675 us (3451 ms)
+scan time
+Diff: 113461 us (113 ms)
+Calculation join with Devise
+Diff: 3875917 us (3875 ms)
+Calculation download with Devise
+Diff: 26 us (0 ms)
+the number of total match tuple = 1677722
+[0]:left 16789567 	:right:       99
+join[0]:left = 54495885	right = 54495885
+
+[1]:left 16897567 	:right:      436
+join[0]:left = 26233396	right = 26233396
+
+[2]:left 17199677 	:right:      512
+join[0]:left = 96198216	right = 96198216
+
+./exe.sh: line 1: 15963 Floating point exception(core dumped) ./NestLoopExe $1 $2
+./exe.sh: line 2: 15968 Floating point exception(core dumped) ./NestLoopExe $1 $2
+./exe.sh: line 3: 15974 Floating point exception(core dumped) ./NestLoopExe $1 $2
+./exe.sh: line 4: 15980 Floating point exception(core dumped) ./NestLoopExe $1 $2
+./exe.sh: line 5: 15985 Floating point exception(core dumped) ./NestLoopExe $1 $2

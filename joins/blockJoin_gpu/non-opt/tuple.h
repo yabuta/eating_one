@@ -10,7 +10,7 @@ GPUで動かすため配列のほうが向いていると思ったので
 #define BLOCK_SIZE_X 256  //outer ,left
 #define BLOCK_SIZE_Y 512  //inner ,right
 
-#define PART 131072
+#define PART 524288
 
 
 #define JT_SIZE 120000000

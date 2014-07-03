@@ -29,11 +29,6 @@ void count(
   
   if(x < left){
     int idx = lt[x].val % NB_BKT_ENT;
-    /*
-    int idx_c = idxcount[idx];
-    int buck_a = buck_array[idx];
-    uint temp = 0;
-    */
     count[x]=0;
     for(int k = 0; k < idxcount[idx]; k++){
       if(bucket[buck_array[idx] + k].val == lt[x].val){

@@ -31,32 +31,22 @@ void count(
 
 {
     
-
-
-  //i,jの方向を間違えないように
-  /*
-   *x軸が縦の方向、y軸が横の方向だよ。
-   *だから、xがleft、yがrightに対応しているよ
-   */
-
   int x = blockIdx.x * blockDim.x + threadIdx.x;
   if(x < left){
-    int idx = lt[x].val;
-    uint temp = 0;
-    uint bidx = search(bucket,idx,right);
+    uint bidx = search(bucket,lt[x].val,right);
     uint seq = bidx;
-    while(bucket[seq].val == idx){
-      temp++;
+    count[x]=0;
+    while(bucket[seq].val == lt[x].val){
+      count[x]++;
       if(seq == 0) break;
       seq--;
     }
     seq = bidx+1;
-    while(bucket[seq].val == idx){
-      temp++;
+    while(bucket[seq].val == lt[x].val){
+      count[x]++;
       if(seq == right-1) break;
       seq++;
     }
-    count[x] = temp;
   }
 
   if(x == left-1){
@@ -81,30 +71,25 @@ __global__ void join(
   int x = blockIdx.x * blockDim.x + threadIdx.x;
 
 
-  uint writeloc = count[x];
-
   if(x < left){
-    int idx = lt[x].val;
-    uint lkey = lt[x].key;
-    uint bidx = search(bucket,idx,right);
+    uint bidx = search(bucket,lt[x].val,right);
     uint seq = bidx;
-    uint i = 0;
-    while(bucket[seq].val == idx){
-      jt[writeloc + i].rkey = lkey;
-      jt[writeloc + i].lkey = rt[bucket[seq].adr].key;
-      jt[writeloc + i].rval = idx;
-      jt[writeloc + i].lval = rt[bucket[seq].adr].val;      
-      i++;
+    while(bucket[seq].val == lt[x].val){
+      jt[count[x]].rkey = lt[x].key;
+      jt[count[x]].lkey = rt[bucket[seq].adr].key;
+      jt[count[x]].rval = lt[x].val;
+      jt[count[x]].lval = rt[bucket[seq].adr].val;      
+      count[x]++;
       if(seq == 0) break;
       seq--;
     }
     seq = bidx+1;
-    while(bucket[seq].val == idx){
-      jt[writeloc + i].rkey = lkey;
-      jt[writeloc + i].rval = idx;
-      jt[writeloc + i].lkey = rt[bucket[seq].adr].key;
-      jt[writeloc + i].lval = rt[bucket[seq].adr].val;      
-      i++;
+    while(bucket[seq].val == lt[x].val){
+      jt[count[x]].rkey = lt[x].key;
+      jt[count[x]].rval = lt[x].val;
+      jt[count[x]].lkey = rt[bucket[seq].adr].key;
+      jt[count[x]].lval = rt[bucket[seq].adr].val;      
+      count[x]++;
       if(seq == right-1) break;
       seq++;
     }

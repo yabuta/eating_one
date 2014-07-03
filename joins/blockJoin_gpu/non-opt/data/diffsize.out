@@ -1,0 +1,1200 @@
+right num :65536
+left num :1048576
+6554
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+Starting...
+ll = 0	rr = 0	lls = 524288	rrs = 65536
+grid_x = 2048	grid_y = 128	block_x = 256	block_y = 1
+gpu_size = 67108864
+End...
+ jt_size = 3277	total = 3277
+
+Starting...
+ll = 524288	rr = 0	lls = 524288	rrs = 65536
+grid_x = 2048	grid_y = 128	block_x = 256	block_y = 1
+gpu_size = 67108864
+End...
+ jt_size = 3277	total = 6554
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 1482877 us (1482 ms)
+Calculation send with Devise
+Diff: 1771 us (1 ms)
+Calculation count with Devise
+Diff: 685413 us (685 ms)
+scan time
+Diff: 50524 us (50 ms)
+Calculation join with Devise
+Diff: 793977 us (793 ms)
+Calculation download with Devise
+Diff: 54 us (0 ms)
+the number of total match tuple = 6554
+[0]:left    65537 	:right:     5549
+join[0]:left = 901114713	right = 901114713
+
+[1]:left   105537 	:right:      285
+join[0]:left = 666731358	right = 666731358
+
+[2]:left   108097 	:right:      420
+join[0]:left = 116024344	right = 116024344
+
+right num :65536
+left num :1048576
+6554
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+Starting...
+ll = 0	rr = 0	lls = 524288	rrs = 65536
+grid_x = 2048	grid_y = 128	block_x = 256	block_y = 1
+gpu_size = 67108864
+End...
+ jt_size = 3277	total = 3277
+
+Starting...
+ll = 524288	rr = 0	lls = 524288	rrs = 65536
+grid_x = 2048	grid_y = 128	block_x = 256	block_y = 1
+gpu_size = 67108864
+End...
+ jt_size = 3277	total = 6554
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 1482791 us (1482 ms)
+Calculation send with Devise
+Diff: 1772 us (1 ms)
+Calculation count with Devise
+Diff: 685311 us (685 ms)
+scan time
+Diff: 50488 us (50 ms)
+Calculation join with Devise
+Diff: 793980 us (793 ms)
+Calculation download with Devise
+Diff: 67 us (0 ms)
+the number of total match tuple = 6554
+[0]:left    65537 	:right:    31511
+join[0]:left = 740360257	right = 740360257
+
+[1]:left    88097 	:right:      239
+join[0]:left = 573269774	right = 573269774
+
+[2]:left   152737 	:right:      113
+join[0]:left = 45698042	right = 45698042
+
+right num :65536
+left num :1048576
+6554
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+Starting...
+ll = 0	rr = 0	lls = 524288	rrs = 65536
+grid_x = 2048	grid_y = 128	block_x = 256	block_y = 1
+gpu_size = 67108864
+End...
+ jt_size = 3277	total = 3277
+
+Starting...
+ll = 524288	rr = 0	lls = 524288	rrs = 65536
+grid_x = 2048	grid_y = 128	block_x = 256	block_y = 1
+gpu_size = 67108864
+End...
+ jt_size = 3277	total = 6554
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 1482854 us (1482 ms)
+Calculation send with Devise
+Diff: 1796 us (1 ms)
+Calculation count with Devise
+Diff: 685345 us (685 ms)
+scan time
+Diff: 50527 us (50 ms)
+Calculation join with Devise
+Diff: 793991 us (793 ms)
+Calculation download with Devise
+Diff: 53 us (0 ms)
+the number of total match tuple = 6554
+[0]:left    65537 	:right:    52350
+join[0]:left = 314632556	right = 314632556
+
+[1]:left   102337 	:right:      135
+join[0]:left = 987978698	right = 987978698
+
+[2]:left   109057 	:right:      440
+join[0]:left = 64002041	right = 64002041
+
+right num :65536
+left num :1048576
+6554
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+Starting...
+ll = 0	rr = 0	lls = 524288	rrs = 65536
+grid_x = 2048	grid_y = 128	block_x = 256	block_y = 1
+gpu_size = 67108864
+End...
+ jt_size = 3277	total = 3277
+
+Starting...
+ll = 524288	rr = 0	lls = 524288	rrs = 65536
+grid_x = 2048	grid_y = 128	block_x = 256	block_y = 1
+gpu_size = 67108864
+End...
+ jt_size = 3277	total = 6554
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 1482890 us (1482 ms)
+Calculation send with Devise
+Diff: 1772 us (1 ms)
+Calculation count with Devise
+Diff: 685402 us (685 ms)
+scan time
+Diff: 50579 us (50 ms)
+Calculation join with Devise
+Diff: 793979 us (793 ms)
+Calculation download with Devise
+Diff: 52 us (0 ms)
+the number of total match tuple = 6554
+[0]:left    65537 	:right:    65407
+join[0]:left = 736819089	right = 736819089
+
+[1]:left   121217 	:right:       41
+join[0]:left = 748831146	right = 748831146
+
+[2]:left   124257 	:right:      415
+join[0]:left = 933472076	right = 933472076
+
+right num :65536
+left num :1048576
+6554
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+Starting...
+ll = 0	rr = 0	lls = 524288	rrs = 65536
+grid_x = 2048	grid_y = 128	block_x = 256	block_y = 1
+gpu_size = 67108864
+End...
+ jt_size = 3277	total = 3277
+
+Starting...
+ll = 524288	rr = 0	lls = 524288	rrs = 65536
+grid_x = 2048	grid_y = 128	block_x = 256	block_y = 1
+gpu_size = 67108864
+End...
+ jt_size = 3277	total = 6554
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 1483122 us (1483 ms)
+Calculation send with Devise
+Diff: 1771 us (1 ms)
+Calculation count with Devise
+Diff: 685660 us (685 ms)
+scan time
+Diff: 50768 us (50 ms)
+Calculation join with Devise
+Diff: 793980 us (793 ms)
+Calculation download with Devise
+Diff: 59 us (0 ms)
+the number of total match tuple = 6554
+[0]:left    65537 	:right:    43096
+join[0]:left =  9526405	right =  9526405
+
+[1]:left    80257 	:right:       89
+join[0]:left = 469664692	right = 469664692
+
+[2]:left    82817 	:right:      463
+join[0]:left = 613139453	right = 613139453
+
+right num :131072
+left num :1048576
+13108
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+Starting...
+ll = 0	rr = 0	lls = 524288	rrs = 131072
+grid_x = 2048	grid_y = 256	block_x = 256	block_y = 1
+gpu_size = 134217728
+End...
+ jt_size = 6554	total = 6554
+
+Starting...
+ll = 524288	rr = 0	lls = 524288	rrs = 131072
+grid_x = 2048	grid_y = 256	block_x = 256	block_y = 1
+gpu_size = 134217728
+End...
+ jt_size = 6554	total = 13108
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 2934128 us (2934 ms)
+Calculation send with Devise
+Diff: 1942 us (1 ms)
+Calculation count with Devise
+Diff: 1342599 us (1342 ms)
+scan time
+Diff: 73340 us (73 ms)
+Calculation join with Devise
+Diff: 1587835 us (1587 ms)
+Calculation download with Devise
+Diff: 69 us (0 ms)
+the number of total match tuple = 13108
+[0]:left   131073 	:right:     6688
+join[0]:left = 43476957	right = 43476957
+
+[1]:left   175153 	:right:      381
+join[0]:left = 648040212	right = 648040212
+
+[2]:left   211153 	:right:      452
+join[0]:left = 61529753	right = 61529753
+
+right num :131072
+left num :1048576
+13108
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+Starting...
+ll = 0	rr = 0	lls = 524288	rrs = 131072
+grid_x = 2048	grid_y = 256	block_x = 256	block_y = 1
+gpu_size = 134217728
+End...
+ jt_size = 6554	total = 6554
+
+Starting...
+ll = 524288	rr = 0	lls = 524288	rrs = 131072
+grid_x = 2048	grid_y = 256	block_x = 256	block_y = 1
+gpu_size = 134217728
+End...
+ jt_size = 6554	total = 13108
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 2934012 us (2934 ms)
+Calculation send with Devise
+Diff: 1990 us (1 ms)
+Calculation count with Devise
+Diff: 1342218 us (1342 ms)
+scan time
+Diff: 73038 us (73 ms)
+Calculation join with Devise
+Diff: 1588070 us (1588 ms)
+Calculation download with Devise
+Diff: 73 us (0 ms)
+the number of total match tuple = 13108
+[0]:left   131073 	:right:     2238
+join[0]:left = 148572095	right = 148572095
+
+[1]:left   211553 	:right:      442
+join[0]:left = 486395382	right = 486395382
+
+[2]:left   217393 	:right:      165
+join[0]:left = 682264825	right = 682264825
+
+right num :131072
+left num :1048576
+13108
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+Starting...
+ll = 0	rr = 0	lls = 524288	rrs = 131072
+grid_x = 2048	grid_y = 256	block_x = 256	block_y = 1
+gpu_size = 134217728
+End...
+ jt_size = 6554	total = 6554
+
+Starting...
+ll = 524288	rr = 0	lls = 524288	rrs = 131072
+grid_x = 2048	grid_y = 256	block_x = 256	block_y = 1
+gpu_size = 134217728
+End...
+ jt_size = 6554	total = 13108
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 2933292 us (2933 ms)
+Calculation send with Devise
+Diff: 1988 us (1 ms)
+Calculation count with Devise
+Diff: 1341750 us (1341 ms)
+scan time
+Diff: 72769 us (72 ms)
+Calculation join with Devise
+Diff: 1587813 us (1587 ms)
+Calculation download with Devise
+Diff: 72 us (0 ms)
+the number of total match tuple = 13108
+[0]:left   131073 	:right:   117354
+join[0]:left = 876119133	right = 876119133
+
+[1]:left   206353 	:right:       45
+join[0]:left = 13654913	right = 13654913
+
+[2]:left   231393 	:right:      302
+join[0]:left = 322936676	right = 322936676
+
+right num :131072
+left num :1048576
+13108
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+Starting...
+ll = 0	rr = 0	lls = 524288	rrs = 131072
+grid_x = 2048	grid_y = 256	block_x = 256	block_y = 1
+gpu_size = 134217728
+End...
+ jt_size = 6554	total = 6554
+
+Starting...
+ll = 524288	rr = 0	lls = 524288	rrs = 131072
+grid_x = 2048	grid_y = 256	block_x = 256	block_y = 1
+gpu_size = 134217728
+End...
+ jt_size = 6554	total = 13108
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 2933137 us (2933 ms)
+Calculation send with Devise
+Diff: 1939 us (1 ms)
+Calculation count with Devise
+Diff: 1341641 us (1341 ms)
+scan time
+Diff: 72654 us (72 ms)
+Calculation join with Devise
+Diff: 1587822 us (1587 ms)
+Calculation download with Devise
+Diff: 80 us (0 ms)
+the number of total match tuple = 13108
+[0]:left   131073 	:right:    62553
+join[0]:left = 63801069	right = 63801069
+
+[1]:left   177233 	:right:       46
+join[0]:left = 924054111	right = 924054111
+
+[2]:left   185713 	:right:      215
+join[0]:left = 151173994	right = 151173994
+
+right num :131072
+left num :1048576
+13108
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+Starting...
+ll = 0	rr = 0	lls = 524288	rrs = 131072
+grid_x = 2048	grid_y = 256	block_x = 256	block_y = 1
+gpu_size = 134217728
+End...
+ jt_size = 6554	total = 6554
+
+Starting...
+ll = 524288	rr = 0	lls = 524288	rrs = 131072
+grid_x = 2048	grid_y = 256	block_x = 256	block_y = 1
+gpu_size = 134217728
+End...
+ jt_size = 6554	total = 13108
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 2933338 us (2933 ms)
+Calculation send with Devise
+Diff: 1943 us (1 ms)
+Calculation count with Devise
+Diff: 1341824 us (1341 ms)
+scan time
+Diff: 72830 us (72 ms)
+Calculation join with Devise
+Diff: 1587823 us (1587 ms)
+Calculation download with Devise
+Diff: 72 us (0 ms)
+the number of total match tuple = 13108
+[0]:left   131073 	:right:   110954
+join[0]:left = 858790330	right = 858790330
+
+[1]:left   181633 	:right:      382
+join[0]:left = 66679903	right = 66679903
+
+[2]:left   192273 	:right:       15
+join[0]:left = 588012530	right = 588012530
+
+right num :262144
+left num :1048576
+26215
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+Starting...
+ll = 0	rr = 0	lls = 524288	rrs = 262144
+grid_x = 2048	grid_y = 512	block_x = 256	block_y = 1
+gpu_size = 268435456
+End...
+ jt_size = 13108	total = 13108
+
+Starting...
+ll = 524288	rr = 0	lls = 524288	rrs = 262144
+grid_x = 2048	grid_y = 512	block_x = 256	block_y = 1
+gpu_size = 268435456
+End...
+ jt_size = 13107	total = 26215
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 5834860 us (5834 ms)
+Calculation send with Devise
+Diff: 2273 us (2 ms)
+Calculation count with Devise
+Diff: 2655311 us (2655 ms)
+scan time
+Diff: 117388 us (117 ms)
+Calculation join with Devise
+Diff: 3175506 us (3175 ms)
+Calculation download with Devise
+Diff: 111 us (0 ms)
+the number of total match tuple = 26215
+[0]:left   262145 	:right:    78327
+join[0]:left = 809919835	right = 809919835
+
+[1]:left   297105 	:right:      139
+join[0]:left = 128929910	right = 128929910
+
+[2]:left   310865 	:right:      159
+join[0]:left = 308937874	right = 308937874
+
+right num :262144
+left num :1048576
+26215
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+Starting...
+ll = 0	rr = 0	lls = 524288	rrs = 262144
+grid_x = 2048	grid_y = 512	block_x = 256	block_y = 1
+gpu_size = 268435456
+End...
+ jt_size = 13108	total = 13108
+
+Starting...
+ll = 524288	rr = 0	lls = 524288	rrs = 262144
+grid_x = 2048	grid_y = 512	block_x = 256	block_y = 1
+gpu_size = 268435456
+End...
+ jt_size = 13107	total = 26215
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 5835184 us (5835 ms)
+Calculation send with Devise
+Diff: 2274 us (2 ms)
+Calculation count with Devise
+Diff: 2655361 us (2655 ms)
+scan time
+Diff: 117492 us (117 ms)
+Calculation join with Devise
+Diff: 3175752 us (3175 ms)
+Calculation download with Devise
+Diff: 122 us (0 ms)
+the number of total match tuple = 26215
+[0]:left   262145 	:right:   247689
+join[0]:left = 137970163	right = 137970163
+
+[1]:left   296665 	:right:      411
+join[0]:left = 261179561	right = 261179561
+
+[2]:left   309385 	:right:       13
+join[0]:left = 970360277	right = 970360277
+
+right num :262144
+left num :1048576
+26215
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+Starting...
+ll = 0	rr = 0	lls = 524288	rrs = 262144
+grid_x = 2048	grid_y = 512	block_x = 256	block_y = 1
+gpu_size = 268435456
+End...
+ jt_size = 13108	total = 13108
+
+Starting...
+ll = 524288	rr = 0	lls = 524288	rrs = 262144
+grid_x = 2048	grid_y = 512	block_x = 256	block_y = 1
+gpu_size = 268435456
+End...
+ jt_size = 13107	total = 26215
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 5835433 us (5835 ms)
+Calculation send with Devise
+Diff: 2320 us (2 ms)
+Calculation count with Devise
+Diff: 2655568 us (2655 ms)
+scan time
+Diff: 117689 us (117 ms)
+Calculation join with Devise
+Diff: 3175756 us (3175 ms)
+Calculation download with Devise
+Diff: 114 us (0 ms)
+the number of total match tuple = 26215
+[0]:left   262145 	:right:    57900
+join[0]:left = 706641000	right = 706641000
+
+[1]:left   281665 	:right:       85
+join[0]:left = 740021744	right = 740021744
+
+[2]:left   288945 	:right:      405
+join[0]:left = 712782389	right = 712782389
+
+right num :262144
+left num :1048576
+26215
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+Starting...
+ll = 0	rr = 0	lls = 524288	rrs = 262144
+grid_x = 2048	grid_y = 512	block_x = 256	block_y = 1
+gpu_size = 268435456
+End...
+ jt_size = 13108	total = 13108
+
+Starting...
+ll = 524288	rr = 0	lls = 524288	rrs = 262144
+grid_x = 2048	grid_y = 512	block_x = 256	block_y = 1
+gpu_size = 268435456
+End...
+ jt_size = 13107	total = 26215
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 5835411 us (5835 ms)
+Calculation send with Devise
+Diff: 2272 us (2 ms)
+Calculation count with Devise
+Diff: 2655606 us (2655 ms)
+scan time
+Diff: 117732 us (117 ms)
+Calculation join with Devise
+Diff: 3175745 us (3175 ms)
+Calculation download with Devise
+Diff: 118 us (0 ms)
+the number of total match tuple = 26215
+[0]:left   262145 	:right:   254717
+join[0]:left = 169930534	right = 169930534
+
+[1]:left   309665 	:right:      240
+join[0]:left = 15536524	right = 15536524
+
+[2]:left   415905 	:right:      461
+join[0]:left = 58263709	right = 58263709
+
+right num :262144
+left num :1048576
+26215
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+Starting...
+ll = 0	rr = 0	lls = 524288	rrs = 262144
+grid_x = 2048	grid_y = 512	block_x = 256	block_y = 1
+gpu_size = 268435456
+End...
+ jt_size = 13108	total = 13108
+
+Starting...
+ll = 524288	rr = 0	lls = 524288	rrs = 262144
+grid_x = 2048	grid_y = 512	block_x = 256	block_y = 1
+gpu_size = 268435456
+End...
+ jt_size = 13107	total = 26215
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 5835152 us (5835 ms)
+Calculation send with Devise
+Diff: 2321 us (2 ms)
+Calculation count with Devise
+Diff: 2655546 us (2655 ms)
+scan time
+Diff: 117621 us (117 ms)
+Calculation join with Devise
+Diff: 3175519 us (3175 ms)
+Calculation download with Devise
+Diff: 113 us (0 ms)
+the number of total match tuple = 26215
+[0]:left   262145 	:right:   235259
+join[0]:left = 957676415	right = 957676415
+
+[1]:left   337705 	:right:      241
+join[0]:left = 208288974	right = 208288974
+
+[2]:left   342305 	:right:      307
+join[0]:left = 207392108	right = 207392108
+
+right num :524288
+left num :1048576
+52429
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+Starting...
+ll = 0	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+End...
+ jt_size = 26215	total = 26215
+
+Starting...
+ll = 524288	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+End...
+ jt_size = 26214	total = 52429
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 11643360 us (11643 ms)
+Calculation send with Devise
+Diff: 2939 us (2 ms)
+Calculation count with Devise
+Diff: 5287675 us (5287 ms)
+scan time
+Diff: 212368 us (212 ms)
+Calculation join with Devise
+Diff: 6350868 us (6350 ms)
+Calculation download with Devise
+Diff: 192 us (0 ms)
+the number of total match tuple = 52429
+[0]:left   524289 	:right:    56657
+join[0]:left = 640950474	right = 640950474
+
+[1]:left   558449 	:right:      375
+join[0]:left = 952882534	right = 952882534
+
+[2]:left   580209 	:right:      376
+join[0]:left = 822024014	right = 822024014
+
+right num :524288
+left num :1048576
+52429
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+Starting...
+ll = 0	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+End...
+ jt_size = 26215	total = 26215
+
+Starting...
+ll = 524288	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+End...
+ jt_size = 26214	total = 52429
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 11643756 us (11643 ms)
+Calculation send with Devise
+Diff: 2991 us (2 ms)
+Calculation count with Devise
+Diff: 5287998 us (5287 ms)
+scan time
+Diff: 212702 us (212 ms)
+Calculation join with Devise
+Diff: 6350872 us (6350 ms)
+Calculation download with Devise
+Diff: 195 us (0 ms)
+the number of total match tuple = 52429
+[0]:left   524289 	:right:   169245
+join[0]:left = 989705838	right = 989705838
+
+[1]:left   564169 	:right:      137
+join[0]:left = 562115186	right = 562115186
+
+[2]:left   572289 	:right:      447
+join[0]:left = 144163235	right = 144163235
+
+right num :524288
+left num :1048576
+52429
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+Starting...
+ll = 0	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+End...
+ jt_size = 26215	total = 26215
+
+Starting...
+ll = 524288	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+End...
+ jt_size = 26214	total = 52429
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 11644340 us (11644 ms)
+Calculation send with Devise
+Diff: 2988 us (2 ms)
+Calculation count with Devise
+Diff: 5288350 us (5288 ms)
+scan time
+Diff: 213106 us (213 ms)
+Calculation join with Devise
+Diff: 6351114 us (6351 ms)
+Calculation download with Devise
+Diff: 204 us (0 ms)
+the number of total match tuple = 52429
+[0]:left   524289 	:right:   455024
+join[0]:left = 364293604	right = 364293604
+
+[1]:left   575989 	:right:        9
+join[0]:left = 509447821	right = 509447821
+
+[2]:left   588649 	:right:      222
+join[0]:left = 882782205	right = 882782205
+
+right num :524288
+left num :1048576
+52429
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+Starting...
+ll = 0	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+End...
+ jt_size = 26215	total = 26215
+
+Starting...
+ll = 524288	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+End...
+ jt_size = 26214	total = 52429
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 11643546 us (11643 ms)
+Calculation send with Devise
+Diff: 2991 us (2 ms)
+Calculation count with Devise
+Diff: 5287554 us (5287 ms)
+scan time
+Diff: 212317 us (212 ms)
+Calculation join with Devise
+Diff: 6351118 us (6351 ms)
+Calculation download with Devise
+Diff: 191 us (0 ms)
+the number of total match tuple = 52429
+[0]:left   524289 	:right:   372409
+join[0]:left = 986835654	right = 986835654
+
+[1]:left   574209 	:right:      171
+join[0]:left = 543896345	right = 543896345
+
+[2]:left   585269 	:right:        1
+join[0]:left = 673036627	right = 673036627
+
+right num :524288
+left num :1048576
+52429
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+Starting...
+ll = 0	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+End...
+ jt_size = 26215	total = 26215
+
+Starting...
+ll = 524288	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+End...
+ jt_size = 26214	total = 52429
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 11644576 us (11644 ms)
+Calculation send with Devise
+Diff: 2942 us (2 ms)
+Calculation count with Devise
+Diff: 5287812 us (5287 ms)
+scan time
+Diff: 212570 us (212 ms)
+Calculation join with Devise
+Diff: 6351116 us (6351 ms)
+Calculation download with Devise
+Diff: 196 us (0 ms)
+the number of total match tuple = 52429
+[0]:left   524289 	:right:    13069
+join[0]:left = 575350835	right = 575350835
+
+[1]:left   601329 	:right:      285
+join[0]:left = 776006108	right = 776006108
+
+[2]:left   625229 	:right:       16
+join[0]:left = 971634868	right = 971634868
+
+right num :1048576
+left num :1048576
+104858
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+Starting...
+ll = 0	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+End...
+ jt_size = 26926	total = 26926
+
+Starting...
+ll = 0	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+End...
+ jt_size = 25503	total = 52429
+
+Starting...
+ll = 524288	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+End...
+ jt_size = 28352	total = 80781
+
+Starting...
+ll = 524288	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+End...
+ jt_size = 24077	total = 104858
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 23285190 us (23285 ms)
+Calculation send with Devise
+Diff: 5712 us (5 ms)
+Calculation count with Devise
+Diff: 10575152 us (10575 ms)
+scan time
+Diff: 424922 us (424 ms)
+Calculation join with Devise
+Diff: 12701778 us (12701 ms)
+Calculation download with Devise
+Diff: 381 us (0 ms)
+the number of total match tuple = 104858
+[0]:left  1055417 	:right:       97
+join[0]:left = 53868306	right = 53868306
+
+[1]:left  1057117 	:right:      389
+join[0]:left = 316996907	right = 316996907
+
+[2]:left  1097597 	:right:      351
+join[0]:left = 453442039	right = 453442039
+
+right num :1048576
+left num :1048576
+104858
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+Starting...
+ll = 0	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+End...
+ jt_size = 26652	total = 26652
+
+Starting...
+ll = 0	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+End...
+ jt_size = 25777	total = 52429
+
+Starting...
+ll = 524288	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+End...
+ jt_size = 28294	total = 80723
+
+Starting...
+ll = 524288	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+End...
+ jt_size = 24135	total = 104858
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 23284430 us (23284 ms)
+Calculation send with Devise
+Diff: 5662 us (5 ms)
+Calculation count with Devise
+Diff: 10574175 us (10574 ms)
+scan time
+Diff: 423968 us (423 ms)
+Calculation join with Devise
+Diff: 12702051 us (12702 ms)
+Calculation download with Devise
+Diff: 396 us (0 ms)
+the number of total match tuple = 104858
+[0]:left  1048577 	:right:   459214
+join[0]:left = 442404384	right = 442404384
+
+[1]:left  1091377 	:right:      466
+join[0]:left = 922774714	right = 922774714
+
+[2]:left  1092827 	:right:       16
+join[0]:left = 770917798	right = 770917798
+
+right num :1048576
+left num :1048576
+104858
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+Starting...
+ll = 0	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+End...
+ jt_size = 26853	total = 26853
+
+Starting...
+ll = 0	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+End...
+ jt_size = 25576	total = 52429
+
+Starting...
+ll = 524288	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+End...
+ jt_size = 28225	total = 80654
+
+Starting...
+ll = 524288	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+End...
+ jt_size = 24204	total = 104858
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 23284850 us (23284 ms)
+Calculation send with Devise
+Diff: 5660 us (5 ms)
+Calculation count with Devise
+Diff: 10574667 us (10574 ms)
+scan time
+Diff: 424485 us (424 ms)
+Calculation join with Devise
+Diff: 12702008 us (12702 ms)
+Calculation download with Devise
+Diff: 384 us (0 ms)
+the number of total match tuple = 104858
+[0]:left  1048577 	:right:   227679
+join[0]:left = 136620889	right = 136620889
+
+[1]:left  1125277 	:right:      371
+join[0]:left = 680858922	right = 680858922
+
+[2]:left  1130087 	:right:      275
+join[0]:left = 781012637	right = 781012637
+
+right num :1048576
+left num :1048576
+104858
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+Starting...
+ll = 0	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+End...
+ jt_size = 26856	total = 26856
+
+Starting...
+ll = 0	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+End...
+ jt_size = 25573	total = 52429
+
+Starting...
+ll = 524288	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+End...
+ jt_size = 28460	total = 80889
+
+Starting...
+ll = 524288	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+End...
+ jt_size = 23969	total = 104858
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 23284336 us (23284 ms)
+Calculation send with Devise
+Diff: 5664 us (5 ms)
+Calculation count with Devise
+Diff: 10574326 us (10574 ms)
+scan time
+Diff: 424118 us (424 ms)
+Calculation join with Devise
+Diff: 12701800 us (12701 ms)
+Calculation download with Devise
+Diff: 383 us (0 ms)
+the number of total match tuple = 104858
+[0]:left  1067067 	:right:      129
+join[0]:left = 263613350	right = 263613350
+
+[1]:left  1088447 	:right:      266
+join[0]:left = 72014725	right = 72014725
+
+[2]:left  1101767 	:right:      312
+join[0]:left = 698632779	right = 698632779
+
+right num :1048576
+left num :1048576
+104858
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+
+Starting...
+ll = 0	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+End...
+ jt_size = 26993	total = 26993
+
+Starting...
+ll = 0	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+End...
+ jt_size = 25436	total = 52429
+
+Starting...
+ll = 524288	rr = 0	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+End...
+ jt_size = 28395	total = 80824
+
+Starting...
+ll = 524288	rr = 524288	lls = 524288	rrs = 524288
+grid_x = 2048	grid_y = 1024	block_x = 256	block_y = 1
+gpu_size = 536870912
+End...
+ jt_size = 24034	total = 104858
+
+
+******************execution time********************************************
+
+Calculation all with Devise
+Diff: 23284560 us (23284 ms)
+Calculation send with Devise
+Diff: 5754 us (5 ms)
+Calculation count with Devise
+Diff: 10574176 us (10574 ms)
+scan time
+Diff: 423975 us (423 ms)
+Calculation join with Devise
+Diff: 12702007 us (12702 ms)
+Calculation download with Devise
+Diff: 387 us (0 ms)
+the number of total match tuple = 104858
+[0]:left  1048577 	:right:   464696
+join[0]:left = 274344806	right = 274344806
+
+[1]:left  1109397 	:right:       68
+join[0]:left = 690881886	right = 690881886
+
+[2]:left  1136167 	:right:      211
+join[0]:left = 620253602	right = 620253602
+
+./exekai.sh: line 7: ../cpu_block/exe.sh: No such file or directory
+./exekai.sh: line 8: ../cpu_block/exe.sh: No such file or directory
+./exekai.sh: line 9: ../cpu_block/exe.sh: No such file or directory
+./exekai.sh: line 10: ../cpu_block/exe.sh: No such file or directory
+./exekai.sh: line 11: ../cpu_block/exe.sh: No such file or directory
