@@ -30,6 +30,10 @@ printDiff(struct timeval begin, struct timeval end)
   printf("Diff: %ld us (%ld ms)\n", diff, diff/1000);
 }
 
+static uint iDivUp(uint dividend, uint divisor)
+{
+  return ((dividend % divisor) == 0) ? (dividend / divisor) : (dividend / divisor + 1);
+}
 
 static int
 getTupleId(void)
@@ -39,7 +43,15 @@ getTupleId(void)
   return ++id;
 }
 
-
+void shuffle(TUPLE ary[],int size) {    
+  srand((unsigned)time(NULL));
+  for(int i=0;i<size;i++){
+    int j = rand()%size;
+    int t = ary[i].val[0];
+    ary[i].val[0] = ary[j].val[0];
+    ary[j].val[0] = t;
+  }
+}
 
 //初期化する
 void
@@ -135,18 +147,16 @@ init(void)
   free(used);
   free(used_r);
 
+  shuffle(Tleft,arg_left);
 
   res = cuMemHostAlloc((void**)&Tjoin,JT_SIZE * sizeof(JOIN_TUPLE),CU_MEMHOSTALLOC_DEVICEMAP);
   if (res != CUDA_SUCCESS) {
     printf("cuMemHostAlloc to LEFT_TUPLE failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
-
-  //Tjoin = (JOIN_TUPLE *)malloc(JT_SIZE*sizeof(JOIN_TUPLE));
-      
-
-
+     
 }
+
 
 
 //メモリ解放のため新しく追加した関数。バグがあるかも
@@ -240,6 +250,7 @@ join()
   //タプルを初期化する
   init();
 
+
   /*全体の実行時間計測*/
   gettimeofday(&begin, NULL);
 
@@ -279,6 +290,14 @@ join()
 
   gpu_size = grid_x * grid_y * block_x * block_y;
   printf("gpu_size = %d\n",gpu_size);
+  if(gpu_size>MAX_LARGE_ARRAY_SIZE){
+    gpu_size = MAX_LARGE_ARRAY_SIZE * iDivUp(gpu_size,MAX_LARGE_ARRAY_SIZE);
+  }else if(gpu_size > MAX_SHORT_ARRAY_SIZE){
+    gpu_size = MAX_SHORT_ARRAY_SIZE * iDivUp(gpu_size,MAX_SHORT_ARRAY_SIZE);
+  }else{
+    gpu_size = MAX_SHORT_ARRAY_SIZE;
+  }
+
 
   /********************************************************************************/
 
@@ -327,8 +346,9 @@ join()
 
       printf("\nStarting...\nll = %d\trr = %d\tlls = %d\trrs = %d\n",ll,rr,lls,rrs);
       printf("grid_x = %d\tgrid_y = %d\tblock_x = %d\tblock_y = %d\n",grid_x,grid_y,block_x,block_y);
-      gpu_size = grid_x * grid_y * block_x * block_y;
+      gpu_size = grid_x * grid_y * block_x * block_y+1;
       printf("gpu_size = %d\n",gpu_size);
+
 
       gettimeofday(&time_send_s, NULL);
       res = cuMemcpyHtoD(lt_dev, &(Tleft[ll]), lls * sizeof(TUPLE));
@@ -615,7 +635,8 @@ join()
 
 
   //finish GPU   ****************************************************
-  res = cuModuleUnload(c_module);
+
+  res = cuModuleUnload(module);
   if (res != CUDA_SUCCESS) {
     printf("cuModuleUnload module failed: res = %lu\n", (unsigned long)res);
     exit(1);

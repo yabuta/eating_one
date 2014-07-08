@@ -46,12 +46,10 @@ void count(
 
 
   if(i<ltn){
-
     __shared__ TUPLE Tright[BLOCK_SIZE_Y];
     for(uint j=0;threadIdx.x+j*BLOCK_SIZE_X<BLOCK_SIZE_Y&&(threadIdx.x+j*BLOCK_SIZE_X+BLOCK_SIZE_Y*blockIdx.y)<rtn;j++){
       Tright[threadIdx.x + j*BLOCK_SIZE_X] = rt[threadIdx.x + j*BLOCK_SIZE_X + BLOCK_SIZE_Y * blockIdx.y];
-    }
-    
+    }    
     __syncthreads();  
 
     
@@ -98,10 +96,7 @@ __global__ void join(
 
     //the first write location
 
-    int writeloc = 0;
-    if(i != 0){
-      writeloc = count[i + blockIdx.y*blockDim.x*gridDim.x];
-    }
+    int writeloc = count[i + blockIdx.y*blockDim.x*gridDim.x];
     int rtn_g = rtn;
 
     for(uint j = 0; j<BLOCK_SIZE_Y &&((j+BLOCK_SIZE_Y*blockIdx.y)<rtn_g);j++){

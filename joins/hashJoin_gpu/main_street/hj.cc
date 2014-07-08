@@ -48,6 +48,17 @@ getTupleId(void)
   return ++id;
 }
 
+void shuffle(TUPLE ary[],int size) {    
+  for(int i=0;i<size;i++){
+    int j = rand()%size;
+    int t = ary[i].val;
+    ary[i].val = ary[j].val;
+    ary[j].val = t;
+  }
+}
+
+
+
 void createTuple()
 {
 
@@ -133,10 +144,10 @@ void createTuple()
   
   free(used);
   free(used_r);
+
+  shuffle(lt,left);
   
   /*********************************************************************************/
-
-
   //JOIN_TUPLEへのGPUでも参照できるメモリの割り当て********************************
   res = cuMemHostAlloc((void**)&jt, JT_SIZE * sizeof(RESULT),CU_MEMHOSTALLOC_DEVICEMAP);
   if (res != CUDA_SUCCESS) {
@@ -151,11 +162,9 @@ void createTuple()
 
 /*      memory free           */
 void freeTuple(){
-
   cuMemFreeHost(rt);
   cuMemFreeHost(lt);
   cuMemFreeHost(jt);
-
 }
 
 
@@ -282,6 +291,16 @@ join()
 
   createTuple();
 
+  /*
+  TUPLE *tlr;
+  int lr;
+  tlr = lt;
+  lt = rt;
+  rt = tlr;
+  lr = left;
+  left = right;
+  right = lr;
+  */
   /*******************
    send data:
    int *lL,*rL

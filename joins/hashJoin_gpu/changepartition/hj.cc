@@ -396,7 +396,7 @@ join()
   }
   */
 
-  p_num = 64 * 1024;
+  p_num = 1024 * 1024;
 
   t_num = left/LEFT_PER_TH;
   if(left%LEFT_PER_TH != 0){

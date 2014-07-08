@@ -36,6 +36,18 @@ getTupleId(void)
   return ++id;
 }
 
+void shuffle(TUPLE ary[],int size) {    
+  srand((unsigned)time(NULL));
+  for(int i=0;i<size;i++){
+    int j = rand()%size;
+    int t = ary[i].val;
+    ary[i].val = ary[j].val;
+    ary[j].val = t;
+  }
+}
+
+
+
 void createTuple()
 {
 
@@ -105,7 +117,6 @@ void createTuple()
       uint temp2 = used_r[temp];
       rg = rg-1;
       used[temp] = used[rg];
-      
       lt[i].val = rt[temp2].val;      
       counter++;
     }else{
@@ -118,10 +129,11 @@ void createTuple()
   }
 
   printf("%d\n",counter);
-
   
   free(used);
   free(used_r);
+
+  shuffle(lt,left);
 
   //JOIN_TUPLEへのGPUでも参照できるメモリの割り当て********************************
   res = cuMemHostAlloc((void**)&jt, JT_SIZE * sizeof(RESULT),CU_MEMHOSTALLOC_DEVICEMAP);
@@ -129,9 +141,8 @@ void createTuple()
     printf("cuMemHostAlloc to JOIN_TUPLE failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
-
-
 }
+
 
 
 /*      memory free           */
@@ -277,6 +288,7 @@ void join(){
 
   createTuple();
 
+  /*
   TUPLE *tlr;
   int lr;
   tlr = lt;
@@ -285,11 +297,11 @@ void join(){
   lr = left;
   left = right;
   right = lr;
+  */
 
   gettimeofday(&time_index_s, NULL);
   createIndex();
   gettimeofday(&time_index_f, NULL);
-
 
   gettimeofday(&begin, NULL);
   /****************************************************************/

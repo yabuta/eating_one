@@ -15,6 +15,7 @@
 #include "tuple.h"
 
 BUCKET *Bucket;
+int *upper;
 
 TUPLE *rt;
 TUPLE *lt;
@@ -129,9 +130,18 @@ void createTuple()
     printf("cuMemHostAlloc to JOIN_TUPLE failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
-
-
 }
+
+void shuffle(TUPLE ary[],int size) {    
+  for(int i=0;i<size;i++){
+    int j = rand()%size;
+    int t = ary[i].val;
+    ary[i].val = ary[j].val;
+    ary[j].val = t;
+  }
+}
+
+
 
 
 /*      memory free           */
@@ -143,6 +153,41 @@ void freeTuple(){
   free(Bucket);
 
 }
+
+
+
+
+void conf(int left,int right,int dep,int wid){
+
+  int m=(left+right)/2;
+  int pos = pow(2,dep-1)-1+wid-1;
+  upper[pos]=Bucket[m].val;
+  wid = (wid-1)*2;
+  if(dep==DEPTH-1){
+    return;
+  }
+  conf(left,m-1,dep+1,wid+1);
+  conf(m+1,right,dep+1,wid+2);
+
+}
+
+/*
+void conf2(int left,int right,int dep,int wid){
+
+  int m=(left+right)/2;
+  int pos = pow(2,dep-1)-1+wid-1;
+  if(upper[pos]!=Bucket[m].val){
+    printf("error\n");
+  }
+  wid = (wid-1)*2;
+  if(dep==13){
+    return;
+  }
+  conf(left,m-1,dep+1,wid+1);
+  conf(m+1,right,dep+1,wid+2);
+
+}
+*/
 
 
 
@@ -214,7 +259,7 @@ void join(){
   CUcontext ctx;
   CUfunction function,c_function;
   CUmodule module,c_module;
-  CUdeviceptr lt_dev, rt_dev, jt_dev, bucket_dev, buckArray_dev ,idxcount_dev;
+  CUdeviceptr lt_dev, rt_dev, jt_dev, bucket_dev, upper_dev;
   CUdeviceptr ltn_dev, rtn_dev, jt_size_dev;
   CUdeviceptr c_dev,temp_dev;
   unsigned int block_x, grid_x;
@@ -275,24 +320,21 @@ void join(){
 
   /*tuple and index init******************************************/  
 
+  printf("create tuple starting...\n");
   createTuple();
+  shuffle(lt,left);
 
-  TUPLE *tlr;
-  int lr;
-  tlr = lt;
-  lt = rt;
-  rt = tlr;
-  lr = left;
-  left = right;
-  right = lr;
-
+  printf("create index starting...\n");
   gettimeofday(&time_index_s, NULL);
   createIndex();
   gettimeofday(&time_index_f, NULL);
 
-
+  printf("join starting...\n");
   gettimeofday(&begin, NULL);
   /****************************************************************/
+
+  upper = (int *)calloc(SHARED_SIZE,sizeof(int));
+  conf(0,right,1,1);
 
   block_x = left < BLOCK_SIZE_X ? left : BLOCK_SIZE_X;  
   grid_x = left / block_x;
@@ -322,6 +364,12 @@ void join(){
   res = cuMemAlloc(&bucket_dev, right * sizeof(BUCKET));
   if (res != CUDA_SUCCESS) {
     printf("cuMemAlloc (bucket) failed\n");
+    exit(1);
+  }
+  /* bucket */
+  res = cuMemAlloc(&upper_dev, SHARED_SIZE * sizeof(int));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemAlloc (upper) failed\n");
     exit(1);
   }
 
@@ -365,6 +413,12 @@ void join(){
     printf("cuMemcpyHtoD (bucket) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
+  res = cuMemcpyHtoD(upper_dev, upper, SHARED_SIZE * sizeof(int));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemcpyHtoD (int) failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+
 
   gettimeofday(&time_isend_f, NULL);
   gettimeofday(&time_send_f, NULL);
@@ -393,6 +447,7 @@ void join(){
     (void *)&lt_dev,
     (void *)&c_dev,
     (void *)&bucket_dev,
+    (void *)&upper_dev,
     (void *)&right,
     (void *)&left
       
@@ -423,7 +478,6 @@ void join(){
     printf("cuCtxSynchronize(count) failed: res = %lu\n", (unsigned long int)res);
     exit(1);
   }  
-
 
   /***************************************************************************************/
 
@@ -486,6 +540,7 @@ void join(){
       (void *)&jt_dev,
       (void *)&c_dev,
       (void *)&bucket_dev,
+      (void *)&upper_dev,
       (void *)&right,
       (void *)&left    
     };
@@ -527,7 +582,6 @@ void join(){
     gettimeofday(&time_jdown_f, NULL);
 
   }
-  gettimeofday(&end, NULL);
 
 
 
@@ -549,7 +603,12 @@ void join(){
   if (res != CUDA_SUCCESS) {
     printf("cuMemFree (jointuple) failed: res = %lu\n", (unsigned long)res);
     exit(1);
-    }
+  }
+  res = cuMemFree(upper_dev);
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemFree (upper) failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
 
   res = cuMemFree(c_dev);
   if (res != CUDA_SUCCESS) {
@@ -561,6 +620,8 @@ void join(){
     printf("cuMemFree (bucket) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
+
+  gettimeofday(&end, NULL);
 
 
   printf("********index create time**************\n");

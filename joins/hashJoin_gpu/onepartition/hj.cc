@@ -327,7 +327,7 @@ join()
 
 
 
-  p_num=256*1024;
+  p_num=PARTITION;
   //p_num=PARTITION*PARTITION*PARTITION;
   t_num = left/LEFT_PER_TH;
   if(left%LEFT_PER_TH != 0){

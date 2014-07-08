@@ -1,0 +1,13 @@
+hash joinのCPU実装
+
+
+実行方法：
+./Hjexe left_tuple_num right_tuple_num
+
+ex)
+1Mのテーブルをjoinするときは
+
+ ./Hjexe 1048576 1048576
+
+
+hash値やmatch rateの設定はtuple.hで行える

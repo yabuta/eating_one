@@ -34,6 +34,13 @@ printDiff(struct timeval begin, struct timeval end)
 }
 
 
+/*
+tableのinit.
+match rateによって適合するタプルの数を決める。
+match rate = the match right tuples / all right tuples
+
+*/
+
 
 static int
 getTupleId(void)
@@ -43,14 +50,14 @@ getTupleId(void)
   return ++id;
 }
 
-
-/*
-tableのinit.
-match rateによって適合するタプルの数を決める。
-match rate = the match right tuples / all right tuples
-
-*/
-
+void shuffle(TUPLE ary[],int size) {    
+  for(int i=0;i<size;i++){
+    int j = rand()%size;
+    int t = ary[i].val;
+    ary[i].val = ary[j].val;
+    ary[j].val = t;
+  }
+}
 void createTuple()
 {
 
@@ -98,6 +105,7 @@ void createTuple()
   }else{
     l_diff = 1;
   }
+
   for (uint i = 0; i < left; i++) {
     lt[i].key = getTupleId();
     if(i%l_diff == 0 && counter < MATCH_RATE*right){
@@ -109,10 +117,12 @@ void createTuple()
       lt[i].val = rt[temp2].val;      
       counter++;
     }else{
+      
       uint temp = rand()%selec;
       uint temp2 = used[temp];
       selec = selec-1;
       used[temp] = used[selec];
+      
       lt[i].val = temp2; 
       
     }
@@ -122,12 +132,10 @@ void createTuple()
 
   
   free(used);
-  free(used_r);
+  free(used_r);  
 
-  
+  shuffle(lt,left);
 
-
-  
 }
 
 void freeTuple(){

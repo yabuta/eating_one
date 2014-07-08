@@ -94,7 +94,7 @@ LDFLAGS       += $(LIBPATH_OPENGL)
 
 
 all: inner-idx-bnlj.cc scan.o scan_main.o
-	$(NVCC) -o join_gpu.cubin join_gpu.cu
+	$(NVCC) -o join_gpu.cubin join_gpu.cu -lm
 #	$(NVCC) -o count.cubin count.cu
 	gcc -o $(TARGET) $(CFLAGS) $(LIBS) $(LDFLAGS) $(EXTRA_LDFLAGS) $(INCLUDES) inner-idx-bnlj.cc scan_main.o scan.o
 

@@ -4,11 +4,11 @@
 
 #define PARTITION 64    //partition num per 1 loop
 #define RADIX 6
-#define PART_C_NUM 32   //cuda block size of hash partition count
+#define PART_C_NUM 16   //cuda block size of hash partition count
 #define SHARED_MAX PARTITION * PART_C_NUM
 //#define LOOP 3          //partition loop times
 
-#define LEFT_PER_TH 512
+#define LEFT_PER_TH 256
 #define RIGHT_PER_TH LEFT_PER_TH       //the number of tuple per one thread of hash partition 
 
 #define PART_STANDARD 64

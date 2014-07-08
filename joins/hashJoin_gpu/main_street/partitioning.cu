@@ -44,28 +44,9 @@ void lcount_partitioning(
   // Matching phase
   int hash = 0;
 
-  /*
-    __shared__ uint temp[PART_C_NUM*PART_C_NUM];
-
-    for(uint i=0 ; i<PER_TH/Dim ; i++){
-    for(uint k=0 ; k<Dim; k++){
-    temp[k+threadIdx.x*Dim] = t[DEF+i*Dim+k*PER_TH+threadIdx.x].val;
-    }
-    __syncthreads();
-
-    for(uint j=0; j<Dim; j++){
-    //hash = (t[DEF+i*Dim+j*PER_TH+threadIdx.x].val>>(8*loop)) % p_n;
-    hash = (temp[j+threadIdx.x*Dim]>>(8*loop)) % p_n;
-    part[hash*Dim + threadIdx.x]++;
-
-    } 
-
-    }
-  */
   if(x < t_n){
 
     for(uint i=0; i<LEFT_PER_TH&&(DEF+threadIdx.x*LEFT_PER_TH+i)<rows_n; i++){
-      //hash = (i>>(8*loop)) % p_n;
       hash = loop==0 ? (t[DEF+threadIdx.x*LEFT_PER_TH+i].val) % p_n:
         (t[DEF+threadIdx.x*LEFT_PER_TH+i].val>>(RADIX*loop)) % p_n;
       part[hash*Dim + threadIdx.x]++;
@@ -101,8 +82,8 @@ void lpartitioning(
   int Dim = (gridDim.x-1 == blockIdx.x) ? (t_n - blockIdx.x*blockDim.x):blockDim.x;
 
   __shared__ int part[SHARED_MAX];
-  for(uint j=0 ; j*blockDim.x+threadIdx.x<p_n*blockDim.x ; j++){
-    part[j*blockDim.x+threadIdx.x]=L[t_n*j+blockIdx.x*blockDim.x+threadIdx.x];
+  for(uint j=0 ; j*Dim+threadIdx.x<p_n*Dim ; j++){
+    part[j*Dim+threadIdx.x]=L[t_n*j+blockIdx.x*Dim+threadIdx.x];
   }
   
   __syncthreads();
@@ -241,8 +222,8 @@ void rpartitioning(
   int Dim = (gridDim.x-1 == blockIdx.x) ? (t_n - blockIdx.x*blockDim.x):blockDim.x;
 
   __shared__ int part[SHARED_MAX];
-  for(uint j=0 ; j*blockDim.x+threadIdx.x<p_n*blockDim.x ; j++){
-    part[j*blockDim.x+threadIdx.x]=L[t_n*j+blockIdx.x*blockDim.x+threadIdx.x];
+  for(uint j=0 ; j*Dim+threadIdx.x<p_n*Dim ; j++){
+    part[j*Dim+threadIdx.x]=L[t_n*j+blockIdx.x*Dim+threadIdx.x];
   }
   
   __syncthreads();

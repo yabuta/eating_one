@@ -8,14 +8,14 @@ GPUで動かすため配列のほうが向いていると思ったので
 
 //1blockでのスレッド数の定義。
 #define BLOCK_SIZE_X 256  //outer ,left
-#define BLOCK_SIZE_Y 512  //inner ,right
+#define BLOCK_SIZE_Y 1024  //inner ,right
 
 #define PART 1048576
 
 
 #define JT_SIZE 120000000
 #define SELECTIVITY 1000000000
-#define MATCH_RATE 0.01
+#define MATCH_RATE 0.1
 
 #define VAL_NUM 1
 
@@ -26,7 +26,7 @@ typedef struct _TUPLE {
 } TUPLE;
 
 typedef struct _JOIN_TUPLE {
-    //int id;
+    int id;
     int lid;
     int lval[VAL_NUM]; // left value
     int rid;

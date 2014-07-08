@@ -227,6 +227,17 @@ main(int argc,char *argv[])
 
   createTuple();
 
+  /*
+  TUPLE *tlr;
+  int lr;
+  tlr = lt;
+  lt = rt;
+  rt = tlr;
+  lr = left;
+  left = right;
+  right = lr;
+  */
+
   //make index
   gettimeofday(&index_s, NULL);
   createIndex();

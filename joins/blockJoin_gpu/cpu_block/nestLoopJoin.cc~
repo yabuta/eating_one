@@ -155,6 +155,17 @@ init(void)
 
 }
 
+void shuffle(TUPLE ary[],int size) {    
+  srand((unsigned)time(NULL));
+  for(int i=0;i<size;i++){
+    int j = rand()%size;
+    int t = ary[i].val;
+    ary[i].val = ary[j].val;
+    ary[j].val = t;
+  }
+}
+
+
 //メモリ解放のため新しく追加した関数。バグがあるかも
 void
 tuple_free(void){
@@ -189,6 +200,8 @@ main(int argc, char *argv[])
   }
 
   init();
+  shuffle(Tleft,left);
+
 
   gettimeofday(&time_s,NULL);
   join();

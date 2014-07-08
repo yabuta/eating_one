@@ -9,7 +9,7 @@
 
 #define JT_SIZE 120000000
 #define SELECTIVITY 1000000000
-#define MATCH_RATE 0.01  //match rate setting
+#define MATCH_RATE 0.1  //match rate setting
 
 int left;
 int right;
@@ -83,6 +83,17 @@ match rate = the match right tuples / all right tuples
 
 */
 
+void shuffle(TUPLE ary[],int size) {    
+  srand((unsigned)time(NULL));
+  for(int i=0;i<size;i++){
+    int j = rand()%size;
+    int t = ary[i].val;
+    ary[i].val = ary[j].val;
+    ary[j].val = t;
+  }
+}
+
+
 void
 init(void)
 {
@@ -152,8 +163,11 @@ init(void)
   free(used);
   free(used_r);
 
+  shuffle(Tleft,left);
 
 }
+
+
 
 //メモリ解放のため新しく追加した関数。バグがあるかも
 void
@@ -189,6 +203,7 @@ main(int argc, char *argv[])
   }
 
   init();
+
 
   gettimeofday(&time_s,NULL);
   join();
