@@ -29,7 +29,7 @@ int main(int argc, char **argv)
     uint *d_Input, *d_Output;
     uint *h_Input, *h_OutputCPU, *h_OutputGPU;
     StopWatchInterface  *hTimer = NULL;
-    const uint MIN = 1 * 1024 * 1024;
+    const uint MIN = 4 * 1024 * 1024;
     const uint MAX = 512 * 1024 * 1024 ; //max size
 
     sdkCreateTimer(&hTimer);

@@ -61,34 +61,51 @@ inline __device__ uint scan1Inclusive(uint idata, volatile uint *s_Data, uint si
 
 
 
-    uint idx = 2 * threadIdx.x - (threadIdx.x & (size - 1));
-    int val = idata;
-    //    uint idx = threadIdx.x;
-    int sum;
+  uint idx = 2 * threadIdx.x - (threadIdx.x & (size - 1));
+  uint widx = idx%32;
+  int val = idata;
+  int sum;
 
-    for (uint ofst = 1; ofst < WARP_SIZE; ofst *= 2) {
-      
+  if(threadIdx.x<32&&blockIdx.x==0){
+    printf("%d\t%d\n",threadIdx.x,val);
+  }
+
+  for (uint ofst = 1; ofst < WARP_SIZE; ofst *= 2) {      
+    
+    int temp;
+    if (widx >= ofst){
+      temp = __shfl_up(val,ofst,WARP_SIZE);
+      val += temp;//__shfl(val,widx-ofst,WARP_SIZE);
+    }
+    if(blockIdx.x==0&&threadIdx.x==31){
+      printf("%d\t%d\n",temp,val);
+    }else if(blockIdx.x==0&&threadIdx.x==15){
+      printf("%d\t%d\n",temp,val);
+    }
+
+  }
+  if(threadIdx.x<32&&blockIdx.x==0){
+    printf("%d\t%d\n",threadIdx.x,val);
+  }
+
+  if (idx % WARP_SIZE == WARP_SIZE - 1)
+    s_Data[idx/WARP_SIZE] = val;
+  __syncthreads();
+  int warp_num = SHORT_SIZE/WARP_SIZE;
+  if(SHORT_SIZE%WARP_SIZE!=0) warp_num++;
+  if (idx < warp_num) {
+    sum = s_Data[idx];
+    for (uint ofst = 1; ofst < warp_num; ofst *= 2) {
       if (idx >= ofst)
-        val += __shfl_up(val,ofst,WARP_SIZE);
+        sum += __shfl_up(sum,ofst,warp_num);
     }
-    if (idx % WARP_SIZE == WARP_SIZE - 1)
-      s_Data[idx/WARP_SIZE] = val;
-    __syncthreads();
-    int warp_num = SHORT_SIZE/WARP_SIZE;
-    if(SHORT_SIZE%WARP_SIZE!=0) warp_num++;
-    if (idx < warp_num) {
-      sum = s_Data[idx];
-      for (uint ofst = 1; ofst < warp_num; ofst *= 2) {
-        if (idx >= ofst)
-          sum += __shfl_up(sum,ofst,warp_num);
-      }
-      s_Data[idx] = sum;
-    }
-    __syncthreads();
-    if (idx/WARP_SIZE > 0)
-      val += s_Data[idx/WARP_SIZE - 1];
+    s_Data[idx] = sum;
+  }
+  __syncthreads();
+  if (idx/WARP_SIZE > 0)
+    val += s_Data[idx/WARP_SIZE - 1];
 
-    return val;
+  return val;
 
 }
 
@@ -417,6 +434,8 @@ extern "C" size_t scanExclusiveLL(
   );
   getLastCudaError("scanExclusiveShared() execution FAILED\n");
   checkCudaErrors(cudaDeviceSynchronize());
+
+  return 0;
 
   //Now ,prefix sum per THREADBLOCK_SIZE done
   

@@ -39,7 +39,7 @@ int main(int argc, char **argv)
 
     int globalFlag = 1;
     size_t szWorkgroup;
-    const int iCycles = 5;
+    const int iCycles = 1;
 
     /*
     printf("*** Running GPU scan for short arrays (%d identical iterations)...\n\n", iCycles);
@@ -224,7 +224,9 @@ int main(int argc, char **argv)
         }
       
       for(uint i=0;i<100;i++){
-        printf("%d\t%d\t%d\n",i, h_OutputCPU[i] ,h_OutputGPU[i]);
+        if(i%4==0){
+          printf("%d\t%d\t%d\n",i, h_OutputCPU[i] ,h_OutputGPU[i]);
+        }
       }
       // Log message on individual test result, then accumulate to global flag
       printf(" ...Results %s\n\n", (localFlag == 1) ? "Match" : "DON'T Match !!!");
