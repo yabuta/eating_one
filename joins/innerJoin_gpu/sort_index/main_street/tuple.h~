@@ -4,12 +4,14 @@
 //#define BLOCK_SIZE_X 128
 #define BLOCK_SIZE_X 256
 
-#define MATCH_RATE 0.01
+#define MATCH_RATE 0.1
 
 #define JT_SIZE 120000000
 #define SELECTIVITY 1000000000
 
 #define VAL_NUM 1
+
+int right,left;
 
 typedef struct _TUPLE {
   int key;

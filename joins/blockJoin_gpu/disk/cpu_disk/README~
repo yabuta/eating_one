@@ -1,0 +1,12 @@
+non-index join
+
+実行方法：
+./ExeNestLoop left_tuple_num right_tuple_num
+
+
+ex)
+tuple数16Kのテーブルをjoinする場合
+./ExeNestLoop 16384 16384
+
+
+match rateはnestloopjoin.ccの中で変更可能

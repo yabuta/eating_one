@@ -1,0 +1,63 @@
+left=65536:right=1048576
+10486
+Caluculation with Devise    : 156018.385000(miri sec)
+8 16
+left=65536:right=1048576
+10486
+Caluculation with Devise    : 157310.306000(miri sec)
+8 16
+left=65536:right=1048576
+10486
+Caluculation with Devise    : 155151.991000(miri sec)
+8 16
+left=65536:right=1048576
+10486
+Caluculation with Devise    : 157245.903000(miri sec)
+8 16
+left=65536:right=1048576
+10486
+Caluculation with Devise    : 157348.331000(miri sec)
+8 16
+left=131072:right=1048576
+10486
+Caluculation with Devise    : 314881.350000(miri sec)
+8 16
+left=131072:right=1048576
+10486
+Caluculation with Devise    : 312429.454000(miri sec)
+8 16
+left=131072:right=1048576
+10486
+Caluculation with Devise    : 314625.977000(miri sec)
+8 16
+left=131072:right=1048576
+10486
+Caluculation with Devise    : 310647.459000(miri sec)
+8 16
+left=131072:right=1048576
+10486
+Caluculation with Devise    : 311036.117000(miri sec)
+8 16
+left=262144:right=1048576
+10486
+Caluculation with Devise    : 621988.080000(miri sec)
+8 16
+left=262144:right=1048576
+10486
+Caluculation with Devise    : 629246.168000(miri sec)
+8 16
+left=262144:right=1048576
+10486
+Caluculation with Devise    : 629336.879000(miri sec)
+8 16
+left=262144:right=1048576
+10486
+Caluculation with Devise    : 621136.743000(miri sec)
+8 16
+left=262144:right=1048576
+10486
+Caluculation with Devise    : 621487.373000(miri sec)
+8 16
+./expkai.sh: line 4: 23608 Terminated              ./exp.sh 524288 1048576
+./exp.sh: line 1: 23660 Terminated              ./ExeNestLoop $1 $2
+./exp.sh: line 2: 23662 Terminated              ./ExeNestLoop $1 $2

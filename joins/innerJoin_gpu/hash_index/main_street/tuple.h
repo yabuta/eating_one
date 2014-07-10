@@ -37,6 +37,8 @@
 #define SELECTIVITY 1000000000
 
 
+int right,left;
+
 typedef struct _TUPLE {
   int key;
   int val;
