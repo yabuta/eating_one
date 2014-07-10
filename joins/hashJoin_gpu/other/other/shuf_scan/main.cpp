@@ -163,8 +163,8 @@ int main(int argc, char **argv)
 
       printf("Allocating and initializing host arrays...\n");
 
-      int temp = 102 * 262144+1;
-      arrayLength = 4 * 26 * 512 * 512;
+      int temp = MIN;
+      arrayLength = MIN;
       h_Input     = (uint *)malloc(temp * sizeof(uint));
       h_OutputCPU = (uint *)malloc(arrayLength * sizeof(uint));
       h_OutputGPU = (uint *)malloc(arrayLength * sizeof(uint));
@@ -218,10 +218,14 @@ int main(int argc, char **argv)
           if (h_OutputCPU[i] != h_OutputGPU[i])
             {
               localFlag = 0;
+              printf("%d\t%d\t%d\n",i, h_OutputCPU[i] ,h_OutputGPU[i]);
               break;
             }
         }
       
+      for(uint i=0;i<100;i++){
+        printf("%d\t%d\t%d\n",i, h_OutputCPU[i] ,h_OutputGPU[i]);
+      }
       // Log message on individual test result, then accumulate to global flag
       printf(" ...Results %s\n\n", (localFlag == 1) ? "Match" : "DON'T Match !!!");
       globalFlag = globalFlag && localFlag;

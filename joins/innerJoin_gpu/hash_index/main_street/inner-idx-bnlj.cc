@@ -15,6 +15,10 @@
 #include "scan_common.h"
 #include "tuple.h"
 
+#define LEFT_FILE "/home/yabuta/JoinData/hash-index/left_table.out"
+#define RIGHT_FILE "/home/yabuta/JoinData/hash-index/right_table.out"
+#define INDEX_FILE "/home/yabuta/JoinData/hash-index/index.out"
+
 BUCKET *Bucket;
 int Buck_array[NB_BKT_ENT];
 int idxcount[NB_BKT_ENT];
@@ -25,6 +29,9 @@ TUPLE *rt;
 TUPLE *lt;
 RESULT *jt;
 
+int right,left;
+
+
 
 void
 printDiff(struct timeval begin, struct timeval end)
@@ -32,22 +39,6 @@ printDiff(struct timeval begin, struct timeval end)
   long diff;  
   diff = (end.tv_sec - begin.tv_sec) * 1000 * 1000 + (end.tv_usec - begin.tv_usec);
   printf("Diff: %ld us (%ld ms)\n", diff, diff/1000);
-}
-
-static int
-getTupleId(void)
-{
-  static int id;
-  return ++id;
-}
-
-void shuffle(TUPLE ary[],int size) {    
-  for(int i=0;i<size;i++){
-    int j = rand()%size;
-    int t = ary[i].val;
-    ary[i].val = ary[j].val;
-    ary[j].val = t;
-  }
 }
 
 
@@ -67,74 +58,12 @@ void createTuple()
     exit(1);
   }
 
-
-  srand((unsigned)time(NULL));
-  uint *used;//usedなnumberをstoreする
-  used = (uint *)calloc(SELECTIVITY,sizeof(uint));
-  for(uint i=0; i<SELECTIVITY ;i++){
-    used[i] = i;
-  }
-  uint selec = SELECTIVITY;
-
-  //uniqueなnumberをvalにassignする
-  for (uint i = 0; i < right; i++) {
-    if(&(rt[i])==NULL){
-      printf("right TUPLE allocate error.\n");
-      exit(1);
-    }
-    rt[i].key = getTupleId();
-    uint temp = rand()%selec;
-    uint temp2 = used[temp];
-    selec = selec-1;
-    used[temp] = used[selec];
-
-    rt[i].val = temp2; 
-  }
-
-
   //LEFT_TUPLEへのGPUでも参照できるメモリの割り当て*******************************
   res = cuMemHostAlloc((void**)&lt,left * sizeof(TUPLE),CU_MEMHOSTALLOC_PORTABLE);
   if (res != CUDA_SUCCESS) {
     printf("cuMemHostAlloc to LEFT_TUPLE failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
-
-  uint counter = 0;//matchするtupleをcountする。
-  uint *used_r;
-  used_r = (uint *)calloc(right,sizeof(uint));
-  for(uint i=0; i<right ; i++){
-    used_r[i] = i;
-  }
-  uint rg = right;
-  uint l_diff;//
-  if(MATCH_RATE != 0){
-    l_diff = left/(MATCH_RATE*right);
-  }else{
-    l_diff = 1;
-  }
-  for (uint i = 0; i < left; i++) {
-    lt[i].key = getTupleId();
-    if(i%l_diff == 0 && counter < MATCH_RATE*right){
-      uint temp = rand()%rg;
-      uint temp2 = used_r[temp];
-      rg = rg-1;
-      used[temp] = used[rg];
-      
-      lt[i].val = rt[temp2].val;      
-      counter++;
-    }else{
-      uint temp = rand()%selec;
-      uint temp2 = used[temp];
-      selec = selec-1;
-      used[temp] = used[selec];
-      lt[i].val = temp2; 
-    }
-  }
-  
-  free(used);
-  free(used_r);
-
-  shuffle(lt,left);
 
   res = cuMemHostAlloc((void**)&jt,JT_SIZE * sizeof(RESULT),CU_MEMHOSTALLOC_PORTABLE);
   if (res != CUDA_SUCCESS) {
@@ -158,45 +87,10 @@ void freeTuple(){
 
 }
 
-// create index for S
-void
-createIndex(void)
-{
-
-  int count=0;
-  for (int i = 0; i < NB_BKT_ENT; i++) idxcount[i] = 0;
-  for(uint i=0 ; i<right ; i++){
-    int idx = rt[i].val % NB_BKT_ENT;
-    idxcount[idx]++;
-    count++;
-  }
-
-  count = 0;
-
-  if (!(Bucket = (BUCKET *)calloc(right, sizeof(BUCKET)))) ERR;
-  for (int i = 0; i < NB_BKT_ENT; i++) {
-    if(idxcount[i] == 0){
-      Buck_array[i] = -1;
-    }else{
-      Buck_array[i] = count;
-    }
-    count += idxcount[i];
-  }
-  for (int i = 0; i < NB_BKT_ENT; i++) idxcount[i] = 0;
-  //for (pidx = Hidx.nxt; pidx; pidx = pidx->nxt) {
-  for(uint i=0; i<right ; i++){
-    int idx = rt[i].val % NB_BKT_ENT;
-    Bucket[Buck_array[idx] + idxcount[idx]].val = rt[i].val;
-    Bucket[Buck_array[idx] + idxcount[idx]].adr = i;
-    idxcount[idx]++;
-  }
-
-}
-
-
 void join(){
 
   //uint *count;
+  FILE *lp,*rp,*ip;
   uint jt_size;
   CUresult res;
   CUdevice dev;
@@ -210,7 +104,7 @@ void join(){
   char fname[256];
   const char *path=".";
   struct timeval begin, end;
-  struct timeval time_join_s,time_join_f,time_send_s,time_send_f;
+  struct timeval time_join_s,time_join_f,time_send_s,time_send_f,time_file_s,time_file_f;
   struct timeval time_count_s,time_count_f,time_tsend_s,time_tsend_f,time_isend_s,time_isend_f;
   struct timeval time_jdown_s,time_jdown_f,time_jkernel_s,time_jkernel_f;
   struct timeval time_scan_s,time_scan_f,time_alloc_s,time_alloc_f,time_index_s,time_index_f;
@@ -274,7 +168,34 @@ void join(){
 
   /*tuple and index init******************************************/  
 
+
+  //read table size from both table file
+  if((lp=fopen(LEFT_FILE,"r"))==NULL){
+    fprintf(stderr,"file open error(left)\n");
+    exit(1);
+  }
+  if(fread(&left,sizeof(int),1,lp)<1){
+    fprintf(stderr,"file read(lsize) error\n");
+    exit(1);
+  }
+  fclose(lp);
+
+  if((rp=fopen(RIGHT_FILE,"r"))==NULL){
+    fprintf(stderr,"file open error(right)\n");
+    exit(1);
+  }
+  if(fread(&right,sizeof(int),1,rp)<1){
+    fprintf(stderr,"file read(rsize) error\n");
+    exit(1);
+  }
+  fclose(rp);
+
+  printf("left size = %d\tright size = %d\n",left,right);
+
+
+  //memory allocate
   createTuple();
+
 
   /*
   TUPLE *tlr;
@@ -287,13 +208,63 @@ void join(){
   right = lr;
   */
 
-  gettimeofday(&time_index_s, NULL);
-  createIndex();
-  gettimeofday(&time_index_f, NULL);
-  shuffle(lt,left);
+
+  gettimeofday(&time_file_s, NULL);
+  if((lp=fopen(LEFT_FILE,"r"))==NULL){
+    fprintf(stderr,"file open error(left)\n");
+    exit(1);
+  }
+  if(fread(&left,sizeof(int),1,lp)<1){
+    fprintf(stderr,"file read(lsize) error\n");
+    exit(1);
+  }
+  if(fread(lt,sizeof(TUPLE),left,lp)<left){
+    fprintf(stderr,"file read(lt) error\n");
+    exit(1);
+  }
+  fclose(lp);
+
+  if((rp=fopen(RIGHT_FILE,"r"))==NULL){
+    fprintf(stderr,"file open error(right)\n");
+    exit(1);
+  }
+  if(fread(&right,sizeof(int),1,rp)<1){
+    fprintf(stderr,"file read(rsize) error\n");
+    exit(1);
+  }
+  if(fread(rt,sizeof(TUPLE),right,rp)<right){
+    fprintf(stderr,"file read(rt) error\n");
+    exit(1);
+  }
+  fclose(rp);
+
+  if((ip=fopen(INDEX_FILE,"r"))==NULL){
+    fprintf(stderr,"file open error(index)\n");
+    exit(1);
+  }
+  Bucket = (BUCKET *)calloc(right ,sizeof(BUCKET));
+
+  if(fread(Bucket,sizeof(BUCKET),right,ip)<right){
+    fprintf(stderr,"file read(BUCKET) error\n");
+    exit(1);
+  }
+  if(fread(Buck_array,sizeof(int),NB_BKT_ENT,ip)<NB_BKT_ENT){
+    fprintf(stderr,"file read(Buck_array) error\n");
+    exit(1);
+  }
+  if(fread(idxcount,sizeof(int),NB_BKT_ENT,ip)<NB_BKT_ENT){
+    fprintf(stderr,"file read(idxcount) error\n");
+    exit(1);
+  }
+  fclose(lp);
+  gettimeofday(&time_file_f, NULL);
 
 
+
+
+  /*全体の実行時間計測*/
   gettimeofday(&begin, NULL);
+
   /****************************************************************/
 
   block_x = left < BLOCK_SIZE_X ? left : BLOCK_SIZE_X;
@@ -604,18 +575,13 @@ void join(){
   gettimeofday(&end, NULL);
 
 
+  printf("\nread file time:\n");
+  printDiff(time_file_s,time_file_f);
+  printf("\n\n");
   
-  printf("************index create time**************\n");
-  printDiff(time_index_s,time_index_f);
-  printf("\n");
-
-
   printf("\n************execution time****************\n\n");
   printf("all time:\n");
   printDiff(begin, end);
-  printf("\n");
-  printf("gpu memory alloc time:\n");
-  printDiff(time_alloc_s,time_alloc_f);
   printf("\n");
   printf("data send time:\n");
   printDiff(time_send_s,time_send_f);
@@ -689,19 +655,6 @@ int
 main(int argc,char *argv[])
 {
 
-
-  if(argc>3){
-    printf("引数が多い\n");
-    return 0;
-  }else if(argc<3){
-    printf("引数が足りない\n");
-    return 0;
-  }else{
-    left=atoi(argv[1]);
-    right=atoi(argv[2]);
-
-    printf("left=%d:right=%d\n",left,right);
-  }
 
   join();
 

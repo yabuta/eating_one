@@ -82,7 +82,7 @@ void lpartitioning(
 
   __shared__ int part[SHARED_MAX];
   for(uint j=0 ; j*blockDim.x+threadIdx.x<p_n*blockDim.x ; j++){
-    part[j*blockDim.x+threadIdx.x]=L[t_n*j+blockIdx.x*blockDim.x+threadIdx.x];
+    part[j*blockDim.x+threadIdx.x] = L[t_n*j+blockIdx.x*Dim+threadIdx.x];
   }
   
   __syncthreads();

@@ -138,24 +138,6 @@ void rcount_partitioning(
   // Matching phase
   int hash = 0;
 
-  /*
-    __shared__ uint temp[PART_C_NUM*PART_C_NUM];
-
-    for(uint i=0 ; i<PER_TH/Dim ; i++){
-    for(uint k=0 ; k<Dim; k++){
-    temp[k+threadIdx.x*Dim] = t[DEF+i*Dim+k*PER_TH+threadIdx.x].val;
-    }
-    __syncthreads();
-
-    for(uint j=0; j<Dim; j++){
-    //hash = (t[DEF+i*Dim+j*PER_TH+threadIdx.x].val>>(8*loop)) % p_n;
-    hash = (temp[j+threadIdx.x*Dim]>>(8*loop)) % p_n;
-    part[hash*Dim + threadIdx.x]++;
-
-    } 
-
-    }
-  */
   if(x < t_n){
 
     for(uint i=0; i<RIGHT_PER_TH&&(DEF+threadIdx.x*RIGHT_PER_TH+i)<rows_n; i++){
@@ -209,28 +191,6 @@ void rpartitioning(
   int temp = 0;
   TUPLE tt;
 
-  /*
-    __shared__ int2 ttemp[PART_C_NUM*PART_C_NUM];
-
-    for(uint i=0 ; i<PER_TH/Dim ; i++){
-    for(uint k=0 ; k<Dim; k++){
-    ttemp[k+threadIdx.x*Dim].x = t[DEF+i*Dim+k*PER_TH+threadIdx.x].x;
-    ttemp[k+threadIdx.x*Dim].y = t[DEF+i*Dim+k*PER_TH+threadIdx.x].y;
-
-    }
-    __syncthreads();
-
-    for(uint j=0; j<Dim; j++){
-    tt.x = ttemp[j+threadIdx.x*Dim].x;
-    tt.y = ttemp[j+threadIdx.x*Dim].y;
-
-    hash = (tt.y>>(8*loop)) % p_n;
-    temp = part[hash*Dim + threadIdx.x]++;
-    pt[temp].x = tt.x; 
-    pt[temp].y = tt.y; 
-    }
-    }
-  */
   if(x < t_n){
 
     for(uint i=0; i<RIGHT_PER_TH&&(DEF+threadIdx.x*RIGHT_PER_TH+i)<rows_n; i++){

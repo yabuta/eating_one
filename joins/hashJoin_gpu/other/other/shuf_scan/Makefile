@@ -70,7 +70,7 @@ else
 endif
 
 # Common binaries
-NVCC            ?= $(CUDA_BIN_PATH)/nvcc
+NVCC            ?= $(CUDA_BIN_PATH)/nvcc -arch sm_35
 GCC             ?= g++
 
 # Extra user flags
@@ -125,7 +125,8 @@ all: build
 build: scan
 
 scan.o: scan.cu scan_common.h
-	$(NVCC) $(NVCCFLAGS) $(EXTRA_NVCCFLAGS) $(GENCODE_FLAGS) $(INCLUDES) -o $@ -c $<
+	$(NVCC) $(INCLUDES) -o $@ -c $<
+#	$(NVCC) $(NVCCFLAGS) $(EXTRA_NVCCFLAGS) $(GENCODE_FLAGS) $(INCLUDES) -o $@ -c $<
 
 scan_gold.o: scan_gold.cpp
 	$(GCC) $(CCFLAGS) $(EXTRA_CCFLAGS) $(INCLUDES) -o $@ -c $<

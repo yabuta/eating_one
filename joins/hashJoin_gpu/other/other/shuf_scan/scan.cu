@@ -17,7 +17,8 @@
 //All three kernels run 512 threads per workgroup
 //Must be a power of two
 #define THREADBLOCK_SIZE 512
-#define SHORT_SIZE 32
+#define SHORT_SIZE 512
+#define WARP_SIZE 32
 
 ////////////////////////////////////////////////////////////////////////////////
 // Basic ccan codelets
@@ -44,11 +45,7 @@ inline __device__ uint scan1Inclusive(uint idata, volatile uint *s_Data, uint si
     }
     return s_Data[pos];
   */
-
-    uint pos = 2 * threadIdx.x - (threadIdx.x & (size - 1));
-    int x = idata;
-
-    for (int offset = 1; offset < size; offset <<= 1)
+    /*    for (int offset = 1; offset < size; offset <<= 1)
     {
       if(pos>offset){
           
@@ -60,6 +57,38 @@ inline __device__ uint scan1Inclusive(uint idata, volatile uint *s_Data, uint si
       
     }
     return x;
+    */
+
+
+
+    uint idx = 2 * threadIdx.x - (threadIdx.x & (size - 1));
+    int val = idata;
+    //    uint idx = threadIdx.x;
+    int sum;
+
+    for (uint ofst = 1; ofst < WARP_SIZE; ofst *= 2) {
+      
+      if (idx >= ofst)
+        val += __shfl_up(val,ofst,WARP_SIZE);
+    }
+    if (idx % WARP_SIZE == WARP_SIZE - 1)
+      s_Data[idx/WARP_SIZE] = val;
+    __syncthreads();
+    int warp_num = SHORT_SIZE/WARP_SIZE;
+    if(SHORT_SIZE%WARP_SIZE!=0) warp_num++;
+    if (idx < warp_num) {
+      sum = s_Data[idx];
+      for (uint ofst = 1; ofst < warp_num; ofst *= 2) {
+        if (idx >= ofst)
+          sum += __shfl_up(sum,ofst,warp_num);
+      }
+      s_Data[idx] = sum;
+    }
+    __syncthreads();
+    if (idx/WARP_SIZE > 0)
+      val += s_Data[idx/WARP_SIZE - 1];
+
+    return val;
 
 }
 
@@ -108,7 +137,7 @@ __global__ void scanExclusiveShared(
     uint size
 )
 {
-    __shared__ uint s_Data[2 * THREADBLOCK_SIZE];
+    __shared__ uint s_Data[SHORT_SIZE/WARP_SIZE+1];
 
     uint pos = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -142,7 +171,7 @@ __global__ void scanExclusiveShared2(
 
     if (pos < N)
         idata =
-            d_Dst[(4 * THREADBLOCK_SIZE) - 1 + (4 * THREADBLOCK_SIZE) * pos] + d_Src[(4 * THREADBLOCK_SIZE) - 1 + (4 * THREADBLOCK_SIZE) * pos];
+            d_Dst[(4 * SHORT_SIZE) - 1 + (4 * SHORT_SIZE) * pos] + d_Src[(4 * SHORT_SIZE) - 1 + (4 * SHORT_SIZE) * pos];
 
     //Compute
     uint odata = scan1Exclusive(idata, s_Data, arrayLength);
@@ -174,7 +203,7 @@ __global__ void scanExclusiveShared3(
   
   if (pos < N)
     idata =
-      d_Buf[THREADBLOCK_SIZE -1 + pos * THREADBLOCK_SIZE] + d_Dst[(4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE) - 1 + (4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE) * pos] + d_Src[(4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE) - 1 + (4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE) * pos];
+      d_Buf[THREADBLOCK_SIZE -1 + pos * THREADBLOCK_SIZE] + d_Dst[(4 * SHORT_SIZE * THREADBLOCK_SIZE) - 1 + (4 * SHORT_SIZE * THREADBLOCK_SIZE) * pos] + d_Src[(4 * SHORT_SIZE * THREADBLOCK_SIZE) - 1 + (4 * SHORT_SIZE * THREADBLOCK_SIZE) * pos];
   
   //Compute
   uint odata = scan1Exclusive(idata, s_Data, arrayLength);
@@ -255,8 +284,8 @@ static uint *e_Buf;
 
 extern "C" void initScan(void)
 {
-    checkCudaErrors(cudaMalloc((void **)&d_Buf, (MAX_BATCH_ELEMENTS / (4 * THREADBLOCK_SIZE)) * sizeof(uint)));
-    checkCudaErrors(cudaMalloc((void **)&e_Buf, (MAX_BATCH_ELEMENTS / (4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE)) * sizeof(uint)));
+    checkCudaErrors(cudaMalloc((void **)&d_Buf, (MAX_BATCH_ELEMENTS / (4 * SHORT_SIZE)) * sizeof(uint)));
+    checkCudaErrors(cudaMalloc((void **)&e_Buf, (MAX_BATCH_ELEMENTS / (4 * SHORT_SIZE * THREADBLOCK_SIZE)) * sizeof(uint)));
 
 }
 
@@ -394,7 +423,7 @@ extern "C" size_t scanExclusiveLL(
   
   //Not all threadblocks need to be packed with input data:
   //inactive threads of highest threadblock just don't do global reads and writes
-  
+
   const uint blockCount2 = iDivUp(arrayLength / (4 * SHORT_SIZE), THREADBLOCK_SIZE);
   scanExclusiveShared2<<< blockCount2, THREADBLOCK_SIZE>>>(
         (uint *)d_Buf,

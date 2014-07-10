@@ -29,7 +29,7 @@ int main(int argc, char **argv)
     uint *d_Input, *d_Output;
     uint *h_Input, *h_OutputCPU, *h_OutputGPU;
     StopWatchInterface  *hTimer = NULL;
-    const uint MIN = 4 * 1024 * 1024;
+    const uint MIN = 1 * 1024 * 1024;
     const uint MAX = 512 * 1024 * 1024 ; //max size
 
     sdkCreateTimer(&hTimer);
@@ -163,15 +163,17 @@ int main(int argc, char **argv)
 
       printf("Allocating and initializing host arrays...\n");
 
-      arrayLength = 4 * 26 * 512 * 512;
-      h_Input     = (uint *)malloc(26738689 * sizeof(uint));
+      int temp = MIN;
+      arrayLength = MIN;
+      h_Input     = (uint *)malloc(temp * sizeof(uint));
       h_OutputCPU = (uint *)malloc(arrayLength * sizeof(uint));
       h_OutputGPU = (uint *)malloc(arrayLength * sizeof(uint));
 
-      for (uint i = 0; i < 26738689; i++)
+      for (uint i = 0; i < temp-1; i++)
         {
           h_Input[i] = 1;//rand();
         }
+      h_Input[temp-1] = 0;
       
       printf("Allocating and initializing CUDA arrays...\n");
       checkCudaErrors(cudaMalloc((void **)&d_Input, arrayLength * sizeof(uint)));
@@ -216,10 +218,14 @@ int main(int argc, char **argv)
           if (h_OutputCPU[i] != h_OutputGPU[i])
             {
               localFlag = 0;
+              printf("%d\t%d\t%d\n",i, h_OutputCPU[i] ,h_OutputGPU[i]);
               break;
             }
         }
       
+      for(uint i=0;i<100;i++){
+        printf("%d\t%d\t%d\n",i, h_OutputCPU[i] ,h_OutputGPU[i]);
+      }
       // Log message on individual test result, then accumulate to global flag
       printf(" ...Results %s\n\n", (localFlag == 1) ? "Match" : "DON'T Match !!!");
       globalFlag = globalFlag && localFlag;
