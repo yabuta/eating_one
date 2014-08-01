@@ -214,16 +214,16 @@ int main(int argc, char *argv[]){
       printf("argument1 is nothing.\n");
       exit(1);
     }else{
-      right=atoi(argv[1]);
-      printf("right num :%d\n",right);
+      left=atoi(argv[1]);
+      printf("left num :%d\n",left);
     }
     
     if(argv[2]==NULL){
       printf("argument2 is nothing.\n");
       exit(1);
     }else{
-      left=atoi(argv[2]);
-      printf("left num :%d\n",left);
+      right=atoi(argv[2]);
+      printf("right num :%d\n",right);
     }
   }
 

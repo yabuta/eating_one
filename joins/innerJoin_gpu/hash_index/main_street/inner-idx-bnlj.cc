@@ -601,6 +601,7 @@ void join(){
     printf("cuMemFree (idxcount) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
+
   gettimeofday(&end, NULL);
 
 

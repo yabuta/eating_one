@@ -126,20 +126,20 @@ main(void)
       if (nr == 0) break;
 
       while (1) {
-	int ns = read(sfd, bufS, NB_BUF * sizeof(TUPLE)); if (ns == -1) ERR; else if (ns == 0) break;
-	if (ns == 0) break;
-
-	for (unsigned int j = 0; j < nr/sizeof(TUPLE); j++) {
-	  for (unsigned int k = 0; k < ns/sizeof(TUPLE); k++) {
-	    if (bufR[j].val == bufS[k].val) {
-	      result.rkey = bufR[j].key;
-	      result.rval = bufR[j].val;
-	      result.skey = bufS[k].key;
-	      result.sval = bufS[k].key;
-	      resultVal += result.rval;
-	    }
-	  }
-	}
+        int ns = read(sfd, bufS, NB_BUF * sizeof(TUPLE)); if (ns == -1) ERR; else if (ns == 0) break;
+        if (ns == 0) break;
+        
+        for (unsigned int j = 0; j < nr/sizeof(TUPLE); j++) {
+          for (unsigned int k = 0; k < ns/sizeof(TUPLE); k++) {
+            if (bufR[j].val == bufS[k].val) {
+              result.rkey = bufR[j].key;
+              result.rval = bufR[j].val;
+              result.skey = bufS[k].key;
+              result.sval = bufS[k].key;
+              resultVal += result.rval;
+            }
+          }
+        }
       }
     }
     close(rfd);

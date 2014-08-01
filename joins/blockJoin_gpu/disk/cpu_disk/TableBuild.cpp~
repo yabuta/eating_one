@@ -6,8 +6,6 @@
 #include <sys/time.h>
 #include "tuple.h"
 
-#define LEFT_FILE "/home/yabuta/JoinData/non-index/left_table.out"
-#define RIGHT_FILE "/home/yabuta/JoinData/non-index/right_table.out"
 
 int left,right;
 
@@ -24,9 +22,9 @@ void shuffle(TUPLE ary[],int size) {
   srand((unsigned)time(NULL));
   for(int i=0;i<size;i++){
     int j = rand()%size;
-    int t = ary[i].val[0];
-    ary[i].val[0] = ary[j].val[0];
-    ary[j].val[0] = t;
+    TUPLE t = ary[i];
+    ary[i] = ary[j];
+    ary[j] = t;
   }
 }
 
@@ -66,9 +64,7 @@ init(void)
     selec = selec-1;
     used[temp] = used[selec];
 
-    for(uint j= 0 ; j<VAL_NUM ; j++){
-      rt[i].val[j] = temp2; 
-    }
+    rt[i].val = temp2;
   }
 
 
@@ -93,18 +89,14 @@ init(void)
       rg = rg-1;
       used[temp] = used[rg];
 
-      for(uint j= 0 ; j<VAL_NUM ; j++){
-        lt[i].val[j] = rt[temp2].val[j];      
-      }
+      lt[i].val = rt[temp2].val;
       counter++;
     }else{
       uint temp = rand()%selec;
       uint temp2 = used[temp];
       selec = selec-1;
       used[temp] = used[selec];
-      for(uint j= 0 ; j<VAL_NUM ; j++){
-        lt[i].val[j] = temp2; 
-      }
+      lt[i].val = temp2;
     }
   }
 

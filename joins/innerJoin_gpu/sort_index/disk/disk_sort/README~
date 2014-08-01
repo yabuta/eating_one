@@ -5,8 +5,6 @@ indexを使ったjoin
 
 
 実行方法：
-table make
->./BuildTable left_num right_num
+>sudo ./InnerExe left_number right_number
 
-execute
->./InnerExe
+

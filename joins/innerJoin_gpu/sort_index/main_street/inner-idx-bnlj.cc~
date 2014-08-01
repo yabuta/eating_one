@@ -40,9 +40,9 @@ void shuffle(TUPLE ary[],int size) {
   srand((unsigned)time(NULL));
   for(int i=0;i<size;i++){
     int j = rand()%size;
-    int t = ary[i].val;
-    ary[i].val = ary[j].val;
-    ary[j].val = t;
+    TUPLE t = ary[i];
+    ary[i] = ary[j];
+    ary[j] = t;
   }
 }
 
@@ -573,8 +573,6 @@ void join(){
     exit(1);
   }
 
-  gettimeofday(&end, NULL);
-
 
   printf("********index create time**************\n");
   printDiff(time_index_s,time_index_f);
@@ -604,6 +602,9 @@ void join(){
   printDiff(time_jkernel_s,time_jkernel_f);
   printf("download time of jt:\n");
   printDiff(time_jdown_s,time_jdown_f);
+
+  gettimeofday(&end, NULL);
+
 
 
   printf("%d\n",jt_size);

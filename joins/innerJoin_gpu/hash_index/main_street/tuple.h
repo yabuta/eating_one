@@ -31,7 +31,7 @@
 #define NB_BKT_ENT 67108864
 
 */
-#define MATCH_RATE 0.1
+#define MATCH_RATE 1
 
 #define JT_SIZE 120000000
 #define SELECTIVITY 1000000000

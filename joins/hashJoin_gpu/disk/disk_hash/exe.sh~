@@ -1,5 +1,6 @@
-./HashExe $1 $2
-./HashExe $1 $2
-./HashExe $1 $2
-./HashExe $1 $2
-./HashExe $1 $2
+./BuildTable $1 $2
+./HashExe
+./HashExe
+./HashExe
+./HashExe
+./HashExe

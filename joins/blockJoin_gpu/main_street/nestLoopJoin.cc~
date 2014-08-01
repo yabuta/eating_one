@@ -30,6 +30,10 @@ printDiff(struct timeval begin, struct timeval end)
   printf("Diff: %ld us (%ld ms)\n", diff, diff/1000);
 }
 
+static uint iDivUp(uint dividend, uint divisor)
+{
+  return ((dividend % divisor) == 0) ? (dividend / divisor) : (dividend / divisor + 1);
+}
 
 static int
 getTupleId(void)

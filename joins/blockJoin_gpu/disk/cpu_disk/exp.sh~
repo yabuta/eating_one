@@ -1,8 +1,13 @@
-./ExeNestLoop $1 $2
-./ExeNestLoop $1 $2
-./ExeNestLoop $1 $2
-./ExeNestLoop $1 $2
-./ExeNestLoop $1 $2
+./BuildTable $1 $2
+./ExeNestLoop
+./BuildTable $1 $2
+./ExeNestLoop
+./BuildTable $1 $2
+./ExeNestLoop
+./BuildTable $1 $2
+./ExeNestLoop
+./BuildTable $1 $2
+./ExeNestLoop
 
 
 #./ExeNestLoop 5 5

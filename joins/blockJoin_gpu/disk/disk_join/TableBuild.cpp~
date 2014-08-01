@@ -6,6 +6,8 @@
 #include <sys/time.h>
 #include "tuple.h"
 
+#define LEFT_FILE "/home/yabuta/JoinData/non-index/left_table.out"
+#define RIGHT_FILE "/home/yabuta/JoinData/non-index/right_table.out"
 
 int left,right;
 
@@ -114,7 +116,7 @@ init(void)
 
   shuffle(lt,left);
 
-  if((lp=fopen("./data/left_table.out","w"))==NULL){
+  if((lp=fopen(LEFT_FILE,"w"))==NULL){
     fprintf(stderr,"file open error(left)\n");
     exit(1);
   }
@@ -130,7 +132,7 @@ init(void)
   fclose(lp);
 
 
-  if((rp=fopen("./data/right_table.out","w"))==NULL){
+  if((rp=fopen(RIGHT_FILE,"w"))==NULL){
     fprintf(stderr,"file open error(right)\n");
     exit(1);
   }

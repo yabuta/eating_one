@@ -662,20 +662,20 @@ main(int argc, char *argv[])
 
   if(argc<4){
     if(argv[1]==NULL){
-      printf("argument1 is nothing.\n");
-      exit(1);
-    }else{
-      arg_right=atoi(argv[1]);
-      printf("right num :%d\n",arg_right);
-    }
-    
-    if(argv[2]==NULL){
       printf("argument2 is nothing.\n");
       exit(1);
     }else{
-      arg_left=atoi(argv[2]);
+      arg_left=atoi(argv[1]);
       printf("left num :%d\n",arg_left);
     }
+    if(argv[2]==NULL){
+      printf("argument1 is nothing.\n");
+      exit(1);
+    }else{
+      arg_right=atoi(argv[2]);
+      printf("right num :%d\n",arg_right);
+    }    
+
   }
 
 

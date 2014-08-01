@@ -1,9 +1,8 @@
-//#define SZ_PAGE 40960
-//#define NB_BUFR (SZ_PAGE * 2 / sizeof(TUPLE))
-//#define NB_BUFS (SZ_PAGE * 16 / sizeof(TUPLE))
+/******
+use hj.cc
+ ******/
 #define BLOCK_SIZE_X 1024
 #define NB_BKT_ENT 33554432
-
 
 /*
 1048576*1048576
@@ -13,6 +12,10 @@
 4194304*4194304    
 #define BLOCK_SIZE_X 1024
 #define NB_BKT_ENT 4194304
+
+8388608*8388608
+#define BLOCK_SIZE_X 1024
+#define NB_BKT_ENT 8388608
 
 16777216*16777216  
 #define BLOCK_SIZE_X 1024
@@ -29,13 +32,24 @@
 134217728*134217728
 #define BLOCK_SIZE_X 1024
 #define NB_BKT_ENT 67108864
-
 */
+
+#define LSIZE 524288
+#define SIZEREADFILE
+
+
+/******
+use TableBuild.cpp
+ ******/
 #define MATCH_RATE 0.1
 
 #define JT_SIZE 120000000
 #define SELECTIVITY 1000000000
 
+
+/******
+use both
+ ******/
 
 typedef struct _TUPLE {
   int key;
@@ -48,22 +62,6 @@ typedef struct _RESULT {
   int lkey;
   int lval;
 } RESULT;
-
-/*
-typedef struct _IDX {
-  int val;
-  int adr;
-  struct _IDX *nxt;
-} IDX;
-*/
-
-/*
-typedef struct _HASHOBJ {
-  int val;
-  int adr;
-    //struct _HASHOBJ *nxt;
-} HASHOBJ;
-*/
 
 typedef struct _BUCKET {
 

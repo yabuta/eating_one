@@ -1,16 +1,21 @@
-//#define SZ_PAGE 40960
-//#define NB_BUFR (SZ_PAGE * 2 / sizeof(TUPLE))
-//#define NB_BUFS (SZ_PAGE * 16 / sizeof(TUPLE))
-//#define BLOCK_SIZE_X 128
+/******
+use hj.cc
+ ******/
 #define BLOCK_SIZE_X 256
 
-#define MATCH_RATE 0.01
+#define LSIZE 524288
+#define SIZEREADFILE
 
+/******
+use TableBuild.cpp
+ ******/
+#define MATCH_RATE 1
 #define JT_SIZE 120000000
 #define SELECTIVITY 1000000000
 
-#define VAL_NUM 1
-
+/******
+use both
+ ******/
 typedef struct _TUPLE {
   int key;
   int val;
@@ -22,15 +27,8 @@ typedef struct _RESULT {
   int lkey;
   int lval;
 } RESULT;
-/*
-typedef struct _IDX {
-  int val;
-  int adr;
-  struct _IDX *nxt;
-} IDX;
-*/
-typedef struct _BUCKET {
 
+typedef struct _BUCKET {
     int val;
     int adr;
 

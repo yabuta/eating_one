@@ -33,6 +33,12 @@ printDiff(struct timeval begin, struct timeval end)
   printf("Diff: %ld us (%ld ms)\n", diff, diff/1000);
 }
 
+void diffplus(long *total,struct timeval begin,struct timeval end){
+  *total += (end.tv_sec - begin.tv_sec) * 1000 * 1000 + (end.tv_usec - begin.tv_usec);
+
+}
+
+
 static uint iDivUp(uint dividend, uint divisor)
 {
   return ((dividend % divisor) == 0) ? (dividend / divisor) : (dividend / divisor + 1);
@@ -49,24 +55,34 @@ init(void)
   //メモリ割り当てを行う
   //タプルに初期値を代入
   //RIGHT_TUPLEへのGPUでも参照できるメモリの割り当て****************************
+  /*
   res = cuMemHostAlloc((void**)&Tright,arg_right * sizeof(TUPLE),CU_MEMHOSTALLOC_DEVICEMAP);
   if (res != CUDA_SUCCESS) {
     printf("cuMemHostAlloc to RIGHT_TUPLE failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
+  */
+
+  //Tright = (TUPLE *)malloc(arg_right*sizeof(TUPLE));
+
 
   //LEFT_TUPLEへのGPUでも参照できるメモリの割り当て*******************************
+  /*
   res = cuMemHostAlloc((void**)&Tleft,arg_left * sizeof(TUPLE),CU_MEMHOSTALLOC_DEVICEMAP);
   if (res != CUDA_SUCCESS) {
     printf("cuMemHostAlloc to LEFT_TUPLE failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
+  */
+  //Tleft = (TUPLE *)malloc(arg_left*sizeof(TUPLE));
 
   res = cuMemHostAlloc((void**)&Tjoin,JT_SIZE * sizeof(JOIN_TUPLE),CU_MEMHOSTALLOC_DEVICEMAP);
   if (res != CUDA_SUCCESS) {
     printf("cuMemHostAlloc to LEFT_TUPLE failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
+
+  //Tjoin = (JOIN_TUPLE *)malloc(JT_SIZE*sizeof(JOIN_TUPLE));
      
 }
 
@@ -88,27 +104,18 @@ tuple_free(void){
 }
 
 
+uint nonIndexJoin(
+                  CUfunction function,
+                  CUfunction c_function
+){
 
-//HrightとHleftをそれぞれ比較する。GPUで並列化するforループもここにあるもので行う。
-void
-join()
-{
-
-  int i, j, idx;
-  FILE *lp,*rp;
-  //int *count;//maybe long long int is better
+  static uint total_jsize = 0;
   uint jt_size,gpu_size;
   uint total = 0;
   CUresult res;
-  CUdevice dev;
-  CUcontext ctx;
-  CUfunction function,c_function;
-  CUmodule module,c_module;
   CUdeviceptr lt_dev, rt_dev, jt_dev,count_dev, pre_dev;
   CUdeviceptr ltn_dev, rtn_dev;
   unsigned int block_x, block_y, grid_x, grid_y;
-  char fname[256];
-  const char *path=".";
   long join_time=0,count_time=0,scan_time=0,send_time=0,down_time=0;
   struct timeval time_join_s,time_join_f,time_download_s,time_download_f;
   struct timeval time_count_s,time_count_f;
@@ -116,113 +123,6 @@ join()
   struct timeval time_send_s,time_send_f,time_file_s,time_file_f;
   struct timeval begin,end;
 
-  /******************** GPU init here ************************************************/
-  //GPU仕様のために
-
-  res = cuInit(0);
-  if (res != CUDA_SUCCESS) {
-    printf("cuInit failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-  res = cuDeviceGet(&dev, 0);
-  if (res != CUDA_SUCCESS) {
-    printf("cuDeviceGet failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-  res = cuCtxCreate(&ctx, 0, dev);
-  if (res != CUDA_SUCCESS) {
-    printf("cuCtxCreate failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-
-  /*********************************************************************************/
-
-
-  /*
-   *指定したファイルからモジュールをロードする。これが平行実行されると思っていいもかな？
-   *今回はjoin_gpu.cubinとcountJoinTuple.cubinの二つの関数を実行する
-   */
-
-  
-  sprintf(fname, "%s/join_gpu.cubin", path);
-  res = cuModuleLoad(&module, fname);
-  if (res != CUDA_SUCCESS) {
-    printf("cuModuleLoad(join) failed\n");
-    exit(1);
-  }
-  res = cuModuleGetFunction(&function, module, "join");
-  if (res != CUDA_SUCCESS) {
-    printf("cuModuleGetFunction() failed\n");
-    exit(1);
-  }
-  res = cuModuleGetFunction(&c_function, module, "count");
-  if (res != CUDA_SUCCESS) {
-    printf("cuModuleGetFunction() failed\n");
-    exit(1);
-  }
-  
-
-  //read table size from both table file
-  if((lp=fopen(LEFT_FILE,"r"))==NULL){
-    fprintf(stderr,"file open error(left)\n");
-    exit(1);
-  }
-  if(fread(&arg_left,sizeof(int),1,lp)<1){
-    fprintf(stderr,"file write error\n");
-    exit(1);
-  }
-  fclose(lp);
-
-  if((rp=fopen(RIGHT_FILE,"r"))==NULL){
-    fprintf(stderr,"file open error(right)\n");
-    exit(1);
-  }
-  if(fread(&arg_right,sizeof(int),1,rp)<1){
-    fprintf(stderr,"file write error\n");
-    exit(1);
-  }
-  fclose(rp);
-  printf("left size = %d\tright size = %d",arg_left,arg_right);
-
-
-  /*******************init array*************************************/
-  init();
-  /*****************************************************************/
-
-
-  /*全体の実行時間計測*/
-  gettimeofday(&begin, NULL);
-
-  gettimeofday(&time_file_s, NULL);
-  if((lp=fopen(LEFT_FILE,"r"))==NULL){
-    fprintf(stderr,"file open error(left)\n");
-    exit(1);
-  }
-  if(fread(&arg_left,sizeof(int),1,lp)<1){
-    fprintf(stderr,"file write error\n");
-    exit(1);
-  }
-  if(fread(Tleft,sizeof(TUPLE),arg_left,lp)<arg_left){
-    fprintf(stderr,"file write error\n");
-    exit(1);
-  }
-
-  fclose(lp);
-
-  if((rp=fopen(RIGHT_FILE,"r"))==NULL){
-    fprintf(stderr,"file open error(right)\n");
-    exit(1);
-  }
-  if(fread(&arg_right,sizeof(int),1,rp)<1){
-    fprintf(stderr,"file write error\n");
-    exit(1);
-  }
-  if(fread(Tright,sizeof(TUPLE),arg_right,rp)<arg_right){
-    fprintf(stderr,"file write error\n");
-    exit(1);
-  }
-  fclose(rp);
-  gettimeofday(&time_file_f, NULL);
 
   /************** block_x * block_y is decided by BLOCK_SIZE. **************/
 
@@ -275,6 +175,7 @@ join()
   /********************** upload lt , rt and count***********************/
 
   for(uint ll = 0; ll < arg_left ; ll += PART){
+
     for(uint rr = 0; rr < arg_right ; rr += PART){
 
       uint lls=PART,rrs=PART;
@@ -465,15 +366,8 @@ join()
         
       }
     }
-    
-
   }
-
-  gettimeofday(&end, NULL);
-  /***************************************************************/
-
-  //free GPU memory***********************************************
-
+  total_jsize += total;
 
   res = cuMemFree(lt_dev);
   if (res != CUDA_SUCCESS) {
@@ -491,20 +385,174 @@ join()
     exit(1);
   }
 
-  /********************************************************************/
+  return total_jsize;
+}
 
 
 
-  /***********   タプルを送ってダウンロードするまでの時間を計測する*************************/
+//HrightとHleftをそれぞれ比較する。GPUで並列化するforループもここにあるもので行う。
+void
+join()
+{
+
+  int total;
+  FILE *lp,*rp;
+  CUresult res;
+  CUdevice dev;
+  CUcontext ctx;
+  CUfunction function,c_function;
+  CUmodule module,c_module;
+  char fname[256];
+  const char *path=".";
+
+  struct timeval begin, end;
+  struct timeval leftread_time_s, leftread_time_f;
+  struct timeval rightread_time_s, rightread_time_f;
+  struct timeval hashjoin_s, hashjoin_f;
+  long leftread_time = 0,rightread_time = 0,hashjoin_time = 0;
 
 
+
+  /******************** GPU init here ************************************************/
+  //GPU仕様のために
+
+  res = cuInit(0);
+  if (res != CUDA_SUCCESS) {
+    printf("cuInit failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+  res = cuDeviceGet(&dev, 0);
+  if (res != CUDA_SUCCESS) {
+    printf("cuDeviceGet failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+  res = cuCtxCreate(&ctx, 0, dev);
+  if (res != CUDA_SUCCESS) {
+    printf("cuCtxCreate failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+
+  /*********************************************************************************/
+
+
+  /*
+   *指定したファイルからモジュールをロードする。これが平行実行されると思っていいもかな？
+   *今回はjoin_gpu.cubinとcountJoinTuple.cubinの二つの関数を実行する
+   */
+
+  
+  sprintf(fname, "%s/join_gpu.cubin", path);
+  res = cuModuleLoad(&module, fname);
+  if (res != CUDA_SUCCESS) {
+    printf("cuModuleLoad(join) failed\n");
+    exit(1);
+  }
+  res = cuModuleGetFunction(&function, module, "join");
+  if (res != CUDA_SUCCESS) {
+    printf("cuModuleGetFunction() failed\n");
+    exit(1);
+  }
+  res = cuModuleGetFunction(&c_function, module, "count");
+  if (res != CUDA_SUCCESS) {
+    printf("cuModuleGetFunction() failed\n");
+    exit(1);
+  }
+  
+
+
+  /*******************init array*************************************/
+  init();
+  /*****************************************************************/
+
+  /*全体の実行時間計測*/
+  gettimeofday(&begin, NULL);
+
+  //read table size from both table file
+  if((lp=fopen(LEFT_FILE,"r"))==NULL){
+    fprintf(stderr,"file open error(left)\n");
+    exit(1);
+  }
+  if(fread(&arg_left,sizeof(int),1,lp)<1){
+    fprintf(stderr,"file write error\n");
+    exit(1);
+  }
+
+  if((rp=fopen(RIGHT_FILE,"r"))==NULL){
+    fprintf(stderr,"file open error(right)\n");
+    exit(1);
+  }
+  if(fread(&arg_right,sizeof(int),1,rp)<1){
+    fprintf(stderr,"file write error\n");
+    exit(1);
+  }
+
+#ifndef SIZEREADFILE
+  arg_left = LSIZE;
+  arg_right = RSIZE;
+#endif
+  int lsize=arg_left,rsize=arg_right;
+
+  printf("left size = %d\tright size = %d\n",arg_left,arg_right);
+
+  Tleft = (TUPLE *)malloc(lsize*sizeof(TUPLE));
+  Tright = (TUPLE *)malloc(rsize*sizeof(TUPLE));
+
+
+  while(1){
+
+    gettimeofday(&leftread_time_s, NULL);
+    if((arg_left=fread(Tleft,sizeof(TUPLE),lsize,lp))<0){
+      fprintf(stderr,"file write error\n");
+      exit(1);
+    }
+    if(arg_left == 0) break;
+    gettimeofday(&leftread_time_f, NULL);
+    diffplus(&leftread_time,leftread_time_s,leftread_time_f);
+
+    while(1){
+      gettimeofday(&rightread_time_s, NULL);
+      if((arg_right=fread(Tright,sizeof(TUPLE),rsize,rp))<0){
+        fprintf(stderr,"file write error\n");
+        exit(1);
+      }
+      if(arg_right == 0) break;
+      gettimeofday(&rightread_time_f, NULL);
+      diffplus(&rightread_time,rightread_time_s,rightread_time_f);
+
+      gettimeofday(&hashjoin_s, NULL);
+      total = nonIndexJoin(function,c_function);
+      gettimeofday(&hashjoin_f, NULL);
+      diffplus(&hashjoin_time,hashjoin_s,hashjoin_f);
+
+    }
+    if(fseek(rp,sizeof(int),0)!=0){
+      fprintf(stderr,"file seek error.\n");
+      exit(1);
+    }
+  }
+
+  fclose(lp);
+  fclose(rp);
+
+  gettimeofday(&end, NULL);
+  /***************************************************************/
 
   printf("\n\n");
   printf("******************execution time********************************************\n\n");
 
   printf("Calculation all with Devise\n");
   printDiff(begin,end);
+  printf("file read time:\n");
+  printf("Diff: %ld us (%ld ms)\n", leftread_time+rightread_time, (leftread_time+rightread_time)/1000);
+  printf("join time:\n");
+  printf("Diff: %ld us (%ld ms)\n", hashjoin_time, hashjoin_time/1000);
+  printf("\n\n");
 
+
+
+
+
+  /*
   printf("Calculation file read with Devise\n");
   printDiff(time_file_s,time_file_f);
 
@@ -522,7 +570,7 @@ join()
 
   printf("Calculation download with Devise\n");
   printf("Diff: %ld us (%ld ms)\n", down_time, down_time/1000);
-
+  */
   /*
   printf("Calculation send with Devise\n");
   printDiff(time_send_s,time_send_f);
@@ -550,43 +598,18 @@ join()
 
   printf("the number of total match tuple = %d\n",total);
 
+  /*****************************************************************************************/
 
-  /*
-  for(i=0;i<arg_right;i++){
-    printf("%d: %8d%8d\n",i,Tright[i].id,Tright[i].val);
-
-  }
-
-  for(i=0;i<arg_left;i++){
-    printf("%d: %8d%8d\n",i,Tleft[i].id,Tleft[i].val);
-
-    }*/
-
-
-  //ループが何番目かとleftテーブルの最後の値、join後のテーブルのidと最後の値を表示する
-  /*
-  for(i=0;i<300;i++){
-    if(i%100000==0&&Tjoin[i].lval[0]>0){//if(Tjoin[j * arg_left + i].lval>0){
-      printf("%d:left :join: %8d%8d%8d\n",i,Tjoin[i].id, Tjoin[i].lval[VAL_NUM-1], Tjoin[i].rval[VAL_NUM-1]);
-    }
-  }
-  */
-
-
-
-  for(i=0;i<3&&i<JT_SIZE;i++){
+  for(uint i=0;i<3&&i<JT_SIZE;i++){
     printf("[%d]:left %8d \t:right: %8d\n",i,Tjoin[i].lid,Tjoin[i].rid);
-    for(j = 0;j<VAL_NUM;j++){
+    for(uint j = 0;j<VAL_NUM;j++){
       printf("join[%d]:left = %8d\tright = %8d\n",j,Tjoin[i].lval[j],Tjoin[i].rval[j]);
     }
     printf("\n");
 
   }
 
-  /*****************************************************************************************/
-  
-
-
+  tuple_free();
 
   //finish GPU   ****************************************************
 
@@ -604,7 +627,6 @@ join()
   /****************************************************************************/
 
   //割り当てたメモリを開放する
-  tuple_free();
 
 }
 

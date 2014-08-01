@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
-//#include <time.h>
 #include <sys/time.h>
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -41,29 +40,39 @@ printDiff(struct timeval begin, struct timeval end)
   printf("Diff: %ld us (%ld ms)\n", diff, diff/1000);
 }
 
+void diffplus(long *total,struct timeval begin,struct timeval end){
+  *total += (end.tv_sec - begin.tv_sec) * 1000 * 1000 + (end.tv_usec - begin.tv_usec);
+
+}
+
 
 void createTuple()
 {
 
-  //RIGHT_TUPLEへのGPUでも参照できるメモリの割り当て
   CUresult res;
 
   //メモリ割り当てを行う
   //タプルに初期値を代入
 
   //RIGHT_TUPLEへのGPUでも参照できるメモリの割り当て****************************
+  /*
   res = cuMemHostAlloc((void**)&rt,right * sizeof(TUPLE),CU_MEMHOSTALLOC_PORTABLE);
   if (res != CUDA_SUCCESS) {
     printf("cuMemHostAlloc to RIGHT_TUPLE failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
+  */
 
   //LEFT_TUPLEへのGPUでも参照できるメモリの割り当て*******************************
+  /*
   res = cuMemHostAlloc((void**)&lt,left * sizeof(TUPLE),CU_MEMHOSTALLOC_PORTABLE);
   if (res != CUDA_SUCCESS) {
     printf("cuMemHostAlloc to LEFT_TUPLE failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
+  */
+  
+
 
   res = cuMemHostAlloc((void**)&jt,JT_SIZE * sizeof(RESULT),CU_MEMHOSTALLOC_PORTABLE);
   if (res != CUDA_SUCCESS) {
@@ -87,185 +96,29 @@ void freeTuple(){
 
 }
 
-void join(){
+int IndexJoin(
+              CUfunction function,
+              CUfunction c_function,
+              CUdeviceptr rt_dev,
+              CUdeviceptr bucket_dev,
+              CUdeviceptr buckArray_dev,
+              CUdeviceptr idxcount_dev
+){
 
-  //uint *count;
-  FILE *lp,*rp,*ip;
+  static uint total=0;
   uint jt_size;
+
   CUresult res;
-  CUdevice dev;
-  CUcontext ctx;
-  CUfunction function,c_function;
-  CUmodule module,c_module;
-  CUdeviceptr lt_dev, rt_dev, jt_dev, bucket_dev, buckArray_dev ,idxcount_dev;
+  CUdeviceptr lt_dev, jt_dev;
   CUdeviceptr ltn_dev, rtn_dev, jt_size_dev;
   CUdeviceptr c_dev;
   unsigned int block_x, grid_x;
-  char fname[256];
-  const char *path=".";
-  struct timeval begin, end;
+
   struct timeval time_join_s,time_join_f,time_send_s,time_send_f,time_file_s,time_file_f;
   struct timeval time_count_s,time_count_f,time_tsend_s,time_tsend_f,time_isend_s,time_isend_f;
   struct timeval time_jdown_s,time_jdown_f,time_jkernel_s,time_jkernel_f;
   struct timeval time_scan_s,time_scan_f,time_alloc_s,time_alloc_f,time_index_s,time_index_f;
-  //double time_cal;
 
-
-
-
-  /******************** GPU init here ************************************************/
-  //GPU仕様のために
-
-  res = cuInit(0);
-  if (res != CUDA_SUCCESS) {
-    printf("cuInit failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-  res = cuDeviceGet(&dev, 0);
-  if (res != CUDA_SUCCESS) {
-    printf("cuDeviceGet failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-  res = cuCtxCreate(&ctx, 0, dev);
-  if (res != CUDA_SUCCESS) {
-    printf("cuCtxCreate failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-
-  /*********************************************************************************/
-
-
-
-  /*
-   *指定したファイルからモジュールをロードする。これが平行実行されると思っていいもかな？
-   *今回はjoin_gpu.cubinとcountJoinTuple.cubinの二つの関数を実行する
-   */
-
-  sprintf(fname, "%s/join_gpu.cubin", path);
-  res = cuModuleLoad(&module, fname);
-  if (res != CUDA_SUCCESS) {
-    printf("cuModuleLoad() failed\n");
-    exit(1);
-  }
-  res = cuModuleGetFunction(&function, module, "join");
-  if (res != CUDA_SUCCESS) {
-    printf("cuModuleGetFunction() failed\n");
-    exit(1);
-  }
-
-  sprintf(fname, "%s/count.cubin", path);
-  res = cuModuleLoad(&c_module, fname);
-  if (res != CUDA_SUCCESS) {
-    printf("cuModuleLoad() failed\n");
-    exit(1);
-  }
-  
-  res = cuModuleGetFunction(&c_function, c_module, "count");
-  if (res != CUDA_SUCCESS) {
-    printf("cuModuleGetFunction() failed\n");
-    exit(1);
-  }
-
-  /*tuple and index init******************************************/  
-
-
-  //read table size from both table file
-  if((lp=fopen(LEFT_FILE,"r"))==NULL){
-    fprintf(stderr,"file open error(left)\n");
-    exit(1);
-  }
-  if(fread(&left,sizeof(int),1,lp)<1){
-    fprintf(stderr,"file read(lsize) error\n");
-    exit(1);
-  }
-  fclose(lp);
-
-  if((rp=fopen(RIGHT_FILE,"r"))==NULL){
-    fprintf(stderr,"file open error(right)\n");
-    exit(1);
-  }
-  if(fread(&right,sizeof(int),1,rp)<1){
-    fprintf(stderr,"file read(rsize) error\n");
-    exit(1);
-  }
-  fclose(rp);
-
-  printf("left size = %d\tright size = %d\n",left,right);
-
-
-  //memory allocate
-  createTuple();
-
-
-  /*
-  TUPLE *tlr;
-  int lr;
-  tlr = lt;
-  lt = rt;
-  rt = tlr;
-  lr = left;
-  left = right;
-  right = lr;
-  */
-
-  /*全体の実行時間計測*/
-  gettimeofday(&begin, NULL);
-
-
-  gettimeofday(&time_file_s, NULL);
-  if((lp=fopen(LEFT_FILE,"r"))==NULL){
-    fprintf(stderr,"file open error(left)\n");
-    exit(1);
-  }
-  if(fread(&left,sizeof(int),1,lp)<1){
-    fprintf(stderr,"file read(lsize) error\n");
-    exit(1);
-  }
-  if(fread(lt,sizeof(TUPLE),left,lp)<left){
-    fprintf(stderr,"file read(lt) error\n");
-    exit(1);
-  }
-  fclose(lp);
-
-  if((rp=fopen(RIGHT_FILE,"r"))==NULL){
-    fprintf(stderr,"file open error(right)\n");
-    exit(1);
-  }
-  if(fread(&right,sizeof(int),1,rp)<1){
-    fprintf(stderr,"file read(rsize) error\n");
-    exit(1);
-  }
-  if(fread(rt,sizeof(TUPLE),right,rp)<right){
-    fprintf(stderr,"file read(rt) error\n");
-    exit(1);
-  }
-  fclose(rp);
-
-  if((ip=fopen(INDEX_FILE,"r"))==NULL){
-    fprintf(stderr,"file open error(index)\n");
-    exit(1);
-  }
-  Bucket = (BUCKET *)calloc(right ,sizeof(BUCKET));
-
-  if(fread(Bucket,sizeof(BUCKET),right,ip)<right){
-    fprintf(stderr,"file read(BUCKET) error\n");
-    exit(1);
-  }
-  if(fread(Buck_array,sizeof(int),NB_BKT_ENT,ip)<NB_BKT_ENT){
-    fprintf(stderr,"file read(Buck_array) error\n");
-    exit(1);
-  }
-  if(fread(idxcount,sizeof(int),NB_BKT_ENT,ip)<NB_BKT_ENT){
-    fprintf(stderr,"file read(idxcount) error\n");
-    exit(1);
-  }
-  fclose(lp);
-
-
-
-  gettimeofday(&time_file_f, NULL);
-
-  /****************************************************************/
 
   block_x = left < BLOCK_SIZE_X ? left : BLOCK_SIZE_X;
   grid_x = left / block_x;
@@ -285,33 +138,6 @@ void join(){
     printf("cuMemAlloc (lefttuple) failed\n");
     exit(1);
   }
-  /* rt */
-  res = cuMemAlloc(&rt_dev, right * sizeof(TUPLE));
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemAlloc (righttuple) failed\n");
-    exit(1);
-  }
-  /* bucket */
-  res = cuMemAlloc(&bucket_dev, right * sizeof(BUCKET));
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemAlloc (bucket) failed\n");
-    exit(1);
-  }
-
-  /* buck_array */
-  res = cuMemAlloc(&buckArray_dev, NB_BKT_ENT * sizeof(int));
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemAlloc (bucket) failed\n");
-    exit(1);
-  }
-
-  /* idxcount */
-  res = cuMemAlloc(&idxcount_dev, NB_BKT_ENT * sizeof(int));
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemAlloc (bucket) failed\n");
-    exit(1);
-  }
-
 
   /*count */
   res = cuMemAlloc(&c_dev, (left+1) * sizeof(uint));
@@ -321,7 +147,6 @@ void join(){
   }
 
   gettimeofday(&time_alloc_f, NULL);
-
 
 
   /**********************************************************************************/
@@ -338,39 +163,10 @@ void join(){
     printf("cuMemcpyHtoD (lt) failed: res = %lu\n", res);//conv(res));
     exit(1);
   }
-  res = cuMemcpyHtoD(rt_dev, rt, right * sizeof(TUPLE));
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD (rt) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-
   gettimeofday(&time_tsend_f, NULL);
 
-  gettimeofday(&time_isend_s, NULL);
-  res = cuMemcpyHtoD(bucket_dev, Bucket, right * sizeof(BUCKET));
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD (bucket) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-  res = cuMemcpyHtoD(buckArray_dev, Buck_array, NB_BKT_ENT * sizeof(int));
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD (BuckArray) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-  res = cuMemcpyHtoD(idxcount_dev, idxcount, NB_BKT_ENT * sizeof(int));
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD (rt) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-  gettimeofday(&time_isend_f, NULL);
   gettimeofday(&time_send_f, NULL);
 
-
-  /*
-  gettimeofday(&time_cinit_s, NULL);
-  
-  gettimeofday(&time_cinit_f, NULL);
-  */
 
   /***************************************************************************/
 
@@ -380,8 +176,6 @@ void join(){
     条件に合致するタプルの数をあらかじめ求めておく
     これによってダウンロードするタプルの数を減らせる
    */
-
-
 
   /******************************************************************
     count the number of match tuple
@@ -447,7 +241,6 @@ void join(){
 
   
   gettimeofday(&time_count_f, NULL);
-
 
 
   /************************************************************************
@@ -528,13 +321,15 @@ void join(){
       exit(1);
     }
     gettimeofday(&time_jdown_f, NULL);
+    total += jt_size;
     //printf("jt_size = %d\n",jt_size*sizeof(RESULT)/1000);
-
 
   }
 
+
   /***************************************************************
   free GPU memory
+
   ***************************************************************/
 
   res = cuMemFree(lt_dev);
@@ -542,11 +337,6 @@ void join(){
     printf("cuMemFree (lt) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
-  res = cuMemFree(rt_dev);
-  if (res != CUDA_SUCCESS) {
-    printf("cuMemFree (rt) failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }  
   res = cuMemFree(jt_dev);
   if (res != CUDA_SUCCESS) {
     printf("cuMemFree (jointuple) failed: res = %lu\n", (unsigned long)res);
@@ -557,6 +347,236 @@ void join(){
     printf("cuMemFree (count) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
+
+  return total;
+
+}
+
+
+
+void join(){
+
+  //uint *count;
+  FILE *lp,*rp,*ip;
+  uint jt_size;
+  CUresult res;
+  CUdevice dev;
+  CUcontext ctx;
+  CUfunction function,c_function;
+  CUmodule module,c_module;
+  CUdeviceptr rt_dev,bucket_dev,buckArray_dev,idxcount_dev;
+  char fname[256];
+  const char *path=".";
+  struct timeval begin, end;
+  struct timeval leftread_time_s, leftread_time_f;
+  struct timeval rightread_time_s, rightread_time_f;
+  struct timeval sendgpu_time_s, sendgpu_time_f;
+  struct timeval join_s, join_f;
+  long leftread_time = 0,rightread_time = 0,join_time = 0;
+
+
+  /******************** GPU init here ************************************************/
+  //GPU仕様のために
+
+  res = cuInit(0);
+  if (res != CUDA_SUCCESS) {
+    printf("cuInit failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+  res = cuDeviceGet(&dev, 0);
+  if (res != CUDA_SUCCESS) {
+    printf("cuDeviceGet failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+  res = cuCtxCreate(&ctx, 0, dev);
+  if (res != CUDA_SUCCESS) {
+    printf("cuCtxCreate failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+
+  /*********************************************************************************/
+
+
+
+  /*
+   *指定したファイルからモジュールをロードする。これが平行実行されると思っていいもかな？
+   *今回はjoin_gpu.cubinとcountJoinTuple.cubinの二つの関数を実行する
+   */
+
+  sprintf(fname, "%s/join_gpu.cubin", path);
+  res = cuModuleLoad(&module, fname);
+  if (res != CUDA_SUCCESS) {
+    printf("cuModuleLoad() failed\n");
+    exit(1);
+  }
+  res = cuModuleGetFunction(&function, module, "join");
+  if (res != CUDA_SUCCESS) {
+    printf("cuModuleGetFunction() failed\n");
+    exit(1);
+  }
+
+  sprintf(fname, "%s/count.cubin", path);
+  res = cuModuleLoad(&c_module, fname);
+  if (res != CUDA_SUCCESS) {
+    printf("cuModuleLoad() failed\n");
+    exit(1);
+  }
+  
+  res = cuModuleGetFunction(&c_function, c_module, "count");
+  if (res != CUDA_SUCCESS) {
+    printf("cuModuleGetFunction() failed\n");
+    exit(1);
+  }
+
+  /*tuple and index init******************************************/  
+
+  if((rp=fopen(RIGHT_FILE,"r"))==NULL){
+    fprintf(stderr,"file open error(right)\n");
+    exit(1);
+  }
+  if(fread(&right,sizeof(int),1,rp)<1){
+    fprintf(stderr,"file read(rsize) error\n");
+    exit(1);
+  }
+
+  if((ip=fopen(INDEX_FILE,"r"))==NULL){
+    fprintf(stderr,"file open error(index)\n");
+    exit(1);
+  }
+  Bucket = (BUCKET *)calloc(right ,sizeof(BUCKET));
+
+  if(fread(Bucket,sizeof(BUCKET),right,ip)<right){
+    fprintf(stderr,"file read(BUCKET) error\n");
+    exit(1);
+  }
+  if(fread(Buck_array,sizeof(int),NB_BKT_ENT,ip)<NB_BKT_ENT){
+    fprintf(stderr,"file read(Buck_array) error\n");
+    exit(1);
+  }
+  if(fread(idxcount,sizeof(int),NB_BKT_ENT,ip)<NB_BKT_ENT){
+    fprintf(stderr,"file read(idxcount) error\n");
+    exit(1);
+  }
+  fclose(rp);
+  fclose(ip);
+
+  //memory allocate
+  createTuple();
+
+
+  /*全体の実行時間計測*/
+  gettimeofday(&begin, NULL);
+
+  //read table size from both table file
+  if((lp=fopen(LEFT_FILE,"r"))==NULL){
+    fprintf(stderr,"file open error(left)\n");
+    exit(1);
+  }
+  if(fread(&left,sizeof(int),1,lp)<1){
+    fprintf(stderr,"file read(lsize) error\n");
+    exit(1);
+  }
+
+#ifndef SIZEREADFILE
+  left = LSIZE;
+#endif
+  int lsize = left;
+
+  printf("left size = %d\n",left);
+
+
+  if((rp=fopen(RIGHT_FILE,"r"))==NULL){
+    fprintf(stderr,"file open error(right)\n");
+    exit(1);
+  }
+  if(fread(&right,sizeof(int),1,rp)<1){
+    fprintf(stderr,"file read(rsize) error\n");
+    exit(1);
+  }
+
+  lt = (TUPLE *)malloc(lsize*sizeof(TUPLE));
+  rt = (TUPLE *)malloc(right*sizeof(TUPLE));
+
+  gettimeofday(&rightread_time_s, NULL);
+  if(fread(rt,sizeof(TUPLE),right,rp)!=right){
+    fprintf(stderr,"file read(rt) error\n");
+    exit(1);
+  }
+  gettimeofday(&rightread_time_f, NULL);
+  diffplus(&rightread_time,rightread_time_s,rightread_time_f);
+
+
+  gettimeofday(&sendgpu_time_s, NULL);
+  /* rt */
+  res = cuMemAlloc(&rt_dev, right * sizeof(TUPLE));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemAlloc (righttuple) failed\n");
+    exit(1);
+  }
+  /* bucket */
+  res = cuMemAlloc(&bucket_dev, right * sizeof(BUCKET));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemAlloc (bucket) failed\n");
+    exit(1);
+  }
+  /* buck_array */
+  res = cuMemAlloc(&buckArray_dev, NB_BKT_ENT * sizeof(int));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemAlloc (bucket) failed\n");
+    exit(1);
+  }
+  /* idxcount */
+  res = cuMemAlloc(&idxcount_dev, NB_BKT_ENT * sizeof(int));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemAlloc (bucket) failed\n");
+    exit(1);
+  }
+
+  res = cuMemcpyHtoD(rt_dev, rt, right * sizeof(TUPLE));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemcpyHtoD (rt) failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+  res = cuMemcpyHtoD(bucket_dev, Bucket, right * sizeof(BUCKET));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemcpyHtoD (bucket) failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+  res = cuMemcpyHtoD(buckArray_dev, Buck_array, NB_BKT_ENT * sizeof(int));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemcpyHtoD (BuckArray) failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+  res = cuMemcpyHtoD(idxcount_dev, idxcount, NB_BKT_ENT * sizeof(int));
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemcpyHtoD (rt) failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+  gettimeofday(&sendgpu_time_f, NULL);
+
+
+  while(1){
+    gettimeofday(&leftread_time_s, NULL);
+    if((left=fread(lt,sizeof(TUPLE),lsize,lp))<0){
+      fprintf(stderr,"file read(lt) error\n");
+      exit(1);
+    }
+    if(left == 0) break;
+    gettimeofday(&leftread_time_f, NULL);
+    diffplus(&leftread_time,leftread_time_s,leftread_time_f);
+
+    gettimeofday(&join_s, NULL);
+    jt_size = IndexJoin(function,c_function,rt_dev,bucket_dev,buckArray_dev,idxcount_dev);
+    gettimeofday(&join_f, NULL);
+    diffplus(&join_time,join_s,join_f);
+
+  }
+
+  res = cuMemFree(rt_dev);
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemFree (rt) failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }  
   res = cuMemFree(bucket_dev);
   if (res != CUDA_SUCCESS) {
     printf("cuMemFree (bucket) failed: res = %lu\n", (unsigned long)res);
@@ -572,6 +592,14 @@ void join(){
     printf("cuMemFree (idxcount) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
+
+
+  fclose(lp);
+  fclose(rp);
+
+
+  /****************************************************************/
+
   gettimeofday(&end, NULL);
 
 
@@ -580,6 +608,22 @@ void join(){
   printf("all time:\n");
   printDiff(begin, end);
   printf("\n");
+  printf("file read time:\n");
+  printf("Diff: %ld us (%ld ms)\n", leftread_time+rightread_time, (leftread_time+rightread_time)/1000);
+  printf("left table file read time:\n");
+  printf("Diff: %ld us (%ld ms)\n", leftread_time, leftread_time/1000);
+  printf("right table file read time:\n");
+  printDiff(rightread_time_s,rightread_time_f);
+  printf("right table and index send gpu time:\n");
+  printDiff(sendgpu_time_s,sendgpu_time_f);
+  printf("join time:\n");
+  printf("Diff: %ld us (%ld ms)\n", join_time, join_time/1000);
+  printf("\n\n");
+
+
+
+
+  /*
   printf("read file time:\n");
   printDiff(time_file_s,time_file_f);
   printf("\n");
@@ -601,9 +645,9 @@ void join(){
   printDiff(time_jkernel_s,time_jkernel_f);
   printf("download time of jt:\n");
   printDiff(time_jdown_s,time_jdown_f);
+  */
 
-
-  printf("%d\n",jt_size);
+  printf("result size = %d\n",jt_size);
   
 
   for(uint i=0;i<3&&i<jt_size;i++){

@@ -85,12 +85,14 @@ void createIndex(TUPLE *rt)
 
   qsort(0,right-1);
 
+  /*
   for(uint i=1; i<right ; i++){
     if(Bucket[i-1].val > Bucket[i].val){
       printf("sort error[%d]\n",i);
       break;
     }
   }
+  */
 
 }
 
@@ -215,7 +217,7 @@ init(void)
     fprintf(stderr,"file write error\n");
     exit(1);
   }
-  fclose(lp);
+  fclose(ip);
 
 }
 
@@ -227,16 +229,16 @@ int main(int argc, char *argv[]){
       printf("argument1 is nothing.\n");
       exit(1);
     }else{
-      right=atoi(argv[1]);
-      printf("right num :%d\n",right);
+      left=atoi(argv[1]);
+      printf("left num :%d\n",left);
     }
     
     if(argv[2]==NULL){
       printf("argument2 is nothing.\n");
       exit(1);
     }else{
-      left=atoi(argv[2]);
-      printf("left num :%d\n",left);
+      right=atoi(argv[2]);
+      printf("right num :%d\n",right);
     }
   }
 

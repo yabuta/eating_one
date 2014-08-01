@@ -96,7 +96,7 @@ __global__ void join(
 
     //the first write location
 
-    writeloc = count[i + blockIdx.y*blockDim.x*gridDim.x];
+    int writeloc = count[i + blockIdx.y*blockDim.x*gridDim.x];
     int rtn_g = rtn;
 
     for(uint j = 0; j<BLOCK_SIZE_Y &&((j+BLOCK_SIZE_Y*blockIdx.y)<rtn_g);j++){

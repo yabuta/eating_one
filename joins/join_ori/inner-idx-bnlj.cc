@@ -121,17 +121,17 @@ main(void)
       int idx = bufR[i].val % NB_BKT_ENT;
       HASHOBJ *pho;
       for (pho = Bucket[idx].head.nxt; pho; pho = pho->nxt) {
-	if (pho->val == bufR[i].val) {
-	  TUPLE tpl;
-	  lseek(sfd, pho->adr, SEEK_SET);
-	  int ns = read(sfd, &tpl, sizeof(TUPLE));
-	  if (ns == -1) ERR;
-	  result.rkey = bufR[i].key;
-	  result.rval = bufR[i].val;
-	  result.skey = 1;//tpl.key;
-	  result.sval = 1;//tpl.val;
-	  resultVal += result.rval;
-	}
+        if (pho->val == bufR[i].val) {
+          TUPLE tpl;
+          lseek(sfd, pho->adr, SEEK_SET);
+          int ns = read(sfd, &tpl, sizeof(TUPLE));
+          if (ns == -1) ERR;
+          result.rkey = bufR[i].key;
+          result.rval = bufR[i].val;
+          result.skey = 1;//tpl.key;
+          result.sval = 1;//tpl.val;
+          resultVal += result.rval;
+        }
       } 
     }
   }

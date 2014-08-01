@@ -31,12 +31,16 @@ printDiff(struct timeval begin, struct timeval end)
   printf("Diff: %ld us (%ld ms)\n", diff, diff/1000);
 }
 
+void diffplus(long *total,struct timeval begin,struct timeval end){
+  *total += (end.tv_sec - begin.tv_sec) * 1000 * 1000 + (end.tv_usec - begin.tv_usec);
+
+}
+
+
 
 void createTuple()
 {
 
-  if (!(rt = (TUPLE *)calloc(right, sizeof(TUPLE)))) ERR;
-  if (!(lt = (TUPLE *)calloc(left, sizeof(TUPLE)))) ERR;
   if (!(jt = (RESULT *)calloc(JT_SIZE, sizeof(RESULT)))) ERR;
 
 }
@@ -79,23 +83,10 @@ main(int argc,char *argv[])
   FILE *lp,*rp,*ip;
   int resultVal = 0;
   struct timeval begin, end;
-  //  struct timeval s_s,s_f,w_s,w_f;
-  //  long sea=0,wri=0;
-
-
-  /*tuple and index init******************************************/  
-
-  if((lp=fopen(LEFT_FILE,"r"))==NULL){
-    fprintf(stderr,"file open error(left)\n");
-    exit(1);
-  }
-
-  if(fread(&left,sizeof(int),1,lp)<1){
-    fprintf(stderr,"file write error\n");
-    exit(1);
-  }
-  fclose(lp);
-
+  struct timeval leftread_time_s, leftread_time_f;
+  struct timeval rightread_time_s, rightread_time_f;
+  struct timeval join_s,join_f;
+  long leftread_time = 0,rightread_time = 0, join_time = 0;
 
   if((rp=fopen(RIGHT_FILE,"r"))==NULL){
     fprintf(stderr,"file open error(right)\n");
@@ -107,47 +98,6 @@ main(int argc,char *argv[])
   }
   fclose(rp);
 
-  createTuple();
-
-  /*
-  TUPLE *tlr;
-  int lr;
-  tlr = lt;
-  lt = rt;
-  rt = tlr;
-  lr = left;
-  left = right;
-  right = lr;
-  */
-
-  gettimeofday(&begin, NULL);
-
-  if((lp=fopen(LEFT_FILE,"r"))==NULL){
-    fprintf(stderr,"file open error(left)\n");
-    exit(1);
-  }
-  if(fread(&left,sizeof(int),1,lp)<1){
-    fprintf(stderr,"file write error\n");
-    exit(1);
-  }
-  if(fread(lt,sizeof(TUPLE),left,lp)<left){
-    fprintf(stderr,"file write error\n");
-    exit(1);
-  }
-  fclose(lp);
-  if((rp=fopen(RIGHT_FILE,"r"))==NULL){
-    fprintf(stderr,"file open error(right)\n");
-    exit(1);
-  }
-  if(fread(&right,sizeof(int),1,rp)<1){
-    fprintf(stderr,"file write error\n");
-    exit(1);
-  }
-  if(fread(rt,sizeof(TUPLE),right,rp)<right){
-    fprintf(stderr,"file write error\n");
-    exit(1);
-  }
-  fclose(rp);
   if((ip=fopen(INDEX_FILE,"r"))==NULL){
     fprintf(stderr,"file open error(left)\n");
     exit(1);
@@ -157,38 +107,101 @@ main(int argc,char *argv[])
     fprintf(stderr,"file write error\n");
     exit(1);
   }
-  fclose(lp);
+  fclose(ip);
 
 
-  // join
+  createTuple();
+
+
   gettimeofday(&begin, NULL);
 
-  for (uint j = 0; j < left; j++) {
 
-    //一致するタプルをBucketから探索し、その周辺で合致するものを探す。
-    uint bidx = search(Bucket,lt[j].val,right);
-    uint x = bidx;
-    while(Bucket[x].val == lt[j].val){
-      jt[resultVal].lkey = lt[j].key;
-      jt[resultVal].lval = lt[j].val;
-      jt[resultVal].rkey = rt[Bucket[x].adr].key;
-      jt[resultVal].rval = rt[Bucket[x].adr].val;      
-      resultVal++;
-      if(x == 0) break;
-      x--;
-    }
-    x = bidx+1;
-    while(Bucket[x].val == lt[j].val){
-      jt[resultVal].lkey = lt[j].key;
-      jt[resultVal].lval = lt[j].val;
-      jt[resultVal].rkey = rt[Bucket[x].adr].key;
-      jt[resultVal].rval = rt[Bucket[x].adr].val;      
-      resultVal++;
-      if(x == right-1) break;
-      x++;
-    }
-
+  /*tuple and index init******************************************/  
+  if((lp=fopen(LEFT_FILE,"r"))==NULL){
+    fprintf(stderr,"file open error(left)\n");
+    exit(1);
   }
+
+  if(fread(&left,sizeof(int),1,lp)<1){
+    fprintf(stderr,"file write error\n");
+    exit(1);
+  }
+
+#ifndef SIZEREADFILE
+  left = LSIZE;
+#endif
+  int lsize = left;
+
+
+  if((rp=fopen(RIGHT_FILE,"r"))==NULL){
+    fprintf(stderr,"file open error(right)\n");
+    exit(1);
+  }
+  if(fread(&right,sizeof(int),1,rp)<1){
+    fprintf(stderr,"file write error\n");
+    exit(1);
+  }
+
+  printf("left size = %d\tright size = %d\n",left,right);
+
+  if (!(lt = (TUPLE *)calloc(lsize, sizeof(TUPLE)))) ERR;
+  if (!(rt = (TUPLE *)calloc(right, sizeof(TUPLE)))) ERR;
+
+  gettimeofday(&rightread_time_s, NULL);
+  if(fread(rt,sizeof(TUPLE),right,rp)<right){
+    fprintf(stderr,"file write error\n");
+    exit(1);
+  }
+  gettimeofday(&rightread_time_f, NULL);
+  diffplus(&rightread_time,rightread_time_s,rightread_time_f);
+
+  // join
+  while(1){
+    gettimeofday(&leftread_time_s, NULL);
+    if((left=fread(lt,sizeof(TUPLE),lsize,lp))<0){
+      fprintf(stderr,"file write error\n");
+      exit(1);
+    }
+    if(left == 0) break;
+    gettimeofday(&leftread_time_f, NULL);
+    diffplus(&leftread_time,leftread_time_s,leftread_time_f);
+
+    gettimeofday(&join_s, NULL);
+    for (uint j = 0; j < left; j++) {
+
+      //一致するタプルをBucketから探索し、その周辺で合致するものを探す。
+      uint bidx = search(Bucket,lt[j].val,right);
+      uint x = bidx;
+      while(Bucket[x].val == lt[j].val){
+        jt[resultVal].lkey = lt[j].key;
+        jt[resultVal].lval = lt[j].val;
+        jt[resultVal].rkey = rt[Bucket[x].adr].key;
+        jt[resultVal].rval = rt[Bucket[x].adr].val;
+        resultVal++;
+        if(x == 0) break;
+        x--;
+      }
+
+      x = bidx+1;
+      while(Bucket[x].val == lt[j].val){
+        jt[resultVal].lkey = lt[j].key;
+        jt[resultVal].lval = lt[j].val;
+        jt[resultVal].rkey = rt[Bucket[x].adr].key;
+        jt[resultVal].rval = rt[Bucket[x].adr].val;      
+        resultVal++;
+        if(x == right-1) break;
+        x++;
+      }
+
+    }
+    gettimeofday(&join_f, NULL);
+    diffplus(&join_time,join_s,join_f);
+  }
+
+
+  fclose(lp);
+  fclose(rp);
+
   gettimeofday(&end, NULL);
 
   //printf("search time = %ldms\nwrite time = %ldms\n",sea/1000,wri/1000);
@@ -196,6 +209,18 @@ main(int argc,char *argv[])
   printf("*******execution time****************\n");
   printDiff(begin, end);
   printf("resultVal: %d\n", resultVal);
+  printf("\n");
+  printf("file read time:\n");
+  printf("Diff: %ld us (%ld ms)\n", leftread_time+rightread_time, (leftread_time+rightread_time)/1000);
+  printf("left table file read time:\n");
+  printf("Diff: %ld us (%ld ms)\n", leftread_time, leftread_time/1000);
+  printf("right table file read time:\n");
+  printDiff(rightread_time_s,rightread_time_f);
+  printf("join time:\n");
+  printf("Diff: %ld us (%ld ms)\n", join_time, join_time/1000);
+  printf("\n\n");
+
+  printf("result size: %d\n", resultVal);
   printf("\n");
 
 

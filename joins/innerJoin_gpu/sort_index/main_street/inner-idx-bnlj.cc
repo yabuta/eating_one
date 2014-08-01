@@ -606,6 +606,8 @@ void join(){
   printDiff(time_jdown_s,time_jdown_f);
 
 
+
+
   printf("%d\n",jt_size);
   printf("\n");
 

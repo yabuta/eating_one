@@ -4,7 +4,7 @@
 
 #define PARTITION 64    //partition num per 1 loop
 #define RADIX 6
-#define PART_C_NUM 16   //cuda block size of hash partition count
+#define PART_C_NUM 32   //cuda block size of hash partition count
 #define SHARED_MAX PARTITION * PART_C_NUM
 //#define LOOP 3          //partition loop times
 
@@ -38,7 +38,7 @@
 
 #define JT_SIZE 120000000 //max result tuple size
 #define SELECTIVITY 1000000000  //the range of random value for tuple
-#define MATCH_RATE 0.01          //match rate (selectivity,%)
+#define MATCH_RATE 0.1          //match rate (selectivity,%)
 
 typedef struct _TUPLE {
   int key;

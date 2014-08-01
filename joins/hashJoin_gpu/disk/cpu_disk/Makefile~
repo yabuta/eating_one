@@ -10,12 +10,11 @@ O1 = hj.o
 # Rules for make
 #
 all:$(T1)
-	$(CC) -o $(TARGET2) TableBuild.cpp
+
 
 $(T1): $(O1) tuple.h
 	$(CC) -o $@ $^ $(LDFLAGS)
-	
-
+	$(CC) -o $(TARGET2) TableBuild.cpp
 .cc.o: tuple.h
 	$(CC) $(CFLAGS) $< $^
 

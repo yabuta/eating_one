@@ -38,6 +38,11 @@ printDiff(struct timeval begin, struct timeval end)
   printf("Diff: %ld us (%ld ms)\n", diff, diff/1000);
 }
 
+void diffplus(long *total,struct timeval begin,struct timeval end){
+  *total += (end.tv_sec - begin.tv_sec) * 1000 * 1000 + (end.tv_usec - begin.tv_usec);
+
+}
+
 static uint iDivUp(uint dividend, uint divisor)
 {
     return ((dividend % divisor) == 0) ? (dividend / divisor) : (dividend / divisor + 1);
@@ -52,19 +57,18 @@ void createTuple()
   //メモリ割り当てを行う
   //タプルに初期値を代入
 
-  //RIGHT_TUPLEへのGPUでも参照できるメモリの割り当て****************************
-  res = cuMemHostAlloc((void**)&rt,right * sizeof(TUPLE),CU_MEMHOSTALLOC_DEVICEMAP);
+  /*
+  res = cuMemHostAlloc((void**)&rt,rsize * sizeof(TUPLE),CU_MEMHOSTALLOC_DEVICEMAP);
   if (res != CUDA_SUCCESS) {
     printf("cuMemHostAlloc to RIGHT_TUPLE failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
-
-  //LEFT_TUPLEへのGPUでも参照できるメモリの割り当て*******************************
-  res = cuMemHostAlloc((void**)&lt,left * sizeof(TUPLE),CU_MEMHOSTALLOC_DEVICEMAP);
+  res = cuMemHostAlloc((void**)&lt,lsize * sizeof(TUPLE),CU_MEMHOSTALLOC_DEVICEMAP);
   if (res != CUDA_SUCCESS) {
     printf("cuMemHostAlloc to LEFT_TUPLE failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
+  */
   
   /*********************************************************************************/
   //JOIN_TUPLEへのGPUでも参照できるメモリの割り当て********************************
@@ -86,12 +90,20 @@ void freeTuple(){
   cuMemFreeHost(jt);
 }
 
-
-void
-join()
+uint hashJoin(
+              CUfunction function,
+              CUfunction c_function,
+              CUfunction lcp_function,
+              CUfunction lp_function,
+              CUfunction sp_function,
+              CUfunction rcp_function,
+              CUfunction rp_function
+)
 {
 
-  //TUPLE *plt,*prt;
+  static uint total=0;
+
+  CUresult res;
   FILE *lp,*rp;
   RESULT result;
   int resultVal = 0;
@@ -101,18 +113,10 @@ join()
   uint count_size;
   uint *l_p,*radix_num,*p_loc;
   uint *count,*p_sum;
-  uint table_type;
-  CUresult res;
-  CUdevice dev;
-  CUcontext ctx;
-  CUfunction function,c_function,lcp_function,lp_function,sp_function,rcp_function,rp_function;
-  CUmodule module,c_module,p_module,cp_module;
-  CUdeviceptr lt_dev, rt_dev, jt_dev,count_dev,lL_dev,rL_dev;
-  CUdeviceptr plt_dev,prt_dev,l_p_dev,r_p_dev,radix_dev,p_sum_dev;
   unsigned int block_x, block_y, grid_x, grid_y,p_grid_x,p_block_x;
-  char fname[256];
-  const char *path=".";
-  struct timeval begin, end;
+  CUdeviceptr lt_dev, rt_dev, jt_dev,count_dev,lL_dev,rL_dev;
+  CUdeviceptr plt_dev,prt_dev,l_p_dev,radix_dev;
+  CUdeviceptr lstartPos_dev,rstartPos_dev;
   struct timeval time_alloc_s,time_alloc_f,time_file_s,time_file_f;
   struct timeval time_jdown_s,time_jdown_f,time_lupload_s,time_lupload_f;
   struct timeval time_hash_s,time_hash_f,time_lhck_s,time_lhck_f,time_lhash_s,time_lhash_f,time_lscan_s,time_lscan_f,time_hkernel_s,time_hkernel_f,time_lhother_s,time_lhother_f;
@@ -124,159 +128,6 @@ join()
   long temper=0,tempest=0;
   long uptime = 0;
 
-
-
-
-  /******************** GPU init here ************************************************/
-  //GPU仕様のために
-
-  res = cuInit(0);
-  if (res != CUDA_SUCCESS) {
-    printf("cuInit failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-  res = cuDeviceGet(&dev, 0);
-  if (res != CUDA_SUCCESS) {
-    printf("cuDeviceGet failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-  res = cuCtxCreate(&ctx, 0, dev);
-  if (res != CUDA_SUCCESS) {
-    printf("cuCtxCreate failed: res = %lu\n", (unsigned long)res);
-    exit(1);
-  }
-
-  cuCtxSetCacheConfig(CU_FUNC_CACHE_PREFER_SHARED);
-
-
-  /*********************************************************************************/
-
-
-
-  /*
-   *指定したファイルからモジュールをロードする。これが平行実行されると思っていいもかな？
-   *今回はjoin_gpu.cubinとcountJoinTuple.cubinの二つの関数を実行する
-   */
-
-  sprintf(fname, "%s/join_gpu.cubin", path);
-  res = cuModuleLoad(&module, fname);
-  if (res != CUDA_SUCCESS) {
-    printf("cuModuleLoad(join) failed\n");
-    exit(1);
-  }
-  res = cuModuleGetFunction(&function, module, "join");
-  if (res != CUDA_SUCCESS) {
-    printf("cuModuleGetFunction(join) failed\n");
-    exit(1);
-  }
-  res = cuModuleGetFunction(&c_function, module, "count");
-  if (res != CUDA_SUCCESS) {
-    printf("cuModuleGetFunction(count) failed\n");
-    exit(1);
-  }
-  sprintf(fname, "%s/partitioning.cubin", path);
-  res = cuModuleLoad(&p_module, fname);
-  if (res != CUDA_SUCCESS) {
-    printf("cuModuleLoad(partitioning) failed\n");
-    exit(1);
-  }
-
-  res = cuModuleGetFunction(&lcp_function, p_module, "lcount_partitioning");
-  if (res != CUDA_SUCCESS) {
-    printf("cuModuleGetFunction(lcount_partitioning) failed\n");
-    exit(1);
-  }
-  res = cuModuleGetFunction(&lp_function, p_module, "lpartitioning");
-  if (res != CUDA_SUCCESS) {
-    printf("cuModuleGetFunction(lpartitioning) failed\n");
-    exit(1);
-  }
-  res = cuModuleGetFunction(&rcp_function, p_module, "rcount_partitioning");
-  if (res != CUDA_SUCCESS) {
-    printf("cuModuleGetFunction(rcount_partitioning) failed\n");
-    exit(1);
-  }
-  res = cuModuleGetFunction(&rp_function, p_module, "rpartitioning");
-  if (res != CUDA_SUCCESS) {
-    printf("cuModuleGetFunction(rpartitioning) failed\n");
-    exit(1);
-  }  
-
-  res = cuModuleGetFunction(&sp_function, p_module, "countPartition");
-  if (res != CUDA_SUCCESS) {
-    printf("cuModuleGetFunction(countpartition) failed\n");
-    exit(1);
-  }
-
-  //read table size from both table file
-  if((lp=fopen(LEFT_FILE,"r"))==NULL){
-    fprintf(stderr,"file open error(left)\n");
-    exit(1);
-  }
-  if(fread(&left,sizeof(int),1,lp)<1){
-    fprintf(stderr,"file write error\n");
-    exit(1);
-  }
-  fclose(lp);
-
-  if((rp=fopen(RIGHT_FILE,"r"))==NULL){
-    fprintf(stderr,"file open error(right)\n");
-    exit(1);
-  }
-  if(fread(&right,sizeof(int),1,rp)<1){
-    fprintf(stderr,"file write error\n");
-    exit(1);
-  }
-  fclose(rp);
-  printf("left size = %d\tright size = %d",left,right);
-
-  createTuple();
-
-
-  gettimeofday(&begin, NULL);
-
-
-  gettimeofday(&time_file_s, NULL);
-  if((lp=fopen(LEFT_FILE,"r"))==NULL){
-    fprintf(stderr,"file open error(left)\n");
-    exit(1);
-  }
-  if(fread(&left,sizeof(int),1,lp)<1){
-    fprintf(stderr,"file write error\n");
-    exit(1);
-  }
-  if(fread(lt,sizeof(TUPLE),left,lp)<left){
-    fprintf(stderr,"file write error\n");
-    exit(1);
-  }
-
-  fclose(lp);
-
-  if((rp=fopen(RIGHT_FILE,"r"))==NULL){
-    fprintf(stderr,"file open error(right)\n");
-    exit(1);
-  }
-  if(fread(&right,sizeof(int),1,rp)<1){
-    fprintf(stderr,"file write error\n");
-    exit(1);
-  }
-  if(fread(rt,sizeof(TUPLE),right,rp)<right){
-    fprintf(stderr,"file write error\n");
-    exit(1);
-  }
-  fclose(rp);
-  gettimeofday(&time_file_f, NULL);
-
-  /*
-  TUPLE *tlr;
-  int lr;
-  tlr = lt;
-  lt = rt;
-  rt = tlr;
-  lr = left;
-  left = right;
-  right = lr;
-  */
   /*******************
    send data:
    int *lL,*rL
@@ -392,7 +243,7 @@ join()
     exit(1);
   }
 
-  printf("t_num=%d\tp_num=%d\n",t_num,p_num);
+  //printf("t_num=%d\tp_num=%d\n",t_num,p_num);
 
   p_block_x = t_num < PART_C_NUM ? t_num : PART_C_NUM;
   p_grid_x = t_num / p_block_x;
@@ -412,9 +263,7 @@ join()
     }
 
     gettimeofday(&time_lhck_s, NULL);
-
-
-    printf("p_grid=%d\tp_block=%d\n",p_grid_x,p_block_x);
+    //printf("p_grid=%d\tp_block=%d\n",p_grid_x,p_block_x);
 
     void *count_lpartition_args[]={
     
@@ -501,8 +350,6 @@ join()
     } 
     gettimeofday(&time_hkernel_f, NULL);  
 
-    printf("...loop finish\n");
-
     ltemp = lt_dev;
     lt_dev = plt_dev;
     plt_dev = ltemp;
@@ -526,7 +373,6 @@ join()
     p_block_x++;
   }
 
-  CUdeviceptr lstartPos_dev;
   int lpos_size = MAX_LARGE_ARRAY_SIZE*iDivUp(p_num,MAX_LARGE_ARRAY_SIZE);
 
   res = cuMemAlloc(&lstartPos_dev, lpos_size * sizeof(uint));
@@ -655,7 +501,6 @@ join()
 
   gettimeofday(&time_lhash_f, NULL);
 
-
   /****************************************************************
     right table partitioning for hash
 
@@ -673,14 +518,10 @@ join()
 
   gettimeofday(&time_rhash_s, NULL);
 
-  //table_type = RIGHT;
-
   t_num = right/RIGHT_PER_TH;
   if(right%RIGHT_PER_TH != 0){
     t_num++;
   }
-
-  printf("t_num=%d\tp_num=%d\n",t_num,p_num);
 
   res = cuMemAlloc(&rL_dev, t_num * PARTITION * sizeof(uint));
   if (res != CUDA_SUCCESS){
@@ -708,8 +549,6 @@ join()
     }
 
     gettimeofday(&time_rhck_s, NULL);
-
-    printf("p_grid=%d\tp_block=%d\n",p_grid_x,p_block_x);
 
     void *count_rpartition_args[]={
     
@@ -796,8 +635,6 @@ join()
     } 
     gettimeofday(&time_rhk_f, NULL);  
 
-    printf("...loop finish\n");
-
     ltemp = rt_dev;
     rt_dev = prt_dev;
     prt_dev = ltemp;
@@ -812,7 +649,6 @@ join()
     p_block_x++;
   }
 
-  CUdeviceptr rstartPos_dev;
   int rpos_size = MAX_LARGE_ARRAY_SIZE*iDivUp(p_num+1,MAX_LARGE_ARRAY_SIZE);
 
   res = cuMemAlloc(&rstartPos_dev, rpos_size * sizeof(uint));
@@ -928,7 +764,6 @@ join()
     cs = MAX_SHORT_ARRAY_SIZE;
   }
 
-  printf("block_x=%d\tgrid_x=%d\tcount_size=%d\n",block_x,grid_x,count_size);
   /*GPU memory alloc and send data of count ,l_p ,radix and r_p*/
 
   res = cuMemAlloc(&count_dev, cs * sizeof(uint));
@@ -1026,8 +861,6 @@ join()
     exit(1);
   }
 
-  printf("jt_size = %d\tx*b_x*y = %d\tl_p_num = %d\n",jt_size,grid_x*block_x*grid_y,l_p_num);
-
   gettimeofday(&time_count_f, NULL);
 
   /***************************************************************************************/
@@ -1097,12 +930,15 @@ join()
 
     gettimeofday(&time_jdown_s, NULL);
 
-    res = cuMemcpyDtoH(jt, jt_dev, jt_size * sizeof(RESULT));
+    res = cuMemcpyDtoH(&(jt[total]), jt_dev, jt_size * sizeof(RESULT));
     if (res != CUDA_SUCCESS) {
       printf("cuMemcpyDtoH (p) failed: res = %lu\n", (unsigned long)res);
       exit(1);
     }
-    printf("jt_size = %d\n",jt_size);
+
+    total += jt_size;
+
+    //printf("total = %d\n",total);
 
     gettimeofday(&time_jdown_f, NULL);
 
@@ -1140,12 +976,253 @@ join()
     printf("cuMemFree (p_sum_dev) failed: res = %lu\n", (unsigned long)res);
     exit(1);
   }
+  res = cuMemFree(lstartPos_dev);
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemFree (lstartPos_dev) failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+  res = cuMemFree(rstartPos_dev);
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemFree (rstartPos_dev) failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+
+  free(p_sum);
+  free(l_p);
+  free(radix_num);
+  free(p_loc);
+  free(r_p);
+
+  return total;
+
+
+}
+
+
+
+void
+join()
+{
+
+  uint jt_size;
+  FILE *lp,*rp;
+  CUresult res;
+  CUdevice dev;
+  CUcontext ctx;
+  CUfunction function,c_function,lcp_function,lp_function,sp_function,rcp_function,rp_function;
+  CUmodule module,c_module,p_module,cp_module;
+
+  char fname[256];
+  const char *path=".";
+  struct timeval begin, end;
+  struct timeval leftread_time_s, leftread_time_f;
+  struct timeval rightread_time_s, rightread_time_f;
+  struct timeval hashjoin_s, hashjoin_f;
+  long leftread_time = 0,rightread_time = 0,hashjoin_time = 0;
+
+
+
+
+  /******************** GPU init here ************************************************/
+  //GPU仕様のために
+
+  res = cuInit(0);
+  if (res != CUDA_SUCCESS) {
+    printf("cuInit failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+  res = cuDeviceGet(&dev, 0);
+  if (res != CUDA_SUCCESS) {
+    printf("cuDeviceGet failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+  res = cuCtxCreate(&ctx, 0, dev);
+  if (res != CUDA_SUCCESS) {
+    printf("cuCtxCreate failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+
+  //cuCtxSetCacheConfig(CU_FUNC_CACHE_PREFER_SHARED);
+
+
+  /*********************************************************************************/
+
+
+
+  /*
+   *指定したファイルからモジュールをロードする。これが平行実行されると思っていいもかな？
+   *今回はjoin_gpu.cubinとcountJoinTuple.cubinの二つの関数を実行する
+   */
+
+  sprintf(fname, "%s/join_gpu.cubin", path);
+  res = cuModuleLoad(&module, fname);
+  if (res != CUDA_SUCCESS) {
+    printf("cuModuleLoad(join) failed\n");
+    exit(1);
+  }
+  res = cuModuleGetFunction(&function, module, "join");
+  if (res != CUDA_SUCCESS) {
+    printf("cuModuleGetFunction(join) failed\n");
+    exit(1);
+  }
+  res = cuModuleGetFunction(&c_function, module, "count");
+  if (res != CUDA_SUCCESS) {
+    printf("cuModuleGetFunction(count) failed\n");
+    exit(1);
+  }
+  sprintf(fname, "%s/partitioning.cubin", path);
+  res = cuModuleLoad(&p_module, fname);
+  if (res != CUDA_SUCCESS) {
+    printf("cuModuleLoad(partitioning) failed\n");
+    exit(1);
+  }
+
+  res = cuModuleGetFunction(&lcp_function, p_module, "lcount_partitioning");
+  if (res != CUDA_SUCCESS) {
+    printf("cuModuleGetFunction(lcount_partitioning) failed\n");
+    exit(1);
+  }
+  res = cuModuleGetFunction(&lp_function, p_module, "lpartitioning");
+  if (res != CUDA_SUCCESS) {
+    printf("cuModuleGetFunction(lpartitioning) failed\n");
+    exit(1);
+  }
+  res = cuModuleGetFunction(&rcp_function, p_module, "rcount_partitioning");
+  if (res != CUDA_SUCCESS) {
+    printf("cuModuleGetFunction(rcount_partitioning) failed\n");
+    exit(1);
+  }
+  res = cuModuleGetFunction(&rp_function, p_module, "rpartitioning");
+  if (res != CUDA_SUCCESS) {
+    printf("cuModuleGetFunction(rpartitioning) failed\n");
+    exit(1);
+  }  
+
+  res = cuModuleGetFunction(&sp_function, p_module, "countPartition");
+  if (res != CUDA_SUCCESS) {
+    printf("cuModuleGetFunction(countpartition) failed\n");
+    exit(1);
+  }
+
+
+#ifdef SIZEREADFILE
+  //read table size from both table file
+  if((lp=fopen(LEFT_FILE,"r"))==NULL){
+    fprintf(stderr,"file open error(left)\n");
+    exit(1);
+  }
+  if(fread(&left,sizeof(int),1,lp)<1){
+    fprintf(stderr,"file write error\n");
+    exit(1);
+  }
+  fclose(lp);
+
+  if((rp=fopen(RIGHT_FILE,"r"))==NULL){
+    fprintf(stderr,"file open error(right)\n");
+    exit(1);
+  }
+  if(fread(&right,sizeof(int),1,rp)<1){
+    fprintf(stderr,"file write error\n");
+    exit(1);
+  }
+  fclose(rp);
+
+#else
+  left = LSIZE;
+  right = RSIZE;
+#endif
+
+  int lsize=left,rsize=right;
+
+  printf("left size = %d\tright size = %d\n",left,right);
+
+  createTuple();
+
+
+
+  /***begin hash join***************************************************************************/
+
+
+  gettimeofday(&begin, NULL);
+
+  if((lp=fopen(LEFT_FILE,"r"))==NULL){
+    fprintf(stderr,"file open error(left)\n");
+    exit(1);
+  }
+  if((rp=fopen(RIGHT_FILE,"r"))==NULL){
+    fprintf(stderr,"file open error(right)\n");
+    exit(1);
+  }
+  lt = (TUPLE *)malloc(lsize*sizeof(TUPLE));
+
+  if(fread(&left,sizeof(int),1,lp)<1){
+    fprintf(stderr,"file write error\n");
+    exit(1);
+  }
+  if(fread(&right,sizeof(int),1,rp)<1){
+    fprintf(stderr,"file write error\n");
+    exit(1);
+  }
+  rt = (TUPLE *)malloc(rsize*sizeof(TUPLE));
+
+  while(1){
+    gettimeofday(&leftread_time_s, NULL);
+    if((left=fread(lt,sizeof(TUPLE),lsize,lp))<0){
+      fprintf(stderr,"file write error\n");
+      exit(1);
+    }
+    if(left == 0) break;
+    gettimeofday(&leftread_time_f, NULL);
+    diffplus(&leftread_time,leftread_time_s,leftread_time_f);
+
+
+    while(1){
+      gettimeofday(&rightread_time_s, NULL);
+      if((right=fread(rt,sizeof(TUPLE),rsize,rp))<0){
+        fprintf(stderr,"file write error\n");
+        exit(1);
+      }
+      if(right == 0) break;
+      gettimeofday(&rightread_time_f, NULL);
+      diffplus(&rightread_time,rightread_time_s,rightread_time_f);
+
+      gettimeofday(&hashjoin_s, NULL);
+      jt_size = hashJoin(function,c_function,lcp_function,lp_function,sp_function,rcp_function,rp_function);
+      gettimeofday(&hashjoin_f, NULL);
+      diffplus(&hashjoin_time,hashjoin_s,hashjoin_f);
+
+    }
+    if(fseek(rp,sizeof(int),0)!=0){
+      fprintf(stderr,"file seek error.\n");
+      exit(1);
+    }
+  }
+
+  fclose(lp);
+  fclose(rp);
 
   gettimeofday(&end, NULL);
 
+  printf("\n");
+  printf("\n");
+  printf("all time:\n");
+  printDiff(begin, end);
+  printf("\n");
+  printf("file read time:\n");
+  printf("Diff: %ld us (%ld ms)\n", leftread_time+rightread_time, (leftread_time+rightread_time)/1000);
+  printf("left table file read time:\n");
+  printf("Diff: %ld us (%ld ms)\n", leftread_time, leftread_time/1000);
+  printf("right table file read time:\n");
+  printf("Diff: %ld us (%ld ms)\n", rightread_time, rightread_time/1000);
+  printf("hash join time:\n");
+  printf("Diff: %ld us (%ld ms)\n", hashjoin_time, hashjoin_time/1000);
+  printf("\n\n");
+
+
+
 
   /*size of HtoD data*/
-
+  /*
   int DEF = 1000;
   printf("lt = %d\n",left*sizeof(TUPLE)/DEF);
   printf("rt = %d\n" ,right * sizeof(TUPLE)/DEF);
@@ -1208,12 +1285,7 @@ join()
   printDiff(time_jkernel_s,time_jkernel_f);
   printf("join download time:\n");
   printDiff(time_jdown_s,time_jdown_f);
-
-  free(p_sum);
-  free(l_p);
-  free(radix_num);
-  free(p_loc);
-  free(r_p);
+  */
 
   for(uint i=0;i<3&&i<jt_size;i++){
     printf("join[%d]:left %8d \t:right: %8d\n",i,jt[i].lkey,jt[i].rkey);

@@ -1,3 +1,6 @@
+/************
+use hj.cc
+ *********/
 #define BLOCK_SIZE_X 1024 //cuda block size of join and count kernel 
 #define BLOCK_SIZE_Y 1
 #define GRID_SIZE_Y 1
@@ -30,15 +33,26 @@
 
 #define PART_STANDARD 64
 #define JOIN_SHARED 256      //the number of sub left tuple per one block in join and count kernel
-
-
-
 */
 
+//read size for disk data
+#define LSIZE 262144
+#define RSIZE 262144
+#define SIZEREADFILE
+
+
+/************
+use TableBuild.cpp
+ *********/
 
 #define JT_SIZE 120000000 //max result tuple size
 #define SELECTIVITY 1000000000  //the range of random value for tuple
-#define MATCH_RATE 0.01          //match rate (selectivity,%)
+#define MATCH_RATE 0.1          //match rate (selectivity,%)
+
+
+/************
+use both
+ *********/
 
 typedef struct _TUPLE {
   int key;
@@ -51,4 +65,3 @@ typedef struct _RESULT {
   int lkey;
   int lval;
 } RESULT;
-

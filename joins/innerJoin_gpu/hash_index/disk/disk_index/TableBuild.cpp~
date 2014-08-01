@@ -8,9 +8,9 @@
 #include "tuple.h"
 
 
-#define LEFT_FILE "/home/yabuta/JoinData/hash-index/left_table.out"
-#define RIGHT_FILE "/home/yabuta/JoinData/hash-index/right_table.out"
-#define INDEX_FILE "/home/yabuta/JoinData/hash-index/index.out"
+#define LEFT_FILE "/home/yabuta/JoinData/hash-index/gpu/left_table.out"
+#define RIGHT_FILE "/home/yabuta/JoinData/hash-index/gpu/right_table.out"
+#define INDEX_FILE "/home/yabuta/JoinData/hash-index/gpu/index.out"
 
 int left,right;
 

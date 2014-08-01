@@ -10,10 +10,10 @@ LDFLAGS = -Wall -L/usr/local/lib -lm -lpthread -O2
 # Rules for make
 #
 all: $(T1)
-
+	$(CC) -o $(TARGET2) TableBuild.cpp	
 $(T1): $(01) 
 	$(CC) -o $@ $^ $(LDFLAGS)
-	$(CC) -o $(TARGET2) TableBuild.cpp
+
 
 .cc.o:
 	$(CC) $(CFLAGS) $<

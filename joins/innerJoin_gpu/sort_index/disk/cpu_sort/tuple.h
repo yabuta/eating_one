@@ -1,15 +1,20 @@
-/*
-#define SZ_PAGE 131072
-#define NB_BUFR (SZ_PAGE * 2 / sizeof(TUPLE))
-#define NB_BUFS (SZ_PAGE * 16 / sizeof(TUPLE))
-*/
+/******
+use hj.cc
+ ******/
+#define LSIZE 8388608
+#define SIZEREADFILE
 
+/******
+use TableBuild.cpp
+ ******/
 #define MATCH_RATE 0.1
-
 #define JT_SIZE 1200000000
 #define SELECTIVITY 1000000000
 
 
+/******
+use both
+ ******/
 typedef struct _TUPLE {
   int key;
   int val;

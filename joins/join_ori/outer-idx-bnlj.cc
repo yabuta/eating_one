@@ -69,6 +69,7 @@ main(void)
   struct timeval begin, end;
   BUCKET bucket[NB_BUCKET];
 
+
   gettimeofday(&begin, NULL);
   rfd = open("R", O_RDONLY); if (rfd == -1) ERR;
   sfd = open("S", O_RDONLY); if (sfd == -1) ERR;

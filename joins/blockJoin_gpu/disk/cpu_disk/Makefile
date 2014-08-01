@@ -1,6 +1,6 @@
 # Makefile
 TARGET	= ExeNestLoop
-TARGET2 = BiuldTable
+TARGET2 = BuildTable
 CC	= gcc
 NVCC	= nvcc -arch sm_35 -cubin
 LIBS	= -lcuda -lstdc++

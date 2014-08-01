@@ -16,6 +16,13 @@ TUPLE *Tright;
 TUPLE *Tleft;
 JOIN_TUPLE *Tjoin;
 
+void diffplus(long *total,struct timeval begin,struct timeval end){
+  *total += (end.tv_sec - begin.tv_sec) * 1000 * 1000 + (end.tv_usec - begin.tv_usec);
+  
+}
+
+
+
 static int
 getTupleId(void)
 {
@@ -31,22 +38,20 @@ getJoinTuple(TUPLE *lt, TUPLE *rt,JOIN_TUPLE *jt)
   int i;
 
   jt->lval = lt->val;
-  jt->rval = rt->val;  
-  
+  jt->rval = rt->val;    
   // lid & rid are just for debug
   jt->lid = lt->id;
   jt->rid = rt->id;
-
   
 }
 
 
-void
+int
 join()
 {
 
   int i,j;
-  int count=0;
+  static int count=0;
   for (i = 0 ; i < left ; i++) {
     for (j = 0 ; j < right ; j++) {
       if(Tleft[i].val == Tright[j].val){
@@ -55,7 +60,10 @@ join()
       }
     }
   }
+
   printf("%d\n",count);
+
+  return count;
 
 }
 
@@ -91,31 +99,13 @@ main(int argc, char *argv[])
 
   struct timeval time_s,time_f;
   double time_cal;
-  int i;
+  int jt_size;
   FILE *lp,*rp;
 
-
-  //read table size from both table file
-  if((lp=fopen(LEFT_FILE,"r"))==NULL){
-    fprintf(stderr,"file open error(left)\n");
-    exit(1);
-  }
-  if(fread(&left,sizeof(int),1,lp)<1){
-    fprintf(stderr,"file write error\n");
-    exit(1);
-  }
-  fclose(lp);
-
-  if((rp=fopen(RIGHT_FILE,"r"))==NULL){
-    fprintf(stderr,"file open error(right)\n");
-    exit(1);
-  }
-  if(fread(&right,sizeof(int),1,rp)<1){
-    fprintf(stderr,"file write error\n");
-    exit(1);
-  }
-  fclose(rp);
-  printf("left size = %d\tright size = %d",left,right);
+  struct timeval leftread_time_s, leftread_time_f;
+  struct timeval rightread_time_s, rightread_time_f;
+  struct timeval hashjoin_s, hashjoin_f;
+  long leftread_time = 0,rightread_time = 0,hashjoin_time = 0;
 
 
   /*******************init array*************************************/
@@ -127,6 +117,9 @@ main(int argc, char *argv[])
 
 
   gettimeofday(&time_s,NULL);
+
+
+  //read table size from both table file
   if((lp=fopen(LEFT_FILE,"r"))==NULL){
     fprintf(stderr,"file open error(left)\n");
     exit(1);
@@ -135,12 +128,6 @@ main(int argc, char *argv[])
     fprintf(stderr,"file write error\n");
     exit(1);
   }
-  if(fread(Tleft,sizeof(TUPLE),left,lp)<left){
-    fprintf(stderr,"file write error\n");
-    exit(1);
-  }
-
-  fclose(lp);
 
   if((rp=fopen(RIGHT_FILE,"r"))==NULL){
     fprintf(stderr,"file open error(right)\n");
@@ -150,19 +137,66 @@ main(int argc, char *argv[])
     fprintf(stderr,"file write error\n");
     exit(1);
   }
-  if(fread(Tright,sizeof(TUPLE),right,rp)<right){
-    fprintf(stderr,"file write error\n");
-    exit(1);
+
+#ifdef SIZEREADFILE
+  left = LSIZE;
+  right = RSIZE;
+#endif
+
+  printf("left size = %d\tright size = %d\n",left,right);
+
+  int lsize = left,rsize = right;
+
+  Tleft = (TUPLE *)malloc(lsize*sizeof(TUPLE));
+  Tright = (TUPLE *)malloc(rsize*sizeof(TUPLE));
+
+  while(1){
+    gettimeofday(&leftread_time_s, NULL);
+    if((left=fread(Tleft,sizeof(TUPLE),lsize,lp))<0){
+      fprintf(stderr,"file write error\n");
+      exit(1);
+    }
+    if(left == 0) break;
+    gettimeofday(&leftread_time_f, NULL);
+    diffplus(&leftread_time,leftread_time_s,leftread_time_f);
+
+    while(1){
+      gettimeofday(&rightread_time_s, NULL);
+      if((right=fread(Tright,sizeof(TUPLE),rsize,rp))<0){
+        fprintf(stderr,"file write error\n");
+        exit(1);
+      }
+      if(right == 0) break;
+      gettimeofday(&rightread_time_f, NULL);
+      diffplus(&rightread_time,rightread_time_s,rightread_time_f);
+
+
+      gettimeofday(&hashjoin_s, NULL);
+      jt_size = join();
+      gettimeofday(&hashjoin_f, NULL);
+      diffplus(&hashjoin_time,hashjoin_s,hashjoin_f);
+
+    }
+    if(fseek(rp,sizeof(int),0)!=0){
+      fprintf(stderr,"file seek error.\n");
+      exit(1);
+    }
   }
+  fclose(lp);
   fclose(rp);
 
-  join();
   gettimeofday(&time_f,NULL);
 
   time_cal=(time_f.tv_sec-time_s.tv_sec)*1000*1000+(time_f.tv_usec-time_s.tv_usec);
   printf("Caluculation with Devise    : %6f(miri sec)\n",time_cal/1000);
+  printf("file read time:\n");
+  printf("Diff: %ld us (%ld ms)\n", leftread_time+rightread_time, (leftread_time+rightread_time)/1000\
+         );
+  printf("hash join time:\n");
+  printf("Diff: %ld us (%ld ms)\n", hashjoin_time, hashjoin_time/1000);
+  printf("result table size = %d\n",jt_size);
+  printf("\n\n");
 
-  printf("%d %d\n",sizeof(TUPLE),sizeof(JOIN_TUPLE));
 
 
   //結果の表示　むやみにやったら死ぬので気を付ける

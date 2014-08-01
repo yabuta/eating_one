@@ -38,7 +38,7 @@
 
 #define JT_SIZE 120000000 //max result tuple size
 #define SELECTIVITY 1000000000  //the range of random value for tuple
-#define MATCH_RATE 0.01          //match rate (selectivity,%)
+#define MATCH_RATE 0.1          //match rate (selectivity,%)
 
 typedef struct _TUPLE {
   int key;
