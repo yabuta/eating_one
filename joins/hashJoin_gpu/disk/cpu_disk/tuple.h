@@ -2,7 +2,7 @@
 use hj.cc
  *******/
 
-#define NB_BKTENT 524288 // the number of partitions
+#define NB_BKTENT 1048576 // the number of partitions
 
 //最適hash値
 // 1M * 1M   131072
@@ -23,7 +23,7 @@ use TableBuild.cpp
 #define JT_SIZE 1200000000
 #define SELECTIVITY 1000000000 //
 
-#define MATCH_RATE 1 //match rate setting
+#define MATCH_RATE 0.1 //match rate setting
 
 
 /*******

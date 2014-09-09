@@ -244,7 +244,7 @@ join()
 
   printf("grid_x = %d\tgrid_y = %d\tblock_x = %d\tblock_y = %d\n",grid_x,grid_y,block_x,block_y);
 
-  uint gpu_size = grid_x * grid_y * block_x * block_y;
+  uint gpu_size = grid_x * grid_y * block_x * block_y+1;
   printf("gpu_size = %d\n",gpu_size);
   
   /********************************************************************************/

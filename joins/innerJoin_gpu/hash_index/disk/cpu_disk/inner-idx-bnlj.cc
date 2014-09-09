@@ -120,10 +120,20 @@ main(int argc,char *argv[])
   //memory allocate
   createTuple();
 
+  if((lp=fopen(LEFT_FILE,"r"))==NULL){
+    fprintf(stderr,"file open error(left)\n");
+    exit(1);
+  }
+
+  if(fread(&left,sizeof(int),1,lp)<1){
+    fprintf(stderr,"file read(lsize) error\n");
+    exit(1);
+  }
+  fclose(lp);
+
 
   /*全体の実行時間計測*/
   gettimeofday(&begin, NULL);
-
 
   //read table size from both table file
   if((lp=fopen(LEFT_FILE,"r"))==NULL){
@@ -142,8 +152,6 @@ main(int argc,char *argv[])
 #endif
   int lsize = left;
 
-  printf("left size = %d\n",left);
-
   if((rp=fopen(RIGHT_FILE,"r"))==NULL){
     fprintf(stderr,"file open error(right)\n");
     exit(1);
@@ -152,6 +160,9 @@ main(int argc,char *argv[])
     fprintf(stderr,"file read(rsize) error\n");
     exit(1);
   }
+
+  printf("left size = %d\tright size = %d\n",left,right);
+
 
   if (!(lt = (TUPLE *)malloc(lsize*sizeof(TUPLE)))) ERR;
   if (!(rt = (TUPLE *)malloc(right*sizeof(TUPLE)))) ERR;
@@ -162,7 +173,7 @@ main(int argc,char *argv[])
     exit(1);
   }
   gettimeofday(&rightread_time_f, NULL);
-
+  diffplus(&rightread_time,rightread_time_s,rightread_time_f);
 
   /*******join******************************************************/
 

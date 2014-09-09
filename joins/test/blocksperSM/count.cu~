@@ -27,13 +27,9 @@ void count(
 {
 
   uint x = blockIdx.x*blockDim.x + threadIdx.x;
-  __shared__ int temp[2048];
+  __shared__ int temp[1024];
 
-  if(x<left){
-    int temp2 = lt[x];
-    temp2=temp2%10;
-    jt[x] = temp2;
-  }
+  jt[x] = lt[x];
 
   //jt[x] = lt[0];
 

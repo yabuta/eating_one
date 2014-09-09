@@ -93,7 +93,7 @@ LDFLAGS       += $(LIBPATH_OPENGL)
 
 all: nestLoopJoin.cc join_gpu.cu scan.o scan_main.o
 	$(NVCC) -o join_gpu.cubin join_gpu.cu -lm
-	gcc -o $(TARGET) $(CFLAGS) $(LIBS) $(LDFLAGS) $(EXTRA_LDFLAGS) $(INCLUDES) nestLoopJoin.cc scan_main.o scan.o
+	gcc $(CFLAGS) -o $(TARGET) nestLoopJoin.cc scan_main.o scan.o $(LIBS) $(LDFLAGS) $(EXTRA_LDFLAGS) $(INCLUDES)
 
 
 scan.o:	scan.cu scan_common.h

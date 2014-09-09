@@ -112,7 +112,6 @@ main(int argc,char *argv[])
 
   createTuple();
 
-
   gettimeofday(&begin, NULL);
 
 

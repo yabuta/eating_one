@@ -261,7 +261,7 @@ void join(){
   gettimeofday(&time_count_f, NULL);
 
   gettimeofday(&time_jdown_s, NULL);
-  res = cuMemcpyDtoH(jt,jt_dev,left * sizeof(TUPLE));
+  res = cuMemcpyDtoH(jt,jt_dev,left * sizeof(int));
   if(res != CUDA_SUCCESS){
     printf("cuMemcpyDtoH (jt) failed: res = %lu\n", (unsigned long)res);
     exit(1);
@@ -326,7 +326,7 @@ int
 main(int argc,char *argv[])
 {
 
-  left = 1024*1024*16;
+  left = 1024*1024*128;
   printf("number = %d\n",left);
 
   join();

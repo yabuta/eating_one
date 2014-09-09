@@ -202,7 +202,7 @@ init(void)
     exit(1);
   }
 
-  fclose(lp);
+  fclose(ip);
 
 }
 

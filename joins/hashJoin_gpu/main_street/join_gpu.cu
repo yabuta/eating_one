@@ -33,6 +33,15 @@ void count(
   }
   __syncthreads();
 
+  /*
+  for(int k=r_p[radix[blockIdx.x]]+threadIdx.x ; k<r_p[radix[blockIdx.x]+1] ; k += blockDim.x){
+    for(int i=0; i<l_p[blockIdx.x+1]-l_p[blockIdx.x] ;i++){
+      if(sub_lt[i].val == rt[k].val){
+        count[x]++;
+      }
+    }
+  }
+  */
   int temp=0;
   int temp2 = r_p[radix[blockIdx.x]+1];
   int temp3 = l_p[blockIdx.x+1] - l_p[blockIdx.x];
@@ -48,10 +57,11 @@ void count(
   }
   count[x] = count_x_temp;
 
+
+
   if(x == gridDim.x*blockDim.x-1){
     count[x+1] = 0;
   }
-
 
 }
 
@@ -81,7 +91,6 @@ __global__ void join(
   }
   __syncthreads();
 
-
   TUPLE temp;
   int temp2 = r_p[radix[blockIdx.x]+1];
   int temp3 = l_p[blockIdx.x+1] - l_p[blockIdx.x];
@@ -100,7 +109,6 @@ __global__ void join(
       }
     }
   }
-
     
 }    
 

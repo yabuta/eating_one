@@ -15,7 +15,7 @@ GPUで動かすため配列のほうが向いていると思ったので
 #define SELECTIVITY 1000000000
 #define MATCH_RATE 0.1
 
-#define VAL_NUM 3
+#define VAL_NUM 2
 
 typedef struct _TUPLE {
     int id;

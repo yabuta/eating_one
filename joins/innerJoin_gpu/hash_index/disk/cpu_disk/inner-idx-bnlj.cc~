@@ -68,7 +68,7 @@ main(int argc,char *argv[])
   struct timeval leftread_time_s, leftread_time_f;
   struct timeval rightread_time_s, rightread_time_f;
   struct timeval join_s,join_f;
-  long leftread_time = 0,join_time = 0;
+  long leftread_time = 0,rightread_time = 0, join_time = 0;
 
 
 
@@ -98,7 +98,7 @@ main(int argc,char *argv[])
     fprintf(stderr,"file open error(index)\n");
     exit(1);
   }
-  Bucket = (BUCKET *)calloc(right ,sizeof(BUCKET));
+  Bucket = (BUCKET *)malloc(right*sizeof(BUCKET));
 
   if(fread(Bucket,sizeof(BUCKET),right,ip)<right){
     fprintf(stderr,"file read(BUCKET) error\n");
@@ -120,9 +120,19 @@ main(int argc,char *argv[])
   //memory allocate
   createTuple();
 
+  if((lp=fopen(LEFT_FILE,"r"))==NULL){
+    fprintf(stderr,"file open error(left)\n");
+    exit(1);
+  }
+
+  if(fread(&left,sizeof(int),1,lp)<1){
+    fprintf(stderr,"file read(lsize) error\n");
+    exit(1);
+  }
+  fclose(lp);
+
 
   /*全体の実行時間計測*/
-
   gettimeofday(&begin, NULL);
 
   //read table size from both table file
@@ -130,17 +140,17 @@ main(int argc,char *argv[])
     fprintf(stderr,"file open error(left)\n");
     exit(1);
   }
+
   if(fread(&left,sizeof(int),1,lp)<1){
     fprintf(stderr,"file read(lsize) error\n");
     exit(1);
   }
 
+
 #ifndef SIZEREADFILE
   left = LSIZE;
 #endif
   int lsize = left;
-
-  printf("left size = %d\n",left);
 
   if((rp=fopen(RIGHT_FILE,"r"))==NULL){
     fprintf(stderr,"file open error(right)\n");
@@ -151,6 +161,9 @@ main(int argc,char *argv[])
     exit(1);
   }
 
+  printf("left size = %d\tright size = %d\n",left,right);
+
+
   if (!(lt = (TUPLE *)malloc(lsize*sizeof(TUPLE)))) ERR;
   if (!(rt = (TUPLE *)malloc(right*sizeof(TUPLE)))) ERR;
 
@@ -160,7 +173,7 @@ main(int argc,char *argv[])
     exit(1);
   }
   gettimeofday(&rightread_time_f, NULL);
-
+  diffplus(&rightread_time,rightread_time_s,rightread_time_f);
 
   /*******join******************************************************/
 
@@ -201,6 +214,8 @@ main(int argc,char *argv[])
   printf("all time:\n");
   printDiff(begin, end);
   printf("\n");
+  printf("file read time:\n");
+  printf("Diff: %ld us (%ld ms)\n", leftread_time+rightread_time, (leftread_time+rightread_time)/1000);
   printf("left table file read time:\n");
   printf("Diff: %ld us (%ld ms)\n", leftread_time, leftread_time/1000);
   printf("right table file read time:\n");

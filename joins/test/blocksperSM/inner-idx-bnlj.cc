@@ -326,7 +326,7 @@ int
 main(int argc,char *argv[])
 {
 
-  left = 1024*1024*16;
+  left = 1024*1024*256;
   printf("number = %d\n",left);
 
   join();

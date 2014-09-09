@@ -112,6 +112,16 @@ main(int argc,char *argv[])
 
   createTuple();
 
+  if((lp=fopen(LEFT_FILE,"r"))==NULL){
+    fprintf(stderr,"file open error(left)\n");
+    exit(1);
+  }
+
+  if(fread(&left,sizeof(int),1,lp)<1){
+    fprintf(stderr,"file write error\n");
+    exit(1);
+  }
+  fclose(lp);
 
   gettimeofday(&begin, NULL);
 
