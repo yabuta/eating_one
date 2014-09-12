@@ -291,6 +291,7 @@ join()
 
   createTuple();
 
+  /*
   TUPLE *tlr;
   int lr;
   tlr = lt;
@@ -299,7 +300,7 @@ join()
   lr = left;
   left = right;
   right = lr;
-
+  */
   /*******************
    send data:
    int *lL,*rL

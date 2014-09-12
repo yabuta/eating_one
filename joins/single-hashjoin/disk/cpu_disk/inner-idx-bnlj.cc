@@ -1,0 +1,239 @@
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <pthread.h>
+#include <sys/time.h>
+#include <string.h>
+#include "debug.h"
+#include "tuple.h"
+
+#define LEFT_FILE "/home/yabuta/JoinData/hash-index/cpu/left_table.out"
+#define RIGHT_FILE "/home/yabuta/JoinData/hash-index/cpu/right_table.out"
+#define INDEX_FILE "/home/yabuta/JoinData/hash-index/cpu/index.out"
+
+BUCKET *Bucket;
+int Buck_array[NB_BUCKET];
+int idxcount[NB_BUCKET];
+
+TUPLE *rt;
+TUPLE *lt;
+RESULT *jt;
+
+uint right,left;
+
+void
+printDiff(struct timeval begin, struct timeval end)
+{
+  long diff;
+
+  diff = (end.tv_sec - begin.tv_sec) * 1000 * 1000 + (end.tv_usec - begin.tv_usec);
+  printf("Diff: %ld us (%ld ms)\n", diff, diff/1000);
+}
+
+void diffplus(long *total,struct timeval begin,struct timeval end){
+  *total += (end.tv_sec - begin.tv_sec) * 1000 * 1000 + (end.tv_usec - begin.tv_usec);
+
+}
+
+
+
+void createTuple()
+{
+  if (!(jt = (RESULT *)calloc(JT_SIZE, sizeof(RESULT)))) ERR;
+
+}
+
+void freeTuple(){
+  free(rt);
+  free(lt);
+  free(jt);
+  free(Bucket);
+
+}
+
+
+
+int 
+main(int argc,char *argv[])
+{
+
+
+  //RESULT result;
+  FILE *lp,*rp,*ip;
+  int resultVal = 0;
+  struct timeval begin, end;
+  struct timeval leftread_time_s, leftread_time_f;
+  struct timeval rightread_time_s, rightread_time_f;
+  struct timeval join_s,join_f;
+  long leftread_time = 0,rightread_time = 0, join_time = 0;
+
+
+
+
+
+  //read index
+  /**
+     Bucket:indexの入っている配列
+     Buck_array:i番目のindexのスタート位置
+     idxcount:i番目のindexの数
+
+     GPUでは配列を一つにした方が扱いやすいので
+     indexとoffsetの配列を用意してある
+
+   */
+
+
+  if((rp=fopen(RIGHT_FILE,"r"))==NULL){
+    fprintf(stderr,"file open error(right)\n");
+    exit(1);
+  }
+  if(fread(&right,sizeof(int),1,rp)<1){
+    fprintf(stderr,"file read(rsize) error\n");
+    exit(1);
+  }
+  if((ip=fopen(INDEX_FILE,"r"))==NULL){
+    fprintf(stderr,"file open error(index)\n");
+    exit(1);
+  }
+  Bucket = (BUCKET *)malloc(right*sizeof(BUCKET));
+
+  if(fread(Bucket,sizeof(BUCKET),right,ip)<right){
+    fprintf(stderr,"file read(BUCKET) error\n");
+    exit(1);
+  }
+  if(fread(Buck_array,sizeof(int),NB_BUCKET,ip)<NB_BUCKET){
+    fprintf(stderr,"file read(Buck_array) error\n");
+    exit(1);
+  }
+  if(fread(idxcount,sizeof(int),NB_BUCKET,ip)<NB_BUCKET){
+    fprintf(stderr,"file read(idxcount) error\n");
+    exit(1);
+  }
+
+  fclose(rp);
+  fclose(ip);
+
+
+  //memory allocate
+  createTuple();
+
+  if((lp=fopen(LEFT_FILE,"r"))==NULL){
+    fprintf(stderr,"file open error(left)\n");
+    exit(1);
+  }
+
+  if(fread(&left,sizeof(int),1,lp)<1){
+    fprintf(stderr,"file read(lsize) error\n");
+    exit(1);
+  }
+  fclose(lp);
+
+
+  /*全体の実行時間計測*/
+  gettimeofday(&begin, NULL);
+
+  //read table size from both table file
+  if((lp=fopen(LEFT_FILE,"r"))==NULL){
+    fprintf(stderr,"file open error(left)\n");
+    exit(1);
+  }
+
+  if(fread(&left,sizeof(int),1,lp)<1){
+    fprintf(stderr,"file read(lsize) error\n");
+    exit(1);
+  }
+
+
+#ifndef SIZEREADFILE
+  left = LSIZE;
+#endif
+  int lsize = left;
+
+  if((rp=fopen(RIGHT_FILE,"r"))==NULL){
+    fprintf(stderr,"file open error(right)\n");
+    exit(1);
+  }
+  if(fread(&right,sizeof(int),1,rp)<1){
+    fprintf(stderr,"file read(rsize) error\n");
+    exit(1);
+  }
+
+  printf("left size = %d\tright size = %d\n",left,right);
+
+
+  if (!(lt = (TUPLE *)malloc(lsize*sizeof(TUPLE)))) ERR;
+  if (!(rt = (TUPLE *)malloc(right*sizeof(TUPLE)))) ERR;
+
+  gettimeofday(&rightread_time_s, NULL);
+  if(fread(rt,sizeof(TUPLE),right,rp)<right){
+    fprintf(stderr,"file read(rt) error\n");
+    exit(1);
+  }
+  gettimeofday(&rightread_time_f, NULL);
+  diffplus(&rightread_time,rightread_time_s,rightread_time_f);
+
+  /*******join******************************************************/
+
+  while(1){
+    gettimeofday(&leftread_time_s, NULL);
+    if((left=fread(lt,sizeof(TUPLE),lsize,lp))<0){
+      fprintf(stderr,"file read(lt) error\n");
+      exit(1);
+    }
+    if(left == 0) break;
+    gettimeofday(&leftread_time_f, NULL);
+    diffplus(&leftread_time,leftread_time_s,leftread_time_f);
+
+
+    gettimeofday(&join_s, NULL);
+    for (uint j = 0; j < left; j++) {
+      int hash = lt[j].val % NB_BUCKET;
+      for (int i = 0; i < idxcount[hash] ;i++ ) {
+        if (Bucket[Buck_array[hash] + i].val == lt[j].val) {
+          jt[resultVal].rkey = rt[Bucket[Buck_array[hash] + i].adr].key;
+          jt[resultVal].rval = rt[Bucket[Buck_array[hash] + i].adr].val;
+          jt[resultVal].lkey = lt[j].key;
+          jt[resultVal].lval = lt[j].val;
+          resultVal++;
+        }
+      }
+    }
+    gettimeofday(&join_f, NULL);
+    diffplus(&join_time,join_s,join_f);
+
+  }
+  fclose(lp);
+  fclose(rp);
+    
+  gettimeofday(&end, NULL);
+
+  printf("*********execution time*************************\n");
+  printf("all time:\n");
+  printDiff(begin, end);
+  printf("\n");
+  printf("file read time:\n");
+  printf("Diff: %ld us (%ld ms)\n", leftread_time+rightread_time, (leftread_time+rightread_time)/1000);
+  printf("left table file read time:\n");
+  printf("Diff: %ld us (%ld ms)\n", leftread_time, leftread_time/1000);
+  printf("right table file read time:\n");
+  printDiff(rightread_time_s,rightread_time_f);
+  printf("join time:\n");
+  printf("Diff: %ld us (%ld ms)\n", join_time, join_time/1000);
+  printf("\n\n");
+  printf("result size: %d\n", resultVal);
+  printf("\n");
+
+
+  for(uint i=0;i<3;i++){
+    printf("join[%d]:left %8d \t:right: %8d\n",i,jt[i].lkey,jt[i].rkey);
+    printf("left = %8d\tright = %8d\n",jt[i].lval,jt[i].rval);
+    printf("\n");
+  }
+
+  freeTuple();
+
+  return 0;
+}

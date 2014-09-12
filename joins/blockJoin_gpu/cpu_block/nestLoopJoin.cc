@@ -66,7 +66,11 @@ join()
   for (i = 0 ; i < left ; i++) {
     for (j = 0 ; j < right ; j++) {
       if(Tleft[i].val == Tright[j].val){
-        getJoinTuple(&(Tleft[i]),&(Tright[j]),&(Tjoin[count]));
+        //        getJoinTuple(&(Tleft[i]),&(Tright[j]),&(Tjoin[count]));
+        Tjoin[count].lval = Tleft[i].val;
+        Tjoin[count].lid = Tleft[i].id;
+        Tjoin[count].rval = Tright[i].val;
+        Tjoin[count].rid = Tright[i].id;
         count++;
       }
     }

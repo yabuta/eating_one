@@ -16,13 +16,13 @@
 #define NB_BUFBLK 1024
 */
 
-#define THREAD_NUM 1
+#define THREAD_NUM 8
 
 #define JT_SIZE 100000000
 #define SELECTIVITY 100000000
 #define MATCH_RATE 0.1
 
-#define RT_BUF 131072
+#define RT_BUF 8192
 
 
 typedef struct _TUPLE {

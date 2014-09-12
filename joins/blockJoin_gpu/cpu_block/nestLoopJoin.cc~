@@ -83,6 +83,17 @@ match rate = the match right tuples / all right tuples
 
 */
 
+void shuffle(TUPLE ary[],int size) {    
+  srand((unsigned)time(NULL));
+  for(int i=0;i<size;i++){
+    int j = rand()%size;
+    int t = ary[i].val;
+    ary[i].val = ary[j].val;
+    ary[j].val = t;
+  }
+}
+
+
 void
 init(void)
 {
@@ -152,18 +163,10 @@ init(void)
   free(used);
   free(used_r);
 
+  shuffle(Tleft,left);
 
 }
 
-void shuffle(TUPLE ary[],int size) {    
-  srand((unsigned)time(NULL));
-  for(int i=0;i<size;i++){
-    int j = rand()%size;
-    int t = ary[i].val;
-    ary[i].val = ary[j].val;
-    ary[j].val = t;
-  }
-}
 
 
 //メモリ解放のため新しく追加した関数。バグがあるかも
@@ -200,7 +203,6 @@ main(int argc, char *argv[])
   }
 
   init();
-  shuffle(Tleft,left);
 
 
   gettimeofday(&time_s,NULL);

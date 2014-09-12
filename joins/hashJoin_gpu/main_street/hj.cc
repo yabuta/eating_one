@@ -375,8 +375,6 @@ join()
     here , right table is big table.
    */
 
-
-
   p_num = 0;
 
   int pt = right/PART_STANDARD;

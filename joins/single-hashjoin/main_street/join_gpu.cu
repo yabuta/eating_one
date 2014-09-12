@@ -1,0 +1,83 @@
+#include <stdio.h>
+#include <stdint.h>
+#include <cuda.h>
+#include <sys/time.h>
+#include "tuple.h"
+
+extern "C" {
+
+__global__
+void count(
+          TUPLE *lt,
+          uint *count,
+          TUPLE *prt,
+          int *r_p,
+          int left
+          ) 
+
+{
+
+  int x = blockIdx.x * blockDim.x + threadIdx.x;
+  
+  if(x < left){
+
+    int val = lt[x].val;
+
+    int temp=0;
+    int temp2 = r_p[val%NB_BKT_ENT+1];
+
+    for(int k=r_p[val%NB_BKT_ENT] ; k<temp2 ; k ++){
+      if(prt[k].val == val){
+        temp++;
+      }
+    }
+
+    count[x] = temp;
+
+  }
+  if(x == left-1){
+    count[x+1] = 0;
+  }
+
+}
+
+
+__global__ void join(
+          TUPLE *prt,
+          TUPLE *lt,
+          RESULT *jt,
+          int *r_p,
+          uint *count,
+          int left
+          ) 
+{
+
+
+  int x = blockIdx.x * blockDim.x + threadIdx.x;
+
+
+  uint writeloc = count[x];
+
+  if(x < left){
+
+    int val = lt[x].val;
+
+    int temp=0;
+    int temp2 = r_p[val%NB_BKT_ENT+1];
+
+    for(int k=r_p[val%NB_BKT_ENT] ; k<temp2 ; k ++){
+      if(prt[k].val == val){
+          jt[writeloc + temp].lkey = lt[x].key;
+          jt[writeloc + temp].lval = val;
+          jt[writeloc + temp].rkey = prt[k].key;
+          jt[writeloc + temp].rval = prt[k].val;
+          
+          temp++;
+      }
+    }
+
+  }
+
+}    
+
+}

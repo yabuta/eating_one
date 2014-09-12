@@ -1,0 +1,38 @@
+/*****
+use hj.cc
+ *****/
+#define NB_BUCKET 134217728 //radix
+
+#define LSIZE 524288
+#define SIZEREADFILE
+
+
+/*****
+use TableBuild.cpp
+ *****/
+#define MATCH_RATE 0.1  //match rate setting
+#define JT_SIZE 1200000000
+#define SELECTIVITY 1000000000
+
+
+/*****
+use both
+ *****/
+typedef struct _TUPLE {
+  int key;
+  int val;
+} TUPLE;
+
+typedef struct _RESULT {
+  int rkey;
+  int rval;
+  int lkey;
+  int lval;
+} RESULT;
+
+typedef struct _BUCKET {
+  int adr;
+  int val;
+
+} BUCKET;
+
