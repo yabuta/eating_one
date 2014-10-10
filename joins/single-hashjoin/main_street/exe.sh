@@ -1,5 +1,5 @@
-./InnerExe $1 $2
-./InnerExe $1 $2
-./InnerExe $1 $2
-./InnerExe $1 $2
-./InnerExe $1 $2
+./HashExe $1 $2
+./HashExe $1 $2
+./HashExe $1 $2
+./HashExe $1 $2
+./HashExe $1 $2

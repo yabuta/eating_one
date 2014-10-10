@@ -97,11 +97,12 @@ all: hj.cc join_gpu.cu partitioning.cu scan.o scan_main.o
 	gcc $(CFLAGS) -o $(TARGET) hj.cc scan.o scan_main.o $(LIBS) $(LDFLAGS) $(EXTRA_LDLAGS) $(INCLUDES)
 
 scan.o:	scan.cu scan_common.h
-	$(MNVCC) $(NVCCFLAGS) $(EXTRA_NVCCFLAGS) $(GENCODE_FLAGS) $(INCLUDES) -o $@ -c $<
+	$(MNVCC) $(INCLUDES) -o $@ -c $<
+#	$(MNVCC) $(NVCCFLAGS) $(EXTRA_NVCCFLAGS) $(GENCODE_FLAGS) $(INCLUDES) -o $@ -c $<
 
 scan_main.o:scan_main.cpp scan_common.h
-	$(GCC) $(CCFLAGS) $(EXTRA_CCFLAGS) $(INCLUDES) -o $@ -c $<
-
+	$(GCC) $(INCLUDES) -o $@ -c $<
+#	$(GCC) $(CCFLAGS) $(EXTRA_CCFLAGS) $(INCLUDES) -o $@ -c $<
 
 clean:
 	rm -f $(TARGET) *.cubin ./*~ *.o

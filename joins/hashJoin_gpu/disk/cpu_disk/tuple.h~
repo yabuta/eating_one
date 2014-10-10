@@ -2,7 +2,7 @@
 use hj.cc
  *******/
 
-#define NB_BKTENT 2097152 // the number of partitions
+#define NB_BKTENT 1048576 // the number of partitions
 
 //最適hash値
 // 1M * 1M   131072

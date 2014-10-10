@@ -157,7 +157,6 @@ main(int argc,char *argv[])
 
   gettimeofday(&begin, NULL);
 
-#ifdef SIZEREADFILE
   if((lp=fopen(LEFT_FILE,"r"))==NULL){
     fprintf(stderr,"file open error(left)\n");
     exit(1);
@@ -176,7 +175,7 @@ main(int argc,char *argv[])
     exit(1);
   }
 
-#else
+#ifndef SIZEREADFILE
   left=LSIZE;
   right=RSIZE;
 #endif

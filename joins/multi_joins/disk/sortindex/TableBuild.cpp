@@ -1,0 +1,254 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/time.h>
+#include "debug.h"
+#include "tuple.h"
+
+#define LEFT_FILE "/home/yabuta/JoinData/sort-index/left_table.out"
+#define RIGHT_FILE "/home/yabuta/JoinData/sort-index/right_table.out"
+#define INDEX_FILE "/home/yabuta/JoinData/sort-index/index.out"
+
+int left,right;
+
+BUCKET *Bucket;
+
+
+static int
+getTupleId(void)
+{
+  static int id;
+  
+  return ++id;
+}
+
+//shuffle tuple
+void shuffle(TUPLE ary[],int size) {    
+  srand((unsigned)time(NULL));
+  for(int i=0;i<size;i++){
+    int j = rand()%size;
+    TUPLE t = ary[i];
+    ary[i] = ary[j];
+    ary[j] = t;
+  }
+}
+
+
+/***************create index*****************************/
+/*
+  swap(TUPLE *a,TUPLE *b)
+  qsort(int p,int q)
+  createIndex(void)
+*/
+
+void swap(BUCKET *a,BUCKET *b)
+{
+  BUCKET temp;
+  temp = *a;
+  *a=*b;
+  *b=temp;
+}
+
+void qsort(int p,int q)
+{
+  int i,j;
+  int pivot;
+
+  i = p;
+  j = q;
+
+  pivot = Bucket[(p+q)/2].val;
+
+  while(1){
+    while(Bucket[i].val < pivot) i++;
+    while(pivot < Bucket[j].val) j--;
+    if(i>=j) break;
+    swap(&Bucket[i],&Bucket[j]);
+    i++;
+    j--;
+  }
+  if(p < i-1) qsort(p,i-1);
+  if(j+1 < q) qsort(j+1,q);
+
+}
+
+void createIndex(TUPLE *rt)
+{
+
+  if (!(Bucket = (BUCKET *)malloc(right * sizeof(BUCKET)))) exit(1);
+  for(uint i=0; i<right ; i++){
+    Bucket[i].val = rt[i].val;
+    Bucket[i].adr = i;
+  }
+
+  qsort(0,right-1);
+
+  /*
+  for(uint i=1; i<right ; i++){
+    if(Bucket[i-1].val > Bucket[i].val){
+      printf("sort error[%d]\n",i);
+      break;
+    }
+  }
+  */
+
+}
+
+
+//初期化する
+void
+init(void)
+{
+  
+
+  TUPLE *lt,*rt;
+  FILE *lp,*rp,*ip;
+
+
+  //メモリ割り当てを行う
+  //タプルに初期値を代入
+
+  lt = (TUPLE *)calloc(left,sizeof(TUPLE));
+  rt = (TUPLE *)calloc(right,sizeof(TUPLE));
+
+  srand((unsigned)time(NULL));
+  uint *used;//usedなnumberをstoreする
+  used = (uint *)calloc(SELECTIVITY,sizeof(uint));
+  for(uint i=0; i<SELECTIVITY ;i++){
+    used[i] = i;
+  }
+  uint selec = SELECTIVITY;
+
+  //uniqueなnumberをvalにassignする
+  for (uint i = 0; i < right; i++) {
+    if(&(rt[i])==NULL){
+      printf("right TUPLE allocate error.\n");
+      exit(1);
+    }
+    rt[i].key = getTupleId();
+    uint temp = rand()%selec;
+    uint temp2 = used[temp];
+    selec = selec-1;
+    used[temp] = used[selec];
+
+    rt[i].val = temp2; 
+  }
+
+
+  uint counter = 0;//matchするtupleをcountする。
+  uint *used_r;
+  used_r = (uint *)calloc(right,sizeof(uint));
+  for(uint i=0; i<right ; i++){
+    used_r[i] = i;
+  }
+  uint rg = right;
+  uint l_diff;//
+  if(MATCH_RATE != 0){
+    l_diff = left/(MATCH_RATE*right);
+  }else{
+    l_diff = 1;
+  }
+  for (uint i = 0; i < left ; i++) {
+    lt[i].key = getTupleId();
+    if(i%l_diff == 0 && counter < MATCH_RATE*right){
+      uint temp = rand()%rg;
+      uint temp2 = used_r[temp];
+      rg = rg-1;
+      used[temp] = used[rg];
+
+      lt[i].val = rt[temp2].val;      
+      counter++;
+    }else{
+      uint temp = rand()%selec;
+      uint temp2 = used[temp];
+      selec = selec-1;
+      used[temp] = used[selec];
+      lt[i].val = temp2; 
+    }
+  }
+
+  printf("%d\n",counter);
+
+  
+  free(used);
+  free(used_r);
+
+  shuffle(lt,left);
+
+  createIndex(rt);
+
+  if((lp=fopen(LEFT_FILE,"w"))==NULL){
+    fprintf(stderr,"file open error(left)\n");
+    exit(1);
+  }
+
+  if(fwrite(&left,sizeof(int),1,lp)<1){
+    fprintf(stderr,"file write error\n");
+    exit(1);
+  }
+  if(fwrite(lt,sizeof(TUPLE),left,lp)<left){
+    fprintf(stderr,"file write error\n");
+    exit(1);
+  }
+  fclose(lp);
+
+
+  if((rp=fopen(RIGHT_FILE,"w"))==NULL){
+    fprintf(stderr,"file open error(right)\n");
+    exit(1);
+  }
+  if(fwrite(&right,sizeof(int),1,rp)<1){
+    fprintf(stderr,"file write error\n");
+    exit(1);
+  }
+  if(fwrite(rt,sizeof(TUPLE),right,rp)<right){
+    fprintf(stderr,"file write error\n");
+    exit(1);
+  }
+  fclose(rp);
+
+  if((ip=fopen(INDEX_FILE,"w"))==NULL){
+    fprintf(stderr,"file open error(left)\n");
+    exit(1);
+  }
+  if(fwrite(Bucket,sizeof(BUCKET),right,ip)<right){
+    fprintf(stderr,"file write error\n");
+    exit(1);
+  }
+  fclose(ip);
+
+}
+
+
+int main(int argc, char *argv[]){
+
+  if(argc<4){
+    if(argv[1]==NULL){
+      printf("argument1 is nothing.\n");
+      exit(1);
+    }else{
+      left=atoi(argv[1]);
+      printf("left num :%d\n",left);
+    }
+    
+    if(argv[2]==NULL){
+      printf("argument2 is nothing.\n");
+      exit(1);
+    }else{
+      right=atoi(argv[2]);
+      printf("right num :%d\n",right);
+    }
+  }
+
+
+
+
+  printf("init starting...\n");
+  init();
+  printf("...init finish\n");
+
+}
+
+

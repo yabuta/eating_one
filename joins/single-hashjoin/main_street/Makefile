@@ -83,7 +83,7 @@ ifeq ($(dbg),1)
       NVCCFLAGS += -g -G
       TARGET := debug
 else
-      TARGET := InnerExe
+      TARGET := HashExe
 endif
 
 
@@ -95,7 +95,7 @@ LDFLAGS       += $(LIBPATH_OPENGL)
 
 all: singlehash.cc scan.o scan_main.o
 	$(NVCC) -o join_gpu.cubin join_gpu.cu
-	$(NVCC) -o count.cubin count.cu
+	$(NVCC) -o partitioning.cubin partitioning.cu
 	gcc $(CFLAGS) -o $(TARGET) singlehash.cc scan_main.o scan.o $(LIBS) $(LDFLAGS) $(EXTRA_LDFLAGS) $(INCLUDES)
 
 scan.o:	scan.cu scan_common.h

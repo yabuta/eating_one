@@ -9,11 +9,11 @@
 #include <sys/time.h>
 #include "debug.h"
 
-#define THREAD_NUM 4
+#define THREAD_NUM 8
 
 #define JT_SIZE 100000000
 #define SELECTIVITY 1000000000
-#define MATCH_RATE 0.1
+#define MATCH_RATE 1
 
 #define LT_BUF 16384
 

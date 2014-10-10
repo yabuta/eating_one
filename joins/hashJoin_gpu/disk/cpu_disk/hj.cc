@@ -204,7 +204,6 @@ main(int argc,char *argv[])
     gettimeofday(&leftread_time_f, NULL);
     diffplus(&leftread_time,leftread_time_s,leftread_time_f);
 
-
     while(1){
       gettimeofday(&rightread_time_s, NULL);
       if((right=fread(rt,sizeof(TUPLE),rsize,rp))<0){

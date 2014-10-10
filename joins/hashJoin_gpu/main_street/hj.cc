@@ -1165,6 +1165,12 @@ join()
     exit(1);
   }
 
+  res = cuMemFree(rstartPos_dev);
+  if (res != CUDA_SUCCESS) {
+    printf("cuMemFree (rstartPos_dev) failed: res = %lu\n", (unsigned long)res);
+    exit(1);
+  }
+
   gettimeofday(&end, NULL);
 
 

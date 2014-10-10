@@ -2,7 +2,6 @@
 //#define NB_BUFR (SZ_PAGE * 2 / sizeof(TUPLE))
 //#define NB_BUFS (SZ_PAGE * 16 / sizeof(TUPLE))
 #define BLOCK_SIZE_X 1024
-#define NB_BKT_ENT 16777216
 
 
 /*
@@ -31,10 +30,20 @@
 #define NB_BKT_ENT 67108864
 
 */
-#define MATCH_RATE 1
+#define MATCH_RATE 0.01
 
 #define JT_SIZE 120000000
 #define SELECTIVITY 1000000000
+
+#define PARTITION 64
+#define RADIX 6
+#define PART_C_NUM 16
+#define SHARED_MAX PARTITION * PART_C_NUM
+
+#define RIGHT_PER_TH 256
+
+#define PART_STANDARD 1
+#define JOIN_SHARED 256
 
 
 int right,left;
@@ -50,22 +59,6 @@ typedef struct _RESULT {
   int lkey;
   int lval;
 } RESULT;
-
-/*
-typedef struct _IDX {
-  int val;
-  int adr;
-  struct _IDX *nxt;
-} IDX;
-*/
-
-/*
-typedef struct _HASHOBJ {
-  int val;
-  int adr;
-    //struct _HASHOBJ *nxt;
-} HASHOBJ;
-*/
 
 typedef struct _BUCKET {
 

@@ -1,0 +1,12 @@
+inner join
+
+実行方法：
+./InnerExe left_tuple_num right_tuple_num
+
+ex)
+
+大きさ1Mのテーブルをjoinする場合
+./InnerExe 1048576 1048576
+
+
+indexの基数やmatch rate はtuple.hで変更できる

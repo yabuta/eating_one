@@ -14,7 +14,7 @@ all:$(T1)
 
 $(T1): $(O1) tuple.h
 	$(CC) -o $@ $^ $(LDFLAGS)
-	
+
 
 .cc.o: tuple.h
 	$(CC) $(CFLAGS) $< $^

@@ -1,10 +1,10 @@
-T1 = InnerExe
+T1 = HashExe
 
 CC = g++
 CFLAGS = -c -Wall -g -DDEBUG -O2
 LDFLAGS = -Wall -L/usr/local/lib -lm -lpthread -O2
 
-01 = inner-idx-bnlj.o
+01 = hj.o
 
 #
 # Rules for make
@@ -18,6 +18,6 @@ $(T1): $(01)
 	$(CC) $(CFLAGS) $<
 
 clean:
-	rm -f *~ *.o *.exe *.stackdump hash-part-*
+	rm -f *~ *.o $(T1) *.exe *.stackdump hash-part-*
 
-inner-idx-bnlj.o:tuple.h
+hj.o:tuple.h

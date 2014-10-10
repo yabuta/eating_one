@@ -59,8 +59,7 @@ init(void)
   rt = (TUPLE *)calloc(right,sizeof(TUPLE));
   lt = (TUPLE *)calloc(left,sizeof(TUPLE));
   jt = (RESULT *)calloc(JT_SIZE,sizeof(RESULT));
-
-
+  
   srand((unsigned)time(NULL));
   uint *used;//usedなnumberをstoreする
   used = (uint *)calloc(SELECTIVITY,sizeof(uint));
@@ -351,6 +350,18 @@ main(int argc, char *argv[])
   }
 
   init();
+
+  TUPLE *temp;
+  int tmp;
+  temp = lt;
+  lt = rt;
+  rt = temp;
+  tmp = left;
+  left = right;
+  right = tmp;
+
+
+
   long idxtime = createIndex();
   printf("index create time:%ld\n",idxtime/1000);
 

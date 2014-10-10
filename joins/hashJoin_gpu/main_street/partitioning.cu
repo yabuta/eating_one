@@ -185,8 +185,8 @@ void rcount_partitioning(
     for(uint i=0; i<RIGHT_PER_TH&&(DEF+threadIdx.x*RIGHT_PER_TH+i)<rows_n; i++){
       //hash = (i>>(8*loop)) % p_n;
       //hash = (t[DEF+threadIdx.x*RIGHT_PER_TH+i].val>>(radix*loop)) % p_n;
-      hash = loop==0 ? (t[DEF+threadIdx.x*LEFT_PER_TH+i].val) % p_n:
-        (t[DEF+threadIdx.x*LEFT_PER_TH+i].val>>(RADIX*loop)) % p_n;
+      hash = loop==0 ? (t[DEF+threadIdx.x*RIGHT_PER_TH+i].val) % p_n:
+        (t[DEF+threadIdx.x*RIGHT_PER_TH+i].val>>(RADIX*loop)) % p_n;
 
       part[hash*Dim + threadIdx.x]++;
       
@@ -260,8 +260,8 @@ void rpartitioning(
     for(uint i=0; i<RIGHT_PER_TH&&(DEF+threadIdx.x*RIGHT_PER_TH+i)<rows_n; i++){
         tt = t[DEF+threadIdx.x*RIGHT_PER_TH+i];
         //hash = (tt.val>>loop*radix) % p_n;
-        hash = loop==0 ? (t[DEF+threadIdx.x*LEFT_PER_TH+i].val) %p_n
-          :(t[DEF+threadIdx.x*LEFT_PER_TH+i].val>>(RADIX*loop)) % p_n;
+        hash = loop==0 ? (t[DEF+threadIdx.x*RIGHT_PER_TH+i].val) %p_n
+          :(t[DEF+threadIdx.x*RIGHT_PER_TH+i].val>>(RADIX*loop)) % p_n;
         temp = part[hash*Dim + threadIdx.x]++;
         pt[temp] = tt; 
 

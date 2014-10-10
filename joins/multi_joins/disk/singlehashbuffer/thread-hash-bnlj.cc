@@ -1,0 +1,419 @@
+#include "tuple.h"
+
+#define LEFT_FILE "/home/yabuta/JoinData/hash/left_table.out"
+#define RIGHT_FILE "/home/yabuta/JoinData/hash/right_table.out"
+
+pthread_mutex_t Lk;
+
+TUPLE *rt;
+TUPLE *prt;
+TUPLE *lt;
+RESULT *jt;
+
+int right,left;
+
+//int resultVal = 0;
+int resoffset = 0;
+
+int RL[THREAD_NUM*PARTITION];
+int RLS[THREAD_NUM*PARTITION];
+
+
+int offset = 0;
+bool finish_flag = false;
+
+
+void
+printDiff(struct timeval begin, struct timeval end)
+{
+  long diff;
+
+  diff = (end.tv_sec - begin.tv_sec) * 1000 * 1000 + (end.tv_usec - begin.tv_usec);
+  printf("Diff: %ld us (%ld ms)\n", diff, diff/1000);
+}
+
+long
+calcDiff(struct timeval begin, struct timeval end)
+{
+  long diff;
+  diff = (end.tv_sec - begin.tv_sec) * 1000 * 1000 + (end.tv_usec - begin.tv_usec);
+  return diff;
+}
+
+void diffplus(long *total,struct timeval begin,struct timeval end){
+  *total += (end.tv_sec - begin.tv_sec) * 1000 * 1000 + (end.tv_usec - begin.tv_usec);
+
+}
+
+
+static int
+getTupleId(void)
+{
+  static int id;
+
+  return ++id;
+}
+
+
+void shuffle(TUPLE ary[],int size) {
+  for(int i=0;i<size;i++){
+    int j = rand()%size;
+    int t = ary[i].val;
+    ary[i].val = ary[j].val;
+    ary[j].val = t;
+  }
+}
+
+
+void
+init(void)
+{
+
+  jt = (RESULT *)calloc(JT_SIZE,sizeof(RESULT));
+
+
+}
+
+
+void *rcount_partitioning(void *a)
+{
+
+  int threadIdx = *((int *)a);
+
+  int startPos,endPos;
+  if(right%THREAD_NUM != 0){
+    startPos = threadIdx*(right/THREAD_NUM+1);
+  }else{
+    startPos = threadIdx*(right/THREAD_NUM);
+  }
+
+  if(right%THREAD_NUM != 0){
+    endPos = (threadIdx+1)*(right/THREAD_NUM+1);
+    if(endPos > right){
+      endPos = right;
+    }
+  }else{
+    endPos = (threadIdx+1)*(right/THREAD_NUM);
+    if(endPos > right){
+      endPos = right;
+    }
+  }
+
+
+  int hash = 0;
+
+  for(int i = startPos; i<endPos;i++){
+    hash = rt[i].val % PARTITION;
+    RL[hash*THREAD_NUM + threadIdx]++;
+  }
+
+}
+
+
+void *rpartitioning(void *a)
+{
+
+  int threadIdx = *((int *)a);
+
+  int startPos,endPos;
+  if(right%THREAD_NUM != 0){
+    startPos = threadIdx*(right/THREAD_NUM+1);
+  }else{
+    startPos = threadIdx*(right/THREAD_NUM);
+  }
+
+  if(right%THREAD_NUM != 0){
+    endPos = (threadIdx+1)*(right/THREAD_NUM+1);
+    if(endPos > right){
+      endPos = right;
+    }
+  }else{
+    endPos = (threadIdx+1)*(right/THREAD_NUM);
+    if(endPos > right){
+      endPos = right;
+    }
+  }
+
+  int hash = 0;
+
+  for(int i = startPos; i<endPos ;i++){
+    hash = rt[i].val%PARTITION;
+    prt[RLS[hash*THREAD_NUM+threadIdx]] = rt[i];
+    RLS[hash*THREAD_NUM + threadIdx]++;    
+
+  }
+
+}
+
+
+
+LTBUFDATA LTGetter(){
+
+
+  LTBUFDATA res;
+
+  if (pthread_mutex_lock(&Lk)) ERR;
+  if(finish_flag == true){
+    res.size = -1;
+    res.startPos = NULL;
+
+  }else{
+    if(left - offset > LT_BUF){
+      res.size = LT_BUF;
+      res.startPos = &(lt[offset]);
+      offset += LT_BUF;
+    }else{
+      res.size = left-offset;
+      res.startPos = &(lt[offset]);
+      offset += left-offset;
+      finish_flag = true;
+    }
+  }
+  if (pthread_mutex_unlock(&Lk)) ERR;
+
+  return res;
+
+}
+
+void writeResult(RESULT *buf,int size){
+
+  if (pthread_mutex_lock(&Lk)) ERR;
+  for(int i=0; i<size ; i++){
+    jt[resoffset+i] = buf[i];
+  }
+  resoffset += size;
+  if (pthread_mutex_unlock(&Lk)) ERR;
+
+}
+
+
+void *
+executor(void *a)
+{
+
+
+  RESULT outputbuf[BUFF_SIZE];
+  int bufoffset=0;
+
+  LTBUFDATA ltBuf;
+  TUPLE *ltemp;
+  TUPLE rtemp;
+
+  /* join */
+  while(true){
+
+    ltBuf = LTGetter();
+    if(ltBuf.size == -1) break;
+    
+    ltemp = ltBuf.startPos;
+    for (int i = 0; i < ltBuf.size ; i++){
+      int hashval = ltemp[i].val%PARTITION;
+      if(hashval==0){
+        for (int j=0 ; j<RLS[THREAD_NUM*(hashval+1)-1] ; j++){
+          if (prt[j].val == ltemp[i].val){
+            rtemp = prt[j];
+            outputbuf[bufoffset].rkey = ltemp[i].key;
+            outputbuf[bufoffset].rval = ltemp[i].val;
+            outputbuf[bufoffset].skey = rtemp.key;
+            outputbuf[bufoffset].sval = rtemp.val;
+            bufoffset++;
+            if(bufoffset == BUFF_SIZE){
+              writeResult(outputbuf,BUFF_SIZE);
+              bufoffset = 0;
+            }
+
+          }
+        }
+      }else{
+        for (int j=RLS[THREAD_NUM*hashval-1] ; j<RLS[THREAD_NUM*(hashval+1)-1] ; j++){
+          if (prt[j].val == ltemp[i].val){
+            rtemp = prt[j];
+            outputbuf[bufoffset].rkey = ltemp[i].key;
+            outputbuf[bufoffset].rval = ltemp[i].val;
+            outputbuf[bufoffset].skey = rtemp.key;
+            outputbuf[bufoffset].sval = rtemp.val;
+            bufoffset++;
+            if(bufoffset == BUFF_SIZE){
+              writeResult(outputbuf,BUFF_SIZE);
+              bufoffset = 0;
+            }
+
+          }
+        }
+
+      }
+    }
+  }
+
+  writeResult(outputbuf,bufoffset);
+
+
+  //printf("temp = %d\n",temp);
+
+
+  return NULL; // just to complier be quiet
+}
+
+
+void
+createThreads(void)
+{
+  pthread_t thEx[THREAD_NUM];
+  int thid[THREAD_NUM];
+  FILE *lp,*rp;
+  struct timeval sjoin,ejoin;
+  struct timeval rp_s,rp_e,j_s,j_e;
+
+  struct timeval leftread_time_s, leftread_time_f;
+  struct timeval rightread_time_s, rightread_time_f;
+  long leftread_time = 0,rightread_time = 0;
+  long joindiff;
+
+
+
+  gettimeofday(&sjoin, NULL);
+
+  if((lp=fopen(LEFT_FILE,"r"))==NULL){
+    fprintf(stderr,"file open error(left)\n");
+    exit(1);
+  }
+  if(fread(&left,sizeof(int),1,lp)<1){
+    fprintf(stderr,"file write error\n");
+    exit(1);
+  }
+
+  if((rp=fopen(RIGHT_FILE,"r"))==NULL){
+    fprintf(stderr,"file open error(right)\n");
+    exit(1);
+  }
+  if(fread(&right,sizeof(int),1,rp)<1){
+    fprintf(stderr,"file write error\n");
+    exit(1);
+  }
+
+  printf("left size = %d\tright size = %d\n",left,right);
+
+  int lsize = left,rsize = right;
+
+  if (!(lt = (TUPLE *)calloc(lsize, sizeof(TUPLE)))) ERR;
+  if (!(rt = (TUPLE *)calloc(rsize, sizeof(TUPLE)))) ERR;
+  if (!(prt = (TUPLE *)calloc(rsize, sizeof(TUPLE)))) ERR;
+
+
+  gettimeofday(&leftread_time_s, NULL);
+  if((left=fread(lt,sizeof(TUPLE),lsize,lp))<0){
+    fprintf(stderr,"file write error\n");
+    exit(1);
+  }
+  gettimeofday(&leftread_time_f, NULL);
+  diffplus(&leftread_time,leftread_time_s,leftread_time_f);
+
+  gettimeofday(&rightread_time_s, NULL);
+  if((right=fread(rt,sizeof(TUPLE),rsize,rp))<0){
+    fprintf(stderr,"file write error\n");
+    exit(1);
+  }
+  gettimeofday(&rightread_time_f, NULL);
+  diffplus(&rightread_time,rightread_time_s,rightread_time_f);
+
+
+  printf("file read time:\n");
+  printf("Diff: %ld us (%ld ms)\n\n", leftread_time+rightread_time, (leftread_time+rightread_time)/1000);
+
+
+
+  /*partition rt*/
+  gettimeofday(&rp_s, NULL);
+
+  for(int i = 0; i<THREAD_NUM; i++){
+    thid[i] = i;
+    if (pthread_create(&(thEx[i]), NULL, rcount_partitioning, &(thid[i]))) ERR;
+  }
+
+  for(int i=0 ; i<THREAD_NUM; i++){
+    if (pthread_join(thEx[i], NULL)) ERR;
+  }
+
+
+  RLS[0] = 0;
+  for(int i=1; i<THREAD_NUM*PARTITION ; i++){
+    RLS[i] = RLS[i-1] + RL[i-1];
+  }
+
+
+  for(int i = 0; i<THREAD_NUM; i++){
+    if (pthread_create(&(thEx[i]), NULL, rpartitioning, &(thid[i]))) ERR;
+  }
+
+  for(int i=0 ; i<THREAD_NUM; i++){
+    if (pthread_join(thEx[i], NULL)) ERR;
+  }
+
+  gettimeofday(&rp_e,NULL);
+  printf("hash time:\n");
+  printDiff(rp_s,rp_e);
+
+
+  /*
+  int temp=0;
+  for(int i=0 ; i<right ; i++){
+    if(prt[i].val%PARTITION > temp){
+      temp = prt[i].val%PARTITION;
+    }else if(prt[i].val%PARTITION < temp){
+      printf("false\t%d\t%d\t%d\n",i,prt[i].val,prt[i].val%PARTITION);
+      break;
+    }
+  }
+
+  exit(1);
+  */
+
+
+  /*join*/
+  gettimeofday(&j_s,NULL);
+  for(int i = 0; i<THREAD_NUM; i++){
+    if (pthread_create(&(thEx[i]), NULL, executor, NULL)) ERR;
+  }
+
+  for(int i=0 ; i<THREAD_NUM; i++){
+    if (pthread_join(thEx[i], NULL)) ERR;
+  }
+
+  gettimeofday(&j_e,NULL);
+  printf("join time:\n");
+  printDiff(j_s,j_e);
+
+  fclose(lp);
+  fclose(rp);
+
+  gettimeofday(&ejoin, NULL);
+  joindiff = calcDiff(sjoin, ejoin);
+
+  printf("all time:\n");  
+  printDiff(sjoin,ejoin);
+  printf("resultVal:%d\n",resoffset);
+  printf("joindiff:%ld\n",joindiff/1000);
+
+  for(uint i=0;i<3;i++){
+    printf("join[%d]:left %8d \t:right: %8d\n",i,jt[i].skey,jt[i].rkey);
+    printf("left = %8d\tright = %8d\n",jt[i].sval,jt[i].rval);
+    printf("\n");
+  }
+
+
+}
+
+int
+main(int argc, char *argv[])
+{
+
+  if(argc>3){
+    printf("引数が多い\n");
+    return 0;
+  }
+
+  init();
+  createThreads();
+
+  return 0;
+}

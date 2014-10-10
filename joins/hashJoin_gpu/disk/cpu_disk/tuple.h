@@ -14,7 +14,7 @@ use hj.cc
 // 128M * 128M 2097152
 #define LSIZE 262144
 #define RSIZE 262144
-#define SIZEREADFILE
+//#define SIZEREADFILE
 
 
 /*******

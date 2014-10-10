@@ -1,6 +1,19 @@
-#define NB_BUCKET 134217728 //radix
+#define NB_BKTENT 4194304 //radix
 
-#define MATCH_RATE 0.1  //match rate setting
+
+/*
+
+4194304*4194304        1048576
+8388608*8388608        2097152
+16777216*16777216      4194304
+33554432*33554432      4194304
+67108864*67108864      4194304
+134217728 134217728    8388608
+
+*/
+
+
+#define MATCH_RATE 0.01  //match rate setting
 
 #define JT_SIZE 1200000000
 #define SELECTIVITY 1000000000
@@ -17,10 +30,4 @@ typedef struct _RESULT {
   int lkey;
   int lval;
 } RESULT;
-
-typedef struct _BUCKET {
-  int adr;
-  int val;
-
-} BUCKET;
 
